@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DharaNirman | Secure Access Gateway</title>
+  <link rel="stylesheet" href="portal.css">
+  <style>
+    .login-shell { width:min(460px, 92vw); margin:7vh auto; }
+    .login-head { background:var(--navy); color:#fff; padding:28px; border-radius:14px 14px 0 0; }
+    .login-body { background:#fff; border:1px solid var(--line); border-top:0; padding:28px; border-radius:0 0 14px 14px; }
+    .role-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px; }
+    .role-tab { padding:10px 4px; border:1px solid var(--line); border-radius:7px; background:#f8fafc; color:var(--muted); font-weight:700; cursor:pointer; }
+    .role-tab.active { color:var(--blue); border-color:var(--blue); background:#e8f5fb; }
+    label { display:block; color:var(--muted); font-weight:700; font-size:12px; margin:12px 0 6px; }
+    input { width:100%; padding:11px; border:1px solid var(--line); border-radius:7px; font:inherit; }
+    .login-error { color:var(--red); font-size:12px; font-weight:700; margin-top:8px; }
+    .demo { width:100%; margin-top:10px; border:0; background:transparent; color:var(--blue); font-weight:700; cursor:pointer; padding:8px; }
+    .login-note { color:var(--muted); text-align:center; font-size:11px; margin-top:18px; }
+  </style>
+</head>
+<body>
+  <main class="login-shell">
+    <section class="login-head">
+      <div class="eyebrow">Secure access gateway</div>
+      <h1>DharaNirman</h1>
+      <p style="margin-top:10px;color:#dbeafe;line-height:1.5">Official workspace for 3D Bhu-Aadhaar, volumetric titles, and ISO 19152 land administration.</p>
+    </section>
+    <section class="login-body">
+      <div class="role-tabs" role="tablist" aria-label="Login portals">
+        <button class="role-tab active" data-role="citizen" onclick="selectLoginRole('citizen')">Citizen</button>
+        <button class="role-tab" data-role="officer" onclick="selectLoginRole('officer')">DoLR Officer</button>
+        <button class="role-tab" data-role="surveyor" onclick="selectLoginRole('surveyor')">Surveyor</button>
+      </div>
+      <div id="login-role-copy" class="card" style="padding:14px;margin-bottom:16px">
+        <h3>Citizen property portal</h3>
+        <p>View registered 3D titles, certificates, tax status, and demarcation requests.</p>
+      </div>
+      <label for="login-identifier">Mobile / official identifier</label>
+      <input id="login-identifier" value="ananya.sharma@digital.gov.in" autocomplete="username">
+      <label for="login-password">One-time password / password</label>
+      <input id="login-password" type="password" value="demo-access" autocomplete="current-password">
+      <p id="login-error" class="login-error" hidden></p>
+      <button class="btn btn-primary" style="width:100%;margin-top:18px" onclick="submitLogin()">Continue to portal</button>
+      <button class="demo" onclick="demoLogin()">Use 1-click demo access</button>
+      <p class="login-note">Prototype access only · no real identity data is transmitted</p>
+    </section>
+  </main>
+  <script src="api.js"></script>
+  <script src="auth.js"></script>
+</body>
+</html>

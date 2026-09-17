@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DharaNirman | 3D ULPIN & Volumetric Land Administration</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gov: {
+              navy: '#162E51',
+              blue: '#005EA2',
+              'blue-dark': '#0c2340',
+              bg: '#F0F0F0',
+              'gray-light': '#F8F9FA',
+              'gray-cool': '#DFE1E2',
+              'gray-border': '#CBD5E1',
+              ink: '#1B1B1B',
+              'ink-muted': '#565C65',
+              red: '#D83933',
+              'red-dark': '#B52B26',
+              amber: '#C05600',
+              'amber-light': '#FA9441',
+              green: '#008852',
+              'green-dark': '#006B40',
+              cyan: '#00BDE3',
+              'accent-blue': '#0050D8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-gov-bg text-gov-ink min-h-screen flex flex-col antialiased overflow-x-hidden">
+
+  <!-- Top Header Navigation (Deep Navy Authority Bar) -->
+  <header class="bg-gov-navy text-white px-6 py-3 flex flex-wrap justify-between items-center gap-4 sticky top-0 z-30 shadow-md border-b-2 border-gov-blue">
+    <div class="flex items-center gap-3.5">
+      <div class="bg-white/10 p-2.5 rounded-xl border border-white/20 text-white shadow-inner">
+        <i data-lucide="layers-3" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg font-extrabold tracking-tight text-white">DharaNirman</h1>
+          <span class="bg-gov-blue text-white text-[11px] font-bold px-2.5 py-0.5 rounded font-mono border border-blue-400/40">
+            3D ULPIN v3.2 • ISO 19152 LADM
+          </span>
+        </div>
+        <p class="text-xs text-slate-300 flex items-center gap-1.5 mt-0.5 font-medium">
+          <span>Ministry of Rural Development • Dept. of Land Resources (DoLR)</span>
+          <span class="text-slate-400">•</span>
+          <span class="font-mono text-cyan-300 font-bold">PS ID: 26011</span>
+        </p>
+      </div>
+    </div>
+    
+    <!-- Top Action Controls -->
+    <div class="flex items-center gap-3 flex-wrap">
+      <!-- CORS GNSS Status (Forest Green Active Status) -->
+      <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+        </span>
+        <span id="txt-cors-status">SoI CORS Network: <strong>ACTIVE</strong> (RTK Fix ±1.2cm)</span>
+      </div>
+
+      <!-- Language Switcher -->
+      <button onclick="toggleLanguage()" id="btn-lang-toggle" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3 py-1.5 rounded-lg font-semibold text-xs flex items-center gap-1.5 transition active:scale-95" title="Switch Language / भाषा बदलें">
+        <i data-lucide="languages" class="w-3.5 h-3.5 text-amber-300"></i>
+        <span id="lang-label">हिंदी</span>
+      </button>
+
+      <!-- Action Buttons -->
+      <button onclick="runAIPipeline()" id="btn-run-ai" class="bg-gov-blue hover:bg-blue-700 text-white px-3.5 py-2 rounded-lg font-bold text-xs flex items-center gap-2 shadow transition active:scale-95 border border-blue-400/30">
+        <i data-lucide="cpu" class="w-4 h-4"></i> <span id="txt-btn-ai">Run AI 3D Extraction</span>
+      </button>
+
+      <button onclick="openDemarcationModal()" id="btn-demarcation" class="hidden bg-gov-cyan hover:bg-cyan-500 text-gov-navy px-3.5 py-2 rounded-lg font-extrabold text-xs items-center gap-2 shadow transition active:scale-95">
+        <i data-lucide="map-pin" class="w-4 h-4"></i> <span id="txt-btn-demarcation">Request Demarcation</span>
+      </button>
+
+      <button onclick="openCertificateModal()" class="bg-gov-green hover:bg-green-700 text-white border border-green-400/30 px-3.5 py-2 rounded-lg font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow">
+        <i data-lucide="file-check-2" class="w-4 h-4"></i> <span id="txt-btn-cert">3D Bhu-Aadhaar Card</span>
+      </button>
+
+      <button onclick="openExportModal()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3.5 py-2 rounded-lg font-semibold text-xs flex items-center gap-2 transition active:scale-95">
+        <i data-lucide="download" class="w-4 h-4 text-cyan-300"></i> <span id="txt-btn-export">Export Cadastre</span>
+      </button>
+
+      <div id="active-session" class="hidden items-center gap-2.5 pl-2.5 border-l border-white/20">
+        <div class="text-right">
+          <p id="session-name" class="text-xs font-bold text-white"></p>
+          <p id="session-role" class="text-[10px] text-cyan-300 font-semibold"></p>
+        </div>
+        <button onclick="logout()" title="Sign out" class="p-2 rounded-lg bg-white/10 hover:bg-gov-red text-white transition border border-white/20">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Grid Workspace (Cool Gray Background Canvas) -->
+  <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden relative bg-gov-bg">
+    
+    <!-- LEFT PANEL (Cols 1-3): Spatial Layers & 3D ULPIN Form -->
+    <aside class="lg:col-span-3 bg-gov-bg border-r border-gov-gray-cool p-4 lg:p-5 flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-68px)]">
+      
+      <!-- Multi-Source Ingestion Layers -->
+      <div class="gov-card rounded-xl p-4 border border-gov-gray-cool">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-xs font-bold text-gov-navy uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="database" class="w-4 h-4 text-gov-blue"></i> Ingested Spatial Layers
+          </h2>
+          <span class="text-[10px] bg-gov-gray-cool text-gov-ink-muted font-bold px-2 py-0.5 rounded font-mono">5 Active</span>
+        </div>
+        
+        <div class="space-y-2 text-xs">
+          <!-- Drone Layer -->
+          <label class="flex items-center justify-between p-2.5 rounded-lg bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue transition cursor-pointer">
+            <div class="flex items-center gap-2.5">
+              <span class="p-1 rounded bg-blue-100 text-gov-blue"><i data-lucide="plane" class="w-3.5 h-3.5"></i></span>
+              <div>
+                <p class="font-bold text-gov-ink">Drone Photogrammetry</p>
+                <p class="text-[10px] text-gov-ink-muted">GSD: 2.5cm/px • Oblique Mesh</p>
+              </div>
+            </div>
+            <input type="checkbox" id="layer-drone" checked class="w-4 h-4 accent-gov-blue rounded cursor-pointer" onchange="updateLayerVisibility()">
+          </label>
+
+          <!-- LiDAR Point Cloud -->
+          <label class="flex items-center justify-between p-2.5 rounded-lg bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue transition cursor-pointer">
+            <div class="flex items-center gap-2.5">
+              <span class="p-1 rounded bg-purple-100 text-purple-700"><i data-lucide="box" class="w-3.5 h-3.5"></i></span>
+              <div>
+                <p class="font-bold text-gov-ink">LiDAR 3D Point Cloud</p>
+                <p class="text-[10px] text-gov-ink-muted">Density: 45 pts/m² • LAS 1.4</p>
+              </div>
+            </div>
+            <input type="checkbox" id="layer-lidar" checked class="w-4 h-4 accent-gov-blue rounded cursor-pointer" onchange="updateLayerVisibility()">
+          </label>
+
+          <!-- 2D Cadastral Base -->
+          <label class="flex items-center justify-between p-2.5 rounded-lg bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue transition cursor-pointer">
+            <div class="flex items-center gap-2.5">
+              <span class="p-1 rounded bg-amber-100 text-gov-amber"><i data-lucide="map" class="w-3.5 h-3.5"></i></span>
+              <div>
+                <p class="font-bold text-gov-ink">2D GIS Cadastral Parcel</p>
+                <p class="text-[10px] text-gov-ink-muted">DoLR GeoJSON • EPSG:7755</p>
+              </div>
+            </div>
+            <input type="checkbox" id="layer-gis" checked class="w-4 h-4 accent-gov-blue rounded cursor-pointer" onchange="updateLayerVisibility()">
+          </label>
+
+          <!-- BIM Architectural Model -->
+          <label class="flex items-center justify-between p-2.5 rounded-lg bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue transition cursor-pointer">
+            <div class="flex items-center gap-2.5">
+              <span class="p-1 rounded bg-emerald-100 text-gov-green"><i data-lucide="building" class="w-3.5 h-3.5"></i></span>
+              <div>
+                <p class="font-bold text-gov-ink">BIM / IFC Architectural Model</p>
+                <p class="text-[10px] text-gov-ink-muted">IFC 4.3 • LoD-3 Polyhedrons</p>
+              </div>
+            </div>
+            <input type="checkbox" id="layer-bim" checked class="w-4 h-4 accent-gov-blue rounded cursor-pointer" onchange="updateLayerVisibility()">
+          </label>
+
+          <!-- Subsurface Utility Ducts -->
+          <label class="flex items-center justify-between p-2.5 rounded-lg bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue transition cursor-pointer">
+            <div class="flex items-center gap-2.5">
+              <span class="p-1 rounded bg-rose-100 text-gov-red"><i data-lucide="git-merge" class="w-3.5 h-3.5"></i></span>
+              <div>
+                <p class="font-bold text-gov-ink">Subsurface Infrastructure</p>
+                <p class="text-[10px] text-gov-ink-muted">Metro Corridor & Utilities</p>
+              </div>
+            </div>
+            <input type="checkbox" id="layer-subsurface" checked class="w-4 h-4 accent-gov-blue rounded cursor-pointer" onchange="updateLayerVisibility()">
+          </label>
+        </div>
+      </div>
+
+      <!-- 3D ULPIN Builder & Encoder -->
+      <div class="gov-card rounded-xl p-4 border border-gov-gray-cool">
+        <h2 class="text-xs font-bold text-gov-navy uppercase tracking-wider mb-3 flex items-center justify-between">
+          <span class="flex items-center gap-2"><i data-lucide="qr-code" class="w-4 h-4 text-gov-blue"></i> 3D ULPIN Encoder</span>
+          <span class="text-[10px] text-gov-blue font-bold font-mono">Bhu-Aadhaar 3D</span>
+        </h2>
+        
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="text-gov-ink-muted font-bold block mb-1">Base 2D Parcel ULPIN (14-Digit)</label>
+            <input type="text" id="base-ulpin" value="2187-4930-1049" oninput="generateULPIN()" class="w-full bg-gov-gray-light border border-gov-gray-cool rounded-lg px-3 py-1.5 text-xs font-mono text-gov-navy font-bold focus:border-gov-blue focus:outline-none">
+          </div>
+          
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-gov-ink-muted font-bold block mb-1">Vertical Zone Type</label>
+              <select id="zone-type" onchange="onZoneSelectChange()" class="w-full bg-gov-gray-light border border-gov-gray-cool rounded-lg px-2 py-1.5 text-xs text-gov-ink font-medium focus:border-gov-blue focus:outline-none">
+                <option value="A">Air / Above Ground (A)</option>
+                <option value="S">Surface Parcel (S)</option>
+                <option value="U">Underground (U)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-gov-ink-muted font-bold block mb-1">Floor Stratum</label>
+              <select id="floor-idx" onchange="generateULPIN()" class="w-full bg-gov-gray-light border border-gov-gray-cool rounded-lg px-2 py-1.5 text-xs text-gov-ink font-medium focus:border-gov-blue focus:outline-none">
+                <option value="F12">Floor 12 (F12)</option>
+                <option value="F06">Floor 06 (F06)</option>
+                <option value="F04">Floor 04 (F04)</option>
+                <option value="F01">Floor 01 (F01)</option>
+                <option value="S00">Surface Ground (S00)</option>
+                <option value="B01">Basement 1 (B01)</option>
+                <option value="B02">Basement 2 (B02)</option>
+                <option value="TUN">Metro Tunnel (TUN)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-gov-ink-muted font-bold block mb-1">Volumetric Unit ID</label>
+              <input type="text" id="unit-tag" value="U1204" oninput="generateULPIN()" class="w-full bg-gov-gray-light border border-gov-gray-cool rounded-lg px-3 py-1.5 text-xs font-mono text-gov-ink font-bold focus:border-gov-blue focus:outline-none">
+            </div>
+            <div>
+              <label class="text-gov-ink-muted font-bold block mb-1">Security Checksum</label>
+              <input type="text" id="checksum-tag" value="K8" readonly class="w-full bg-gov-gray-cool/60 border border-gov-gray-cool rounded-lg px-3 py-1.5 text-xs font-mono text-gov-navy font-bold">
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-gov-gray-cool">
+            <span class="text-[11px] text-gov-ink-muted font-bold block mb-1">Generated Standardized 3D ULPIN:</span>
+            <div class="flex items-center gap-1.5">
+              <div id="result-ulpin" class="flex-1 p-2 bg-blue-50 border border-gov-blue/40 rounded-lg text-center text-xs font-mono text-gov-navy font-extrabold tracking-wider break-all shadow-inner">
+                IN-2187-4930-1049-A-F12-U1204-K8
+              </div>
+              <button onclick="copyULPIN()" title="Copy ULPIN" class="p-2 bg-white hover:bg-gov-gray-light text-gov-blue rounded-lg border border-gov-gray-cool shadow-sm transition">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Delineation Telemetry Log (Deep Navy Terminal) -->
+      <div class="flex-1 min-h-[160px] bg-gov-navy text-slate-100 rounded-xl p-3.5 border border-gov-navy flex flex-col shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-mono text-cyan-300 flex items-center gap-1.5 font-bold">
+            <i data-lucide="terminal" class="w-3.5 h-3.5 text-cyan-300"></i> AI Extraction Terminal
+          </span>
+          <span id="ai-status-badge" class="text-[9px] font-mono bg-white/15 text-slate-200 px-1.5 py-0.5 rounded font-bold">IDLE</span>
+        </div>
+        <div id="ai-logs" class="text-[11px] font-mono text-slate-300 space-y-1 overflow-y-auto flex-1 max-h-36 pr-1">
+          <p class="text-slate-400">[System] Cadastre Core Initialized. Ready for 3D AI extraction.</p>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- CENTER PANEL (Cols 4-9): Three.js WebGL 3D Cadastre Canvas -->
+    <section class="lg:col-span-6 bg-gov-gray-cool/40 relative flex flex-col justify-center items-center p-3 lg:p-4 min-h-[500px]">
+      
+      <!-- Top Overlay Controls -->
+      <div class="absolute top-6 left-6 z-10 flex flex-wrap gap-2 bg-white/95 border border-gov-gray-cool p-1.5 rounded-xl shadow-lg backdrop-blur-md">
+        <button onclick="setViewMode('3d')" class="px-3 py-1.5 text-xs rounded-lg bg-gov-blue text-white font-bold shadow transition" id="btn-3d">
+          <i data-lucide="box" class="w-3.5 h-3.5 inline mr-1"></i> 3D Volumetric
+        </button>
+        <button onclick="setViewMode('cross')" class="px-3 py-1.5 text-xs rounded-lg hover:bg-gov-gray-light text-gov-ink font-semibold transition" id="btn-cross">
+          <i data-lucide="scan-line" class="w-3.5 h-3.5 inline mr-1"></i> Vertical Cross-Section
+        </button>
+        <button onclick="runTopologyValidation()" id="btn-topology" class="px-3 py-1.5 text-xs rounded-lg hover:bg-amber-50 text-gov-amber font-bold flex items-center gap-1.5 transition">
+          <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-gov-amber"></i> Topology Clash Check
+        </button>
+      </div>
+
+      <!-- Top Right Telemetry HUD -->
+      <div class="absolute top-6 right-6 z-10 bg-white/95 border border-gov-gray-cool px-3.5 py-2 rounded-xl text-[11px] font-mono text-gov-ink backdrop-blur-md shadow-md pointer-events-none hidden sm:block">
+        <p class="text-gov-blue font-bold">CRS: EPSG:7755 (Indian Nat. Grid) + Geoid</p>
+        <p class="text-gov-ink-muted">Vertical Datum: WGS84 Orthometric (m)</p>
+        <p class="text-gov-ink-muted">Camera: <span id="camera-pos" class="text-gov-ink font-bold">X: 38, Y: 42, Z: 48</span></p>
+      </div>
+
+      <div id="visualizer-role-banner" class="absolute bottom-20 left-6 z-10 max-w-xs bg-gov-navy/95 text-white border border-cyan-300/40 px-3 py-2 rounded-lg shadow-lg text-[11px]">
+        <p id="visualizer-role-title" class="font-extrabold text-cyan-200">3D registry workspace</p>
+        <p id="visualizer-role-copy" class="text-slate-300 mt-0.5">Role-specific controls are active.</p>
+      </div>
+
+      <!-- Main Three.js Container -->
+      <div id="cadastreCanvasContainer" class="w-full h-[580px] relative bg-slate-900 rounded-2xl border border-gov-gray-cool overflow-hidden shadow-xl">
+        <!-- 2D Canvas Fallback / Cross-Section Overlay -->
+        <canvas id="crossSectionCanvas" class="hidden absolute inset-0 w-full h-full z-10 bg-slate-900"></canvas>
+        
+        <!-- Hover Tooltip -->
+        <div id="unitTooltip" class="hidden absolute z-20 pointer-events-none bg-gov-navy/95 border-2 border-gov-cyan text-white rounded-lg p-2.5 shadow-2xl backdrop-blur text-xs font-mono">
+          <p class="font-bold text-cyan-300" id="tt-title">Unit 1204</p>
+          <p class="text-[10px] text-slate-300" id="tt-ulpin">ULPIN: IN-2187-4930-1049-A-F12-U1204</p>
+          <p class="text-[10px] text-slate-200" id="tt-vol">Volume: 384.2 m³ (Z: +36.5m to +39.8m)</p>
+        </div>
+      </div>
+
+      <!-- Bottom Interactive Interactive View Sliders & Toolbar -->
+      <div class="w-full mt-3 flex flex-wrap items-center justify-between gap-3 px-3 bg-white p-2.5 rounded-xl border border-gov-gray-cool shadow-sm">
+        
+        <!-- Exploded View Slider -->
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-gov-ink font-bold flex items-center gap-1"><i data-lucide="layers" class="w-3.5 h-3.5 text-gov-blue"></i> Exploded View:</span>
+          <input type="range" id="explode-slider" min="0" max="3" step="0.1" value="0" oninput="onExplodeChange(this.value)" class="w-24 md:w-32 accent-gov-blue cursor-pointer">
+          <span id="explode-val" class="font-mono text-[11px] text-gov-navy font-bold">0.0x</span>
+        </div>
+
+        <!-- Vertical Height Slicing Slider -->
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-gov-ink font-bold flex items-center gap-1"><i data-lucide="scissors" class="w-3.5 h-3.5 text-gov-cyan"></i> Strata Slice (Z):</span>
+          <input type="range" id="slice-slider" min="-25" max="65" step="1" value="65" oninput="onSliceChange(this.value)" class="w-24 md:w-32 accent-gov-blue cursor-pointer">
+          <span id="slice-val" class="font-mono text-[11px] text-gov-navy font-bold">+65m</span>
+        </div>
+
+        <!-- Action Quick-Toggles -->
+        <div class="flex items-center gap-1.5">
+          <button onclick="resetCamera()" title="Reset Camera" class="p-1.5 rounded bg-gov-gray-light hover:bg-gov-gray-cool text-gov-navy text-xs border border-gov-gray-cool shadow-sm">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="toggleWireframe()" title="Toggle Wireframe Mode" class="p-1.5 rounded bg-gov-gray-light hover:bg-gov-gray-cool text-gov-navy text-xs border border-gov-gray-cool shadow-sm">
+            <i data-lucide="grid" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="toggleAutoRotate()" title="Auto Rotate" class="p-1.5 rounded bg-gov-gray-light hover:bg-gov-gray-cool text-gov-navy text-xs border border-gov-gray-cool shadow-sm">
+            <i data-lucide="play-circle" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT PANEL (Cols 10-12): Property Inspector & Vertical Strata Navigator -->
+    <aside class="lg:col-span-3 bg-gov-bg border-l border-gov-gray-cool p-4 lg:p-5 flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-68px)]">
+      
+      <div>
+        <h2 class="text-xs font-bold text-gov-navy uppercase tracking-wider flex items-center gap-2 mb-3">
+          <i data-lucide="info" class="w-4 h-4 text-gov-blue"></i> Selected 3D Cadastral Unit
+        </h2>
+
+        <!-- Active Property Details Card -->
+        <div class="gov-card rounded-xl p-4 border border-gov-gray-cool space-y-3.5 shadow-md relative">
+          <div id="owned-badge" class="hidden absolute -top-2.5 right-4 bg-gov-amber text-white text-[9px] font-extrabold px-2.5 py-0.5 rounded-full shadow-lg items-center gap-1 border border-amber-300">
+            <i data-lucide="shield" class="w-3 h-3"></i> <span>YOUR REGISTERED UNIT</span>
+          </div>
+
+          <div class="flex justify-between items-start pt-1">
+            <div>
+              <span id="txt-title-designation" class="text-[10px] text-gov-ink-muted uppercase tracking-wider font-bold">Title Designation</span>
+              <h3 id="prop-title" class="text-base font-black text-gov-navy">Apartment Unit #1204</h3>
+              <p id="prop-ulpin-display" class="text-[10px] font-mono text-gov-blue font-bold">IN-2187-4930-1049-A-F12-U1204</p>
+            </div>
+            <span id="prop-lod" class="bg-blue-100 text-gov-blue border border-blue-300 text-[9px] px-2 py-0.5 rounded font-bold uppercase font-mono">
+              LoD 3 Cadastre
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="bg-gov-gray-light p-2 rounded-lg border border-gov-gray-cool">
+              <span class="text-[10px] text-gov-ink-muted block font-semibold" id="lbl-prop-z">Vertical Elevation (Z)</span>
+              <span id="prop-z" class="font-mono text-gov-navy font-bold">+36.5m to +39.8m</span>
+            </div>
+            <div class="bg-gov-gray-light p-2 rounded-lg border border-gov-gray-cool">
+              <span class="text-[10px] text-gov-ink-muted block font-semibold" id="lbl-prop-vol">Calculated Volume</span>
+              <span id="prop-vol" class="font-mono text-gov-navy font-bold">384.2 m³</span>
+            </div>
+            <div class="bg-gov-gray-light p-2 rounded-lg border border-gov-gray-cool">
+              <span class="text-[10px] text-gov-ink-muted block font-semibold" id="lbl-prop-area">Carpet Area</span>
+              <span id="prop-area" class="font-mono text-gov-navy font-bold">128.0 m²</span>
+            </div>
+            <div class="bg-gov-gray-light p-2 rounded-lg border border-gov-gray-cool">
+              <span class="text-[10px] text-gov-ink-muted block font-semibold" id="lbl-prop-owner">Owner / Title Holder</span>
+              <span id="prop-owner" class="text-gov-green-dark font-bold truncate block">Dr. A. Sharma</span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-gov-gray-cool text-[11px] space-y-1.5">
+            <div class="flex justify-between items-center">
+              <span class="text-gov-ink-muted font-semibold" id="lbl-prop-status">Title Status:</span>
+              <span id="prop-status" class="text-gov-green font-bold flex items-center gap-1">
+                <i data-lucide="check-circle" class="w-3 h-3"></i> Verified Freehold
+              </span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gov-ink-muted font-semibold" id="lbl-prop-tax">Tax Assessment:</span>
+              <div class="flex items-center gap-1.5">
+                <span id="prop-tax" class="font-mono text-gov-navy font-bold">₹ 14,820 / yr</span>
+                <button onclick="openTaxModal()" id="btn-pay-tax" class="text-[10px] bg-gov-green hover:bg-green-700 text-white px-2.5 py-0.5 rounded transition font-bold shadow-sm">
+                  Pay / Receipt
+                </button>
+              </div>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gov-ink-muted font-semibold" id="lbl-prop-strata">Strata Share:</span>
+              <span id="prop-strata" class="font-mono text-gov-ink font-bold">1.82% of Base Parcel</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vertical Strata Stack Navigator -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold text-gov-navy uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-gov-blue"></i> Vertical Strata Stack
+          </h3>
+          <span class="text-[10px] text-gov-ink-muted font-semibold">Click to focus</span>
+        </div>
+
+        <div class="space-y-1.5 text-xs">
+          <!-- Air Rights (Amber Safety Gold) -->
+          <div onclick="selectStrataUnit('air')" class="p-2.5 rounded-lg bg-amber-50/70 border border-amber-300 hover:border-gov-amber flex justify-between items-center cursor-pointer transition shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-gov-amber shadow-sm"></span>
+              <span class="text-gov-ink font-semibold">Air Rights Corridor (+45m to +60m)</span>
+            </div>
+            <span class="font-mono text-[10px] text-gov-amber font-bold">ULPIN-A</span>
+          </div>
+
+          <!-- Residential Tower (Trust Blue) -->
+          <div onclick="selectStrataUnit('res')" id="strata-res" class="p-2.5 rounded-lg bg-blue-50 border-2 border-gov-blue flex justify-between items-center cursor-pointer transition shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-gov-blue shadow-sm"></span>
+              <span class="font-bold text-gov-navy">Residential Tower (Fl. 1–15)</span>
+            </div>
+            <span class="font-mono text-[10px] text-gov-blue font-extrabold">14 Units</span>
+          </div>
+
+          <!-- Surface Land Parcel (Forest Green) -->
+          <div onclick="selectStrataUnit('surface')" class="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-300 hover:border-gov-green flex justify-between items-center cursor-pointer transition shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-gov-green shadow-sm"></span>
+              <span class="text-gov-ink font-semibold">Surface Land Parcel (0.0m Datum)</span>
+            </div>
+            <span class="font-mono text-[10px] text-gov-green-dark font-bold">ULPIN-S</span>
+          </div>
+
+          <!-- Underground Parking Basement -->
+          <div onclick="selectStrataUnit('b1')" class="p-2.5 rounded-lg bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue flex justify-between items-center cursor-pointer transition shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-600 shadow-sm"></span>
+              <span class="text-gov-ink font-semibold">Basement 1 Parking (-6.0m)</span>
+            </div>
+            <span class="font-mono text-[10px] text-slate-700 font-bold">ULPIN-U1</span>
+          </div>
+
+          <!-- Subsurface Metro Corridor (Crimson Red) -->
+          <div onclick="selectStrataUnit('metro')" class="p-2.5 rounded-lg bg-rose-50/70 border border-rose-200 hover:border-gov-red flex justify-between items-center cursor-pointer transition shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-gov-red shadow-sm"></span>
+              <span class="text-gov-ink font-semibold">Metro Transit Tunnel (-18.0m)</span>
+            </div>
+            <span class="font-mono text-[10px] text-gov-red-dark font-bold">ULPIN-U2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Topology Status Card (Forest Green Verified) -->
+      <div id="topology-card" class="mt-auto p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-xs shadow-sm">
+        <div class="flex items-center gap-2 text-gov-green-dark font-bold mb-1">
+          <i data-lucide="shield-check" class="w-4 h-4 text-gov-green"></i>
+          <span>ISO 19152 3D Topology Audit</span>
+        </div>
+        <p class="text-[11px] text-gov-ink-muted">All 3D volumetric polyhedrons validated: 0 overlaps, 0 boundary clashing, closed 2-manifold geometries.</p>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- MODAL: 3D Bhu-Aadhaar Digital Property Certificate -->
+  <div id="certificateModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gov-navy/80 backdrop-blur-sm p-4">
+    <div class="bg-white border-2 border-gov-navy rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative text-gov-ink max-h-[90vh] overflow-y-auto">
+      <button onclick="closeCertificateModal()" class="absolute top-4 right-4 text-gov-ink-muted hover:text-gov-ink p-1 rounded-lg bg-gov-gray-light border border-gov-gray-cool">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Certificate Header -->
+      <div class="text-center border-b-2 border-gov-navy pb-4 mb-4">
+        <div class="flex justify-center items-center gap-2 mb-1">
+          <i data-lucide="award" class="w-7 h-7 text-gov-blue"></i>
+          <span class="text-xs uppercase tracking-widest text-gov-navy font-extrabold">Government of India</span>
+        </div>
+        <h2 class="text-xl font-black tracking-tight text-gov-navy">Department of Land Resources (DoLR)</h2>
+        <p class="text-xs text-gov-ink-muted font-medium">Ministry of Rural Development • National 3D Cadastral Registry</p>
+        <div class="mt-2 inline-block px-3 py-1 bg-blue-50 border border-gov-blue/40 rounded-full text-gov-navy text-xs font-mono font-bold">
+          Official 3D Bhu-Aadhaar Property Title Certificate
+        </div>
+      </div>
+
+      <!-- Certificate Body -->
+      <div class="space-y-4 text-xs">
+        <div class="bg-gov-gray-light p-3 rounded-xl border border-gov-gray-cool flex justify-between items-center">
+          <div>
+            <span class="text-gov-ink-muted block text-[10px] font-bold">Unique 3D Volumetric ULPIN</span>
+            <span id="cert-ulpin" class="font-mono text-gov-blue text-sm font-extrabold">IN-2187-4930-1049-A-F12-U1204-K8</span>
+          </div>
+          <div class="text-right">
+            <span class="text-gov-ink-muted block text-[10px] font-bold">Base Surface Parcel</span>
+            <span class="font-mono text-gov-ink font-bold">2187-4930-1049-S00</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-gov-gray-light p-3 rounded-xl border border-gov-gray-cool">
+            <span class="text-gov-ink-muted block text-[10px] font-bold">Registered Property Owner</span>
+            <span class="font-extrabold text-gov-navy text-sm">Dr. Ananya Sharma</span>
+            <span class="text-[10px] text-gov-ink-muted block mt-0.5">Aadhaar Vault Ref: ****-****-8812</span>
+          </div>
+          <div class="bg-gov-gray-light p-3 rounded-xl border border-gov-gray-cool">
+            <span class="text-gov-ink-muted block text-[10px] font-bold">Strata & Space Type</span>
+            <span class="font-extrabold text-gov-navy text-sm">Residential Condominium</span>
+            <span class="text-[10px] text-gov-blue font-bold block mt-0.5">Floor 12 • Unit #1204</span>
+          </div>
+        </div>
+
+        <!-- 3D Spatial Geometry Matrix -->
+        <div class="bg-gov-gray-light p-3 rounded-xl border border-gov-gray-cool space-y-2 font-mono">
+          <span class="text-gov-navy block font-sans text-[11px] font-bold">3D Spatial Extent & Volumetric Dimensions:</span>
+          <div class="grid grid-cols-3 gap-2 text-center text-[11px]">
+            <div class="bg-white p-2 rounded border border-gov-gray-cool">
+              <span class="text-gov-ink-muted block text-[9px] font-bold">Calculated Volume</span>
+              <span class="text-gov-blue font-extrabold">384.2 m³</span>
+            </div>
+            <div class="bg-white p-2 rounded border border-gov-gray-cool">
+              <span class="text-gov-ink-muted block text-[9px] font-bold">Vertical Bounds (Z)</span>
+              <span class="text-gov-navy font-extrabold">+36.5m to +39.8m</span>
+            </div>
+            <div class="bg-white p-2 rounded border border-gov-gray-cool">
+              <span class="text-gov-ink-muted block text-[9px] font-bold">CRS Reference</span>
+              <span class="text-gov-amber font-extrabold">EPSG:7755</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cryptographic Hash & Verification -->
+        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-300 flex justify-between items-center text-[10px] font-mono">
+          <div>
+            <span class="text-gov-ink-muted block font-sans font-bold">Blockchain Title Hash:</span>
+            <span class="text-gov-green-dark font-bold break-all">0x9f4a8b7e61c3d2e5a4f890123456789abcdef0123456789</span>
+          </div>
+          <div class="p-2 bg-white rounded-lg text-gov-navy font-bold text-center border border-emerald-300 shadow-sm">
+            <i data-lucide="qr-code" class="w-8 h-8 mx-auto text-gov-navy"></i>
+            <span class="text-[8px] block font-bold text-gov-green">DoLR Verified</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="mt-5 pt-3 border-t border-gov-gray-cool flex justify-end gap-3">
+        <button onclick="window.print()" class="px-4 py-2 bg-gov-gray-light hover:bg-gov-gray-cool text-gov-navy border border-gov-gray-cool rounded-lg text-xs font-bold flex items-center gap-2 shadow-sm">
+          <i data-lucide="printer" class="w-4 h-4"></i> Print Certificate
+        </button>
+        <button onclick="closeCertificateModal()" class="px-4 py-2 bg-gov-navy hover:bg-gov-blue text-white rounded-lg text-xs font-bold shadow">
+          Close Window
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Export 3D Cadastral Datasets -->
+  <div id="exportModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gov-navy/80 backdrop-blur-sm p-4">
+    <div class="bg-white border-2 border-gov-navy rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-gov-ink">
+      <button onclick="closeExportModal()" class="absolute top-4 right-4 text-gov-ink-muted hover:text-gov-ink p-1 rounded-lg bg-gov-gray-light border border-gov-gray-cool">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="p-2 rounded-xl bg-blue-100 text-gov-blue border border-blue-200">
+          <i data-lucide="download" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h2 class="text-base font-black text-gov-navy">Export 3D Cadastral Datasets</h2>
+          <p class="text-xs text-gov-ink-muted font-medium">Standardized Interoperable Formats (ISO & OGC)</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <button onclick="downloadCityGML()" class="w-full p-3 rounded-xl bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue flex justify-between items-center transition group text-left shadow-sm">
+          <div>
+            <span class="font-bold text-gov-navy group-hover:text-gov-blue block">OGC CityGML 3.0 (LoD-3 Building Polyhedrons)</span>
+            <span class="text-[10px] text-gov-ink-muted">XML format including interior room geometries and 3D ULPIN tags.</span>
+          </div>
+          <i data-lucide="file-code" class="w-5 h-5 text-gov-blue"></i>
+        </button>
+
+        <button onclick="downloadLADM()" class="w-full p-3 rounded-xl bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue flex justify-between items-center transition group text-left shadow-sm">
+          <div>
+            <span class="font-bold text-gov-navy group-hover:text-gov-blue block">ISO 19152 (LADM v2) Cadastre JSON</span>
+            <span class="text-[10px] text-gov-ink-muted">Standardized land administration domain model with 3D spatial units.</span>
+          </div>
+          <i data-lucide="file-json" class="w-5 h-5 text-gov-blue"></i>
+        </button>
+
+        <button onclick="downloadGeoJSON3D()" class="w-full p-3 rounded-xl bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue flex justify-between items-center transition group text-left shadow-sm">
+          <div>
+            <span class="font-bold text-gov-navy group-hover:text-gov-blue block">3D GeoJSON / PostGIS 3D Polyhedrons</span>
+            <span class="text-[10px] text-gov-ink-muted">Compatible with QGIS 3D, ArcGIS Pro, and PostGIS databases.</span>
+          </div>
+          <i data-lucide="database" class="w-5 h-5 text-gov-blue"></i>
+        </button>
+      </div>
+
+      <div class="mt-5 pt-3 border-t border-gov-gray-cool flex justify-end">
+        <button onclick="closeExportModal()" class="px-4 py-2 bg-gov-gray-light hover:bg-gov-gray-cool text-gov-navy border border-gov-gray-cool rounded-lg text-xs font-bold">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Request 3D Demarcation Survey -->
+  <div id="demarcationModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gov-navy/80 backdrop-blur-sm p-4">
+    <div class="bg-white border-2 border-gov-navy rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-gov-ink max-h-[90vh] overflow-y-auto">
+      <button onclick="closeDemarcationModal()" class="absolute top-4 right-4 text-gov-ink-muted hover:text-gov-ink p-1 rounded-lg bg-gov-gray-light border border-gov-gray-cool">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="p-2.5 rounded-xl bg-blue-100 text-gov-blue border border-blue-200">
+          <i data-lucide="map-pin" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-wider text-gov-blue block font-mono">DoLR Citizen Services</span>
+          <h2 class="text-lg font-black text-gov-navy" id="modal-demarcation-title">Request 3D Cadastral Demarcation</h2>
+        </div>
+      </div>
+
+      <div id="demarcation-form" class="space-y-4 text-xs">
+        <div class="bg-gov-gray-light p-3 rounded-xl border border-gov-gray-cool flex justify-between items-center">
+          <div>
+            <span class="text-gov-ink-muted text-[10px] font-bold block">Target Cadastral Unit & ULPIN:</span>
+            <span id="demarcation-unit-label" class="font-extrabold text-gov-navy text-sm">Apartment Unit #1204</span>
+            <span id="demarcation-ulpin-label" class="block font-mono text-[10px] text-gov-blue font-bold">IN-2187-4930-1049-A-F12-U1204</span>
+          </div>
+          <span class="px-2.5 py-1 rounded bg-blue-100 text-gov-blue border border-blue-300 font-mono text-[10px] font-bold">EPSG:7755</span>
+        </div>
+
+        <div>
+          <label class="block text-gov-navy font-bold mb-1">Reason for 3D Demarcation</label>
+          <select id="demarcation-reason" class="w-full bg-gov-gray-light border border-gov-gray-cool rounded-lg p-2.5 text-gov-ink font-medium focus:border-gov-blue focus:outline-none">
+            <option value="encroachment">3D Boundary Encroachment / Balcony Violation</option>
+            <option value="subdivision">Volumetric Sub-division & Title Bifurcation</option>
+            <option value="easement">Overhead Air-Rights / Utility Easement Dispute</option>
+            <option value="resurvey">Periodic Resurvey with SoI CORS RTK GNSS</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-gov-navy font-bold mb-1">Applicant Remarks & Observations</label>
+          <textarea id="demarcation-notes" rows="3" class="w-full bg-gov-gray-light border border-gov-gray-cool rounded-lg p-2.5 text-gov-ink font-medium focus:border-gov-blue focus:outline-none" placeholder="Describe the boundary dispute or vertical height verification needed..."></textarea>
+        </div>
+
+        <div class="p-3 bg-gov-gray-light rounded-xl border border-dashed border-gov-gray-border flex items-center justify-between">
+          <div class="flex items-center gap-2 text-gov-ink-muted font-medium">
+            <i data-lucide="paperclip" class="w-4 h-4 text-gov-blue"></i>
+            <span>Site Photos / Drone Scan Evidence:</span>
+          </div>
+          <span class="text-[10px] text-gov-green font-mono bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 font-bold">3D_LiDAR_Scan.las (Attached)</span>
+        </div>
+
+        <button onclick="submitDemarcation()" class="w-full py-2.5 bg-gov-blue hover:bg-blue-700 text-white font-bold rounded-lg transition active:scale-95 shadow-md">
+          Submit Official Demarcation Request
+        </button>
+      </div>
+
+      <!-- Success Ticket View -->
+      <div id="demarcation-success" class="hidden space-y-4 text-xs">
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-center space-y-2">
+          <div class="w-10 h-10 bg-emerald-100 text-gov-green rounded-full flex items-center justify-center mx-auto border border-emerald-300">
+            <i data-lucide="check" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-sm font-black text-gov-green-dark">Demarcation Request Registered</h3>
+          <p class="text-[11px] text-gov-ink-muted">Your application has been logged into the DoLR Survey Queue with high priority.</p>
+        </div>
+
+        <div class="bg-gov-gray-light p-3.5 rounded-xl border border-gov-gray-cool space-y-2 font-mono text-[11px]">
+          <div class="flex justify-between">
+            <span class="text-gov-ink-muted font-sans font-bold">Application Ticket:</span>
+            <span id="ticket-number" class="text-gov-blue font-black">DoLR-DEM-2026-784912</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gov-ink-muted font-sans font-bold">Assigned Surveyor:</span>
+            <span class="text-gov-ink font-bold">Er. Rajesh Verma (DoLR / SoI)</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gov-ink-muted font-sans font-bold">Scheduled Inspection:</span>
+            <span class="text-gov-navy font-black">Within 48 Hours</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gov-ink-muted font-sans font-bold">Survey Standard:</span>
+            <span class="text-gov-amber font-bold">CORS RTK (±1.2cm Tolerance)</span>
+          </div>
+        </div>
+
+        <button onclick="closeDemarcationModal()" class="w-full py-2 bg-gov-navy hover:bg-gov-blue text-white font-bold rounded-lg transition shadow">
+          Return to 3D Map
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: 3D Property Tax Assessment & Payment -->
+  <div id="taxModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gov-navy/80 backdrop-blur-sm p-4">
+    <div class="bg-white border-2 border-gov-navy rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-gov-ink max-h-[90vh] overflow-y-auto">
+      <button onclick="closeTaxModal()" class="absolute top-4 right-4 text-gov-ink-muted hover:text-gov-ink p-1 rounded-lg bg-gov-gray-light border border-gov-gray-cool">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="p-2.5 rounded-xl bg-emerald-100 text-gov-green border border-emerald-300">
+          <i data-lucide="receipt" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-wider text-gov-green-dark block font-mono">Municipal Corporation & DoLR</span>
+          <h2 class="text-lg font-black text-gov-navy">3D Property Tax Assessment</h2>
+        </div>
+      </div>
+
+      <!-- Tax Breakdown -->
+      <div id="tax-details-view" class="space-y-4 text-xs">
+        <div class="bg-gov-gray-light p-3 rounded-xl border border-gov-gray-cool flex justify-between items-center">
+          <div>
+            <span id="tax-unit-name" class="font-black text-gov-navy text-sm">Apartment Unit #1204</span>
+            <span id="tax-unit-ulpin" class="block font-mono text-[10px] text-gov-blue font-bold">IN-2187-4930-1049-A-F12-U1204</span>
+          </div>
+          <span id="tax-badge-status" class="px-2.5 py-1 rounded bg-emerald-100 text-gov-green-dark border border-emerald-300 font-mono text-[10px] font-extrabold">PAID (FY 2026-27)</span>
+        </div>
+
+        <!-- 3D Volumetric Formula Calculation -->
+        <div class="bg-gov-gray-light p-3 rounded-xl border border-gov-gray-cool space-y-2">
+          <span class="text-gov-navy font-bold block text-[11px]">3D Volumetric Valuation Model:</span>
+          <div class="space-y-1 text-[11px]">
+            <div class="flex justify-between text-gov-ink font-medium">
+              <span>Base Surface Factor (128.0 m² @ ₹80/m²):</span>
+              <span class="font-mono font-bold">₹ 10,240</span>
+            </div>
+            <div class="flex justify-between text-gov-ink font-medium">
+              <span>Vertical Height Factor (Floor 12 Premium @ 1.25x):</span>
+              <span class="font-mono font-bold">+ ₹ 2,560</span>
+            </div>
+            <div class="flex justify-between text-gov-ink font-medium">
+              <span>Volumetric Strata Amenity Coefficient (384.2 m³):</span>
+              <span class="font-mono font-bold">+ ₹ 2,020</span>
+            </div>
+            <div class="pt-2 border-t border-gov-gray-cool flex justify-between font-black text-gov-green-dark text-sm">
+              <span>Total Annual 3D Tax:</span>
+              <span id="tax-total-amount" class="font-mono">₹ 14,820</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Actions / Mock UPI -->
+        <div id="tax-pay-actions" class="space-y-3">
+          <div class="p-3 rounded-xl bg-gov-gray-light border border-gov-gray-cool flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="p-2 rounded bg-white text-gov-navy font-bold border border-gov-gray-cool shadow-sm">
+                <i data-lucide="qr-code" class="w-6 h-6 text-gov-navy"></i>
+              </div>
+              <div>
+                <p class="font-bold text-gov-navy">Bharat BillPay / UPI FastPay</p>
+                <p class="text-[10px] text-gov-ink-muted font-medium">Instant 3D Bhu-Aadhaar Tax Receipt</p>
+              </div>
+            </div>
+            <button onclick="processTaxPayment()" class="px-3 py-1.5 bg-gov-green hover:bg-green-700 text-white font-bold rounded-lg transition active:scale-95 text-[11px] shadow">
+              Pay ₹14,820
+            </button>
+          </div>
+        </div>
+
+        <!-- Download Clearance Certificate -->
+        <div class="pt-2 flex gap-2">
+          <button onclick="downloadTaxReceipt()" class="flex-1 py-2 bg-gov-gray-light hover:bg-gov-gray-cool text-gov-navy font-bold rounded-lg border border-gov-gray-cool transition flex items-center justify-center gap-1.5 text-xs shadow-sm">
+            <i data-lucide="download" class="w-3.5 h-3.5 text-gov-blue"></i> Download Tax Receipt
+          </button>
+          <button onclick="closeTaxModal()" class="px-4 py-2 bg-gov-gray-light hover:bg-gov-gray-cool text-gov-navy font-bold rounded-lg border border-gov-gray-cool transition text-xs">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom JavaScript -->
+  <script src="api.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

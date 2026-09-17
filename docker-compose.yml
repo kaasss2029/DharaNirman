@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: ulpin
+      POSTGRES_USER: ulpin
+      POSTGRES_PASSWORD: ulpin
+    ports:
+      - "5432:5432"
+    volumes:
+      - ulpin-postgres:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+volumes:
+  ulpin-postgres:

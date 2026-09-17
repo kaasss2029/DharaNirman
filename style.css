@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --gov-navy: #162E51;
+  --gov-blue: #005EA2;
+  --gov-bg: #F0F0F0;
+  --gov-gray-cool: #DFE1E2;
+  --gov-ink: #1B1B1B;
+  --gov-red: #D83933;
+  --gov-amber: #C05600;
+  --gov-amber-light: #FA9441;
+  --gov-green: #008852;
+  --gov-cyan: #00BDE3;
+  --gov-accent-blue: #0050D8;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--gov-ink);
+  background-color: var(--gov-bg);
+  user-select: none;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Accessible Interactive Focus Rings (WCAG 2.1 AA) */
+*:focus-visible {
+  outline: 3px solid var(--gov-cyan) !important;
+  outline-offset: 2px !important;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--gov-gray-cool);
+}
+::-webkit-scrollbar-thumb {
+  background: #A6AAAE;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gov-blue);
+}
+
+/* Government Card & Surface Styles */
+.gov-card {
+  background: #FFFFFF;
+  border: 1px solid var(--gov-gray-cool);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+}
+
+.gov-card-inset {
+  background: #F8F9FA;
+  border: 1px solid var(--gov-gray-cool);
+}
+
+.gov-panel-sidebar {
+  background: #F0F0F0;
+  border-color: var(--gov-gray-cool);
+}
+
+/* Government Navigation & Action Controls */
+.bg-gov-navy {
+  background-color: var(--gov-navy);
+}
+
+.bg-gov-blue {
+  background-color: var(--gov-blue);
+}
+
+.text-gov-ink {
+  color: var(--gov-ink);
+}
+
+.text-gov-navy {
+  color: var(--gov-navy);
+}
+
+.text-gov-blue {
+  color: var(--gov-blue);
+}
+
+.border-gov-gray {
+  border-color: var(--gov-gray-cool);
+}
+
+/* Auth Role Switcher Tabs */
+.auth-role-tab {
+  padding: 0.65rem 0.4rem;
+  border: 1.5px solid var(--gov-gray-cool);
+  border-radius: 0.55rem;
+  color: #565C65;
+  background: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.auth-role-tab:hover {
+  border-color: var(--gov-blue);
+  color: var(--gov-blue);
+  background: #F8F9FA;
+}
+
+.auth-role-tab.active {
+  color: #FFFFFF;
+  border-color: var(--gov-navy);
+  background: var(--gov-navy);
+  box-shadow: 0 2px 6px -1px rgba(22, 46, 81, 0.35);
+}
+
+/* Status Badges */
+.badge-green {
+  background-color: rgba(0, 136, 82, 0.12);
+  color: #006B40;
+  border: 1px solid rgba(0, 136, 82, 0.3);
+}
+
+.badge-amber {
+  background-color: rgba(192, 86, 0, 0.12);
+  color: #9E4600;
+  border: 1px solid rgba(192, 86, 0, 0.3);
+}
+
+.badge-red {
+  background-color: rgba(216, 57, 51, 0.12);
+  color: #B52B26;
+  border: 1px solid rgba(216, 57, 51, 0.3);
+}
+
+.badge-blue {
+  background-color: rgba(0, 94, 162, 0.12);
+  color: #005EA2;
+  border: 1px solid rgba(0, 94, 162, 0.3);
+}
+
+/* Three.js Canvas Container */
+#cadastreCanvasContainer canvas {
+  outline: none;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Certificate Print Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #certificateModal, #certificateModal * {
+    visibility: visible;
+  }
+  #certificateModal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: white !important;
+    color: #1B1B1B !important;
+  }
+}
