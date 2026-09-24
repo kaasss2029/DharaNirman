@@ -30,6 +30,31 @@ async function apiLogin(identifier, role) {
   return result.user;
 }
 
+async function apiRegister(name, identifier, role = 'citizen', unit_id = 'U1204') {
+  const result = await apiRequest('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ name, identifier, role, unit_id })
+  });
+  sessionStorage.setItem('ulpin-access-token', result.access_token);
+  sessionStorage.setItem('ulpin-user', JSON.stringify(result.user));
+  return result.user;
+}
+
+async function apiListProperties() {
+  return apiRequest('/api/properties');
+}
+
+async function apiGetBuilding(buildingId) {
+  return apiRequest(`/api/buildings/${buildingId}`);
+}
+
+async function apiCreateTitleApplication(payload) {
+  return apiRequest('/api/title-applications', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+}
+
 function clearApiSession() {
   sessionStorage.removeItem('ulpin-access-token');
   sessionStorage.removeItem('ulpin-user');

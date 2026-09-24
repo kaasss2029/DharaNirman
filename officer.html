@@ -1,12 +1,130 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DharaNirman | DoLR Officer Console</title><link rel="stylesheet" href="portal.css"></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DharaNirman | DoLR Registry Officer Console</title>
+  <link rel="stylesheet" href="portal.css?v=3">
+  <style>
+    .gov-strip {
+      background: #0f1f38;
+      color: #94a3b8;
+      font-size: 11px;
+      padding: 4px 5vw;
+      border-bottom: 1px solid #1e3a5f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
 <body data-role="officer">
-<header><div class="brand"><div class="brand-mark">▣</div><div><div class="eyebrow">DharaNirman · Ministry of Rural Development · PS 26011</div><h1>DoLR Registry Officer Console</h1></div></div><div class="header-actions"><span id="portal-user"></span><button class="btn btn-light" onclick="portalLogout()">Sign out</button></div></header>
-<main><section class="hero"><div><div class="eyebrow">Official registry administration</div><h2>Review, validate, and issue 3D titles</h2><p>Manage submissions, resolve volumetric conflicts, and publish authoritative cadastral records under ISO 19152 LADM v2.</p></div><span class="role-badge">DoLR Registry Officer</span></section>
-<div id="portal-notice" class="card" hidden></div>
-<section class="grid">
-<article class="card"><h3>Live approval queue</h3><div class="metric" id="live-case-count">0</div><div class="metric-label">Cases in the backend</div><div id="live-cases"><p class="muted">Loading cases...</p></div></article>
-<article class="card"><h3>Registry health</h3><div class="status"><span>Topology audit</span><strong class="ok">0 overlaps</strong></div><div class="status"><span>Closed 2-manifolds</span><strong class="ok">100%</strong></div><div class="status"><span>SoI CORS network</span><strong class="ok">Active</strong></div><div class="status"><span>Last backup</span><strong>09:42 IST</strong></div></article>
-<article class="card"><h3>Case actions</h3><select id="assignment-case" class="btn" style="width:100%;margin-bottom:8px"></select><select id="assignment-surveyor" class="btn" style="width:100%;margin-bottom:8px"></select><div class="actions"><button class="btn" onclick="assignSelectedCase()">Assign surveyor</button><button class="btn" onclick="validateSelectedCase()">Run validation</button><button class="btn btn-primary" onclick="approveSelectedCase()">Approve and issue ULPIN</button></div><div class="actions" style="margin-top:10px"><a class="btn" href="index.html">Open 3D registry explorer</a></div></article>
-<article class="card wide"><h3>Priority review cases</h3><div class="status"><span>Volumetric balcony encroachment · Parcel 2187-4930-1049</span><strong class="danger">Review now</strong></div><div class="status"><span>Metro easement crossing · U-TUN-DMRC-T7</span><strong class="pending">Survey evidence received</strong></div><div class="status"><span>Strata subdivision · Tower B, Floor 06</span><strong class="pending">Awaiting approval</strong></div></article>
-</section><p class="footer-note">Officer actions publish official records. Every approval, geometry change, and certificate issuance must be retained in the immutable audit log.</p></main><script src="api.js"></script><script src="portal.js"></script></body></html>
+  <div class="gov-strip">
+    <span>Government of India • Ministry of Rural Development</span>
+    <span class="font-mono">DoLR PS ID: 26011 • Official Registry Console</span>
+  </div>
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark">▣</div>
+      <div>
+        <div class="eyebrow">Department of Land Resources (DoLR)</div>
+        <h1>3D Land Registry Officer Console</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span id="portal-user" style="font-weight: 700; font-size: 12px; color: #e2e8f0;">R. K. Iyer (DoLR)</span>
+      <button class="btn btn-light" onclick="portalLogout()">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <div class="eyebrow" style="color: #005ea2;">Official Registry Administration</div>
+        <h2>Review, Validate, and Issue 3D Titles</h2>
+        <p>Authoritative case management, volumetric conflict resolution, and legally binding 3D ULPIN title issuance under ISO 19152 LADM v2.</p>
+      </div>
+      <span class="role-badge" style="border: 1px solid #005ea2; background: #e8f3fa; color: #005ea2;">DoLR Registry Officer</span>
+    </section>
+
+    <div id="portal-notice" class="card" hidden style="margin-bottom: 16px; border-top: 3px solid var(--blue); background: #f0fdf4; color: #166534; font-weight: 600;"></div>
+
+    <section class="grid">
+      <!-- Approval Queue -->
+      <article class="card">
+        <h3>Live Approval Queue</h3>
+        <div class="metric" id="live-case-count">0</div>
+        <div class="metric-label">Cases in the backend</div>
+        <div id="live-cases">
+          <p class="muted">Loading cases...</p>
+        </div>
+      </article>
+
+      <!-- Registry Health Audit -->
+      <article class="card">
+        <h3>Spatial Registry Health</h3>
+        <div class="status">
+          <span>Topology Audit:</span>
+          <strong class="ok">0 Overlaps Detected</strong>
+        </div>
+        <div class="status">
+          <span>Closed 2-Manifolds:</span>
+          <strong class="ok">100% Validated</strong>
+        </div>
+        <div class="status">
+          <span>SoI CORS Network:</span>
+          <strong class="ok">Active (RTK ±1.2cm)</strong>
+        </div>
+        <div class="status">
+          <span>Audit Log Sync:</span>
+          <strong class="font-mono">Immutable State</strong>
+        </div>
+      </article>
+
+      <!-- Case Actions -->
+      <article class="card">
+        <h3>Case Workflow Actions</h3>
+        <label for="assignment-case" class="metric-label" style="display:block; margin-bottom:4px;">Select Pending Case</label>
+        <select id="assignment-case" class="btn" style="width:100%; margin-bottom:10px; text-align:left; background: #fff;"></select>
+
+        <label for="assignment-surveyor" class="metric-label" style="display:block; margin-bottom:4px;">Assign Licensed Surveyor</label>
+        <select id="assignment-surveyor" class="btn" style="width:100%; margin-bottom:12px; text-align:left; background: #fff;"></select>
+
+        <div class="actions" style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; gap:8px; width:100%;">
+            <button class="btn" style="flex:1;" onclick="assignSelectedCase()">Assign Surveyor</button>
+            <button class="btn" style="flex:1;" onclick="validateSelectedCase()">Run Validation</button>
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="approveSelectedCase()">Approve and Issue 3D ULPIN</button>
+        </div>
+        <div class="actions" style="margin-top:12px;">
+          <a class="btn" style="width:100%; text-align: center; display: block;" href="index.html">Open 3D Registry Explorer</a>
+        </div>
+      </article>
+
+      <!-- Priority Review Cases -->
+      <article class="card wide">
+        <h3>Priority Boundary Reviews</h3>
+        <div class="status">
+          <span>Volumetric balcony encroachment · Parcel 2187-4930-1049</span>
+          <strong class="danger">Review Now</strong>
+        </div>
+        <div class="status">
+          <span>Metro easement crossing · U-TUN-DMRC-T7</span>
+          <strong class="pending">Survey Evidence Attached</strong>
+        </div>
+        <div class="status">
+          <span>Strata subdivision · Tower B, Floor 06</span>
+          <strong class="pending">Awaiting Final Approval</strong>
+        </div>
+      </article>
+    </section>
+
+    <p class="footer-note">Officer actions publish official records. Every approval, geometry change, and certificate issuance is immutably recorded in the backend PostGIS spatial audit log.</p>
+  </main>
+
+  <script src="api.js?v=4"></script>
+  <script src="portal.js?v=4"></script>
+</body>
+</html>

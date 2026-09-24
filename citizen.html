@@ -1,12 +1,133 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DharaNirman | Citizen Property Portal</title><link rel="stylesheet" href="portal.css"></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DharaNirman | Citizen Property Portal</title>
+  <link rel="stylesheet" href="portal.css?v=3">
+  <style>
+    .gov-strip {
+      background: #0f1f38;
+      color: #94a3b8;
+      font-size: 11px;
+      padding: 4px 5vw;
+      border-bottom: 1px solid #1e3a5f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
 <body data-role="citizen">
-<header><div class="brand"><div class="brand-mark">⌂</div><div><div class="eyebrow">DharaNirman · Government of India · DoLR</div><h1>Citizen Property Portal</h1></div></div><div class="header-actions"><span id="portal-user"></span><button class="btn btn-light" onclick="portalLogout()">Sign out</button></div></header>
-<main><section class="hero"><div><div class="eyebrow">My 3D Bhu-Aadhaar</div><h2>Welcome, Dr. Ananya Sharma</h2><p>View your legally recorded volumetric property, download certificates, and request official survey services.</p></div><span class="role-badge">Citizen / Unit #1204 Owner</span></section>
-<div id="portal-notice" class="card" hidden></div>
-<section class="grid">
-<article class="card"><h3>My registered property</h3><div class="metric">U1204</div><div class="metric-label">Apartment Unit #1204 · Floor 12</div><div class="status"><span>3D ULPIN</span><strong class="ok">IN-2187-4930-1049-A-F12-U1204-K8</strong></div><div class="status"><span>Title status</span><strong class="ok">Verified freehold</strong></div><div class="actions"><a class="btn btn-primary" href="index.html">Open 3D explorer</a><button class="btn" onclick="portalAction('Your digitally signed 3D Bhu-Aadhaar certificate is ready to download.')">Download title</button></div></article>
-<article class="card"><h3>Property summary</h3><div class="status"><span>Carpet area</span><strong>128.0 m²</strong></div><div class="status"><span>Volume</span><strong>384.2 m³</strong></div><div class="status"><span>Elevation</span><strong>+36.5m to +39.8m</strong></div><div class="status"><span>Annual tax</span><strong class="ok">Paid · ₹14,820</strong></div></article>
-<article class="card"><h3>Submit a request</h3><select id="request-type" class="btn" style="width:100%;margin-bottom:8px"><option value="demarcation">3D boundary demarcation</option><option value="mutation">Mutation / inheritance</option><option value="subdivision">Volumetric subdivision</option><option value="encroachment">Report encroachment</option><option value="new_title">New 3D title</option></select><textarea id="request-notes" rows="3" style="width:100%;border:1px solid var(--line);border-radius:7px;padding:10px" placeholder="Describe the request"></textarea><button class="btn btn-primary" style="margin-top:8px" onclick="createCitizenCase()">Submit to DoLR</button></article>
-<article class="card wide"><h3>Live applications <span class="metric-label">(<span id="live-case-count">0</span>)</span></h3><div id="live-cases"><p class="muted">Loading cases...</p></div></article>
-</section><p class="footer-note">Citizen access is read-only for official geometry and ownership records. Changes require an authorized survey and DoLR approval.</p></main><script src="api.js"></script><script src="portal.js"></script></body></html>
+  <div class="gov-strip">
+    <span>Government of India • Ministry of Rural Development</span>
+    <span class="font-mono">DoLR PS ID: 26011 • ISO 19152 LADM v2</span>
+  </div>
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark">⌂</div>
+      <div>
+        <div class="eyebrow">Department of Land Resources (DoLR)</div>
+        <h1>Citizen 3D Property Portal</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span id="portal-user" style="font-weight: 700; font-size: 12px; color: #e2e8f0;">Dr. Ananya Sharma</span>
+      <button class="btn btn-light" onclick="portalLogout()">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <div class="eyebrow" style="color: #005ea2;">My 3D Bhu-Aadhaar Registry</div>
+        <h2>Welcome, <span id="citizen-name">Citizen</span></h2>
+        <p>Authoritative record for volumetric freehold land units, verified 3D boundaries, and spatial administration services.</p>
+      </div>
+      <span class="role-badge" style="border: 1px solid #005ea2; background: #e8f3fa; color: #005ea2;">Citizen / Unit #1204 Owner</span>
+    </section>
+
+    <div id="portal-notice" class="card" hidden style="margin-bottom: 16px; border-top: 3px solid var(--blue); background: #f0fdf4; color: #166534; font-weight: 600;"></div>
+
+    <section class="grid">
+      <!-- Unit Card -->
+      <article class="card">
+        <h3>My Registered Property</h3>
+        <div class="metric" data-citizen-unit>U1204</div>
+        <div class="metric-label" data-citizen-property-title>Linked volumetric property</div>
+        <div class="status">
+          <span>3D ULPIN:</span>
+          <strong class="ok font-mono" data-citizen-property>Loading linked property…</strong>
+        </div>
+        <div class="status">
+          <span>Title Status:</span>
+          <strong class="ok">Verified Freehold Title</strong>
+        </div>
+        <div class="status">
+          <span>Parent Parcel:</span>
+          <strong class="font-mono">2187-4930-1049 (Zone A)</strong>
+        </div>
+        <div class="actions" style="margin-top: 14px; display: flex; gap: 8px;">
+          <a class="btn btn-primary" style="flex: 1;" href="index.html">Open 3D Explorer</a>
+          <button class="btn" style="flex: 1;" onclick="portalAction('Your digitally signed 3D Bhu-Aadhaar certificate is ready to download.')">Download Title</button>
+        </div>
+      </article>
+
+      <!-- Summary Card -->
+      <article class="card">
+        <h3>Volumetric Summary</h3>
+        <div class="status">
+          <span>Carpet Area</span>
+          <strong>128.0 m²</strong>
+        </div>
+        <div class="status">
+          <span>Calculated Volume</span>
+          <strong>384.2 m³</strong>
+        </div>
+        <div class="status">
+          <span>Vertical Elevation (Z)</span>
+          <strong>+36.5m to +39.8m</strong>
+        </div>
+        <div class="status">
+          <span>Strata Share</span>
+          <strong>1.82% of Base Parcel</strong>
+        </div>
+        <div class="status">
+          <span>Annual Property Tax</span>
+          <strong class="ok">Paid · ₹14,820</strong>
+        </div>
+      </article>
+
+      <!-- Request Submission -->
+      <article class="card">
+        <h3>Submit Service Request</h3>
+        <label for="request-type" class="metric-label" style="display:block; margin-bottom: 4px;">Service Request Type</label>
+        <select id="request-type" class="btn" style="width:100%; margin-bottom:10px; text-align: left;">
+          <option value="demarcation">3D boundary demarcation</option>
+          <option value="mutation">Mutation / inheritance</option>
+          <option value="subdivision">Volumetric strata subdivision</option>
+          <option value="encroachment">Report volumetric encroachment</option>
+          <option value="new_title">New 3D Title Application</option>
+        </select>
+        <label for="request-notes" class="metric-label" style="display:block; margin-bottom: 4px;">Application Notes</label>
+        <textarea id="request-notes" rows="3" style="width:100%; border:1px solid var(--line); padding:8px; font-family:inherit; font-size:12px; background: #fff;" placeholder="Provide additional cadastral details..."></textarea>
+        <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="createCitizenCase()">Submit Application to DoLR</button>
+      </article>
+
+      <!-- Live Applications Table -->
+      <article class="card wide">
+        <h3>Live Cadastral Applications <span class="metric-label">(<span id="live-case-count">0</span>)</span></h3>
+        <div id="live-cases">
+          <p class="muted">Loading cases...</p>
+        </div>
+      </article>
+    </section>
+
+    <p class="footer-note">Citizen access is read-only for official geometry and ownership records. Changes require an authorized survey by Survey of India and DoLR officer validation.</p>
+  </main>
+
+  <script src="api.js?v=6"></script>
+  <script src="portal.js?v=6"></script>
+</body>
+</html>

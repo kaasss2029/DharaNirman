@@ -39,16 +39,39 @@ async function loadPortalCases(role) {
   return cases;
 }
 
+async function loadCitizenProperties() {
+  const properties = await apiListProperties();
+  const property = properties[0];
+  if (property) {
+    const session = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
+    session.unit_id = property.unit_id;
+    session.property_ulpin = property.property_ulpin;
+    sessionStorage.setItem('ulpin-session', JSON.stringify(session));
+  }
+  const propertyLabel = document.querySelector('[data-citizen-property]');
+  if (propertyLabel && property) {
+    propertyLabel.textContent = `${property.unit_id} · ${property.property_ulpin}`;
+  } else if (propertyLabel) {
+    propertyLabel.textContent = 'No linked property';
+  }
+  const unitMetric = document.querySelector('[data-citizen-unit]');
+  if (unitMetric && property) unitMetric.textContent = property.unit_id;
+  const propertyTitle = document.querySelector('[data-citizen-property-title]');
+  if (propertyTitle) propertyTitle.textContent = property ? `${property.title} · ${property.floor}` : 'No linked volumetric property';
+  return properties;
+}
+
 async function createCitizenCase() {
   const requestType = document.getElementById('request-type')?.value || 'demarcation';
   const notes = document.getElementById('request-notes')?.value || '';
   try {
+    const session = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
     const caseItem = await apiRequest('/api/cases', {
       method: 'POST',
       body: JSON.stringify({
         title: `${requestType.replace('_', ' ')} request for Unit #1204`,
         request_type: requestType,
-        property_ulpin: '2187-4930-1049',
+        property_ulpin: session.property_ulpin || '2187-4930-1049',
         notes
       })
     });
@@ -89,26 +112,26 @@ async function assignSelectedCase() {
   } catch (error) {
     portalAction(`Assignment failed: ${error.message}`);
   }
+}
 
-  async function validateSelectedCase() {
-    const caseId = document.getElementById('assignment-case')?.value;
-    try {
-      const result = await apiRequest(`/api/cases/${caseId}/validate`, { method: 'POST' });
-      portalAction(`Validation completed for Case #${caseId}: ${result.overall_valid ? 'all checks passed' : 'corrections required'}.`);
-    } catch (error) {
-      portalAction(`Validation failed: ${error.message}`);
-    }
+async function validateSelectedCase() {
+  const caseId = document.getElementById('assignment-case')?.value;
+  try {
+    const result = await apiRequest(`/api/cases/${caseId}/validate`, { method: 'POST' });
+    portalAction(`Validation completed for Case #${caseId}: ${result.overall_valid ? 'all checks passed' : 'corrections required'}.`);
+  } catch (error) {
+    portalAction(`Validation failed: ${error.message}`);
   }
+}
 
-  async function approveSelectedCase() {
-    const caseId = document.getElementById('assignment-case')?.value;
-    try {
-      const result = await apiRequest(`/api/cases/${caseId}/approve`, { method: 'POST' });
-      portalAction(`Case #${caseId} approved. Issued 3D ULPIN: ${result.issued_ulpin}`);
-      await loadOfficerCases();
-    } catch (error) {
-      portalAction(`Approval failed: ${error.message}`);
-    }
+async function approveSelectedCase() {
+  const caseId = document.getElementById('assignment-case')?.value;
+  try {
+    const result = await apiRequest(`/api/cases/${caseId}/approve`, { method: 'POST' });
+    portalAction(`Case #${caseId} approved. Issued 3D ULPIN: ${result.issued_ulpin}`);
+    await loadOfficerCases();
+  } catch (error) {
+    portalAction(`Approval failed: ${error.message}`);
   }
 }
 
@@ -158,9 +181,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   const name = document.getElementById('portal-user');
-  if (name) name.textContent = ROLE_NAMES[expectedRole];
+  if (name) name.textContent = session.name || ROLE_NAMES[expectedRole];
+  const citizenName = document.getElementById('citizen-name');
+  if (citizenName && expectedRole === 'citizen') citizenName.textContent = session.name || ROLE_NAMES.citizen;
   try {
-    if (expectedRole === 'citizen') await loadPortalCases(expectedRole);
+    if (expectedRole === 'citizen') {
+      await loadCitizenProperties();
+      await loadPortalCases(expectedRole);
+    }
     if (expectedRole === 'officer') await loadOfficerCases();
     if (expectedRole === 'surveyor') {
       await loadSurveyorCases();

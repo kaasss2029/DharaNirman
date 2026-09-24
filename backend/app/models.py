@@ -37,6 +37,83 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(160))
     identifier: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     role: Mapped[UserRole] = mapped_column(SqlEnum(UserRole, native_enum=False), index=True)
+    unit_id: Mapped[Optional[str]] = mapped_column(String(40), default="U1204")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Building(Base):
+    __tablename__ = "buildings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    building_code: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(240))
+    base_parcel: Mapped[str] = mapped_column(String(80), index=True)
+    building_use: Mapped[str] = mapped_column(String(80))
+    above_ground_floors: Mapped[int] = mapped_column(default=0)
+    basement_levels: Mapped[int] = mapped_column(default=0)
+    height_m: Mapped[float] = mapped_column(default=0)
+    footprint_area: Mapped[float] = mapped_column(default=0)
+    built_up_area: Mapped[float] = mapped_column(default=0)
+    volume: Mapped[float] = mapped_column(default=0)
+    status: Mapped[str] = mapped_column(String(60), default="verified")
+    geometry: Mapped[Optional[Any]] = mapped_column(Geometry("POLYHEDRALSURFACEZ", srid=7755))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class BuildingFloor(Base):
+    __tablename__ = "building_floors"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    building_id: Mapped[int] = mapped_column(ForeignKey("buildings.id"), index=True)
+    floor_code: Mapped[str] = mapped_column(String(20))
+    floor_number: Mapped[int] = mapped_column()
+    elevation_min: Mapped[float] = mapped_column()
+    elevation_max: Mapped[float] = mapped_column()
+    unit_count: Mapped[int] = mapped_column(default=0)
+
+
+class VolumetricProperty(Base):
+    __tablename__ = "volumetric_properties"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    building_id: Mapped[Optional[int]] = mapped_column(ForeignKey("buildings.id"), index=True)
+    unit_id: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    property_ulpin: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(240))
+    base_parcel: Mapped[str] = mapped_column(String(80), index=True)
+    zone: Mapped[str] = mapped_column(String(10))
+    floor: Mapped[str] = mapped_column(String(40))
+    z_min: Mapped[float] = mapped_column()
+    z_max: Mapped[float] = mapped_column()
+    area: Mapped[float] = mapped_column()
+    volume: Mapped[float] = mapped_column()
+    status: Mapped[str] = mapped_column(String(60), default="available")
+    owner_name: Mapped[Optional[str]] = mapped_column(String(160))
+    geometry: Mapped[Optional[Any]] = mapped_column(Geometry("POLYHEDRALSURFACEZ", srid=7755))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class PropertyOwnership(Base):
+    __tablename__ = "property_ownerships"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    property_id: Mapped[int] = mapped_column(ForeignKey("volumetric_properties.id"), index=True)
+    citizen_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    ownership_percent: Mapped[float] = mapped_column(default=100.0)
+    status: Mapped[str] = mapped_column(String(40), default="verified")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class TitleApplication(Base):
+    __tablename__ = "title_applications"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    citizen_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    property_id: Mapped[Optional[int]] = mapped_column(ForeignKey("volumetric_properties.id"), index=True)
+    requested_unit_id: Mapped[Optional[str]] = mapped_column(String(40))
+    requested_ulpin: Mapped[Optional[str]] = mapped_column(String(120))
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(40), default="submitted", index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

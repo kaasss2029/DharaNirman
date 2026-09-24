@@ -12,8 +12,8 @@ from sqlalchemy.orm import Session
 from .auth import create_access_token, current_user, require_roles
 from .config import get_settings
 from .db import get_db, initialize_database
-from .models import CaseEvent, CaseFile, CaseStatus, User, UserRole, WorkflowCase
-from .schemas import AssignmentRequest, CaseCreate, CaseResponse, LoginRequest, ReviewRequest, TokenResponse, UserResponse, ValidationResponse
+from .models import Building, BuildingFloor, CaseEvent, CaseFile, CaseStatus, PropertyOwnership, TitleApplication, User, UserRole, VolumetricProperty, WorkflowCase
+from .schemas import AssignmentRequest, BuildingFloorResponse, BuildingResponse, CaseCreate, CaseResponse, LoginRequest, PropertyResponse, RegisterRequest, ReviewRequest, TitleApplicationCreate, TitleApplicationResponse, TokenResponse, UserResponse, ValidationResponse
 
 app = FastAPI(title="DharaNirman Workflow API", description="3D volumetric land administration workflow service.", version="0.1.0")
 settings = get_settings()
@@ -24,11 +24,76 @@ app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origin_list, allo
 def startup() -> None:
     initialize_database()
     Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
+    seed_properties()
+    seed_building_data()
 
 
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "service": "dharanirman-api"}
+
+
+def seed_properties() -> None:
+    db = next(get_db())
+    try:
+        if db.scalar(select(VolumetricProperty.id).limit(1)):
+            return
+        records = [
+            ("U0602", "IN-2187-4930-1049-A-F06-U0602-M2", "Apartment Unit #602", "F06", 18.0, 21.2, 120.0, 360.0),
+            ("U1204", "IN-2187-4930-1049-A-F12-U1204-K8", "Apartment Unit #1204", "F12", 36.5, 39.8, 128.0, 384.2),
+            ("U1201", "IN-2187-4930-1049-A-F12-U1201-J4", "Apartment Unit #1201 (Corner Suite)", "F12", 36.5, 39.8, 137.5, 412.5),
+            ("U0401", "IN-2187-4930-1049-A-F04-U0401-R6", "Apartment Unit #401", "F04", 10.8, 14.4, 118.0, 354.0),
+            ("U0101", "IN-2187-4930-1049-A-F01-U0101-T3", "Apartment Unit #101 (Garden View)", "F01", 0.8, 4.4, 125.0, 375.0),
+        ]
+        for unit_id, ulpin, title, floor, z_min, z_max, area, volume in records:
+            db.add(VolumetricProperty(
+                unit_id=unit_id, property_ulpin=ulpin, title=title,
+                base_parcel="2187-4930-1049", zone="A", floor=floor,
+                z_min=z_min, z_max=z_max, area=area, volume=volume,
+                status="available"
+            ))
+        db.commit()
+    finally:
+        db.close()
+
+
+def seed_building_data() -> None:
+    db = next(get_db())
+    try:
+        building = db.scalar(select(Building).where(Building.building_code == "BLDG-2187-4930-1049-A"))
+        if not building:
+            building = Building(
+                building_code="BLDG-2187-4930-1049-A",
+                name="Tower A",
+                base_parcel="2187-4930-1049",
+                building_use="residential",
+                above_ground_floors=12,
+                basement_levels=2,
+                height_m=46.8,
+                footprint_area=640.0,
+                built_up_area=7680.0,
+                volume=35840.0,
+                status="verified",
+            )
+            db.add(building)
+            db.flush()
+            for floor_number in range(1, 13):
+                db.add(BuildingFloor(
+                    building_id=building.id,
+                    floor_code=f"F{floor_number:02d}",
+                    floor_number=floor_number,
+                    elevation_min=0.8 + (floor_number - 1) * 3.6,
+                    elevation_max=4.4 + (floor_number - 1) * 3.6,
+                    unit_count=4,
+                ))
+        db.flush()
+        db.query(VolumetricProperty).filter(
+            VolumetricProperty.base_parcel == "2187-4930-1049",
+            VolumetricProperty.building_id.is_(None),
+        ).update({"building_id": building.id}, synchronize_session=False)
+        db.commit()
+    finally:
+        db.close()
 
 
 @app.post("/api/auth/login", response_model=TokenResponse)
@@ -42,11 +107,125 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
     identifier = payload.identifier.strip() or default_identifier
     user = db.scalar(select(User).where(User.identifier == identifier, User.role == payload.role))
     if not user:
-        user = User(name=name, identifier=identifier, role=payload.role)
+        user = User(name=name, identifier=identifier, role=payload.role, unit_id="U1204")
         db.add(user)
         db.commit()
         db.refresh(user)
     return TokenResponse(access_token=create_access_token(user), user=UserResponse.model_validate(user))
+
+
+@app.post("/api/auth/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
+    identifier = payload.identifier.strip()
+    if not identifier:
+        raise HTTPException(400, "Identifier / Email is required")
+    existing = db.scalar(select(User).where(User.identifier == identifier))
+    if existing:
+        raise HTTPException(409, "User identifier already registered")
+    if payload.role != UserRole.citizen:
+        raise HTTPException(403, "Only citizen self-registration is available")
+    property_record = None
+    if payload.unit_id:
+        property_record = db.scalar(select(VolumetricProperty).where(VolumetricProperty.unit_id == payload.unit_id))
+        if not property_record:
+            raise HTTPException(404, "Registered 3D property unit not found")
+        if property_record.status != "available":
+            raise HTTPException(409, "This property is not available for a new citizen registration")
+    user = User(
+        name=payload.name.strip(),
+        identifier=identifier,
+        role=payload.role,
+        unit_id=payload.unit_id or "U1204"
+    )
+    db.add(user)
+    db.flush()
+    if property_record:
+        property_record.status = "claimed"
+        property_record.owner_name = user.name
+        db.add(PropertyOwnership(property_id=property_record.id, citizen_id=user.id))
+    db.commit()
+    db.refresh(user)
+    return TokenResponse(access_token=create_access_token(user), user=UserResponse.model_validate(user))
+
+
+@app.get("/api/properties", response_model=list[PropertyResponse])
+def list_properties(db: Session = Depends(get_db), user: User = Depends(current_user)) -> list[VolumetricProperty]:
+    query = select(VolumetricProperty)
+    if user.role == UserRole.citizen:
+        query = query.join(PropertyOwnership, PropertyOwnership.property_id == VolumetricProperty.id).where(PropertyOwnership.citizen_id == user.id)
+    return list(db.scalars(query.order_by(VolumetricProperty.unit_id)))
+
+
+@app.get("/api/buildings/{building_id}", response_model=BuildingResponse)
+def get_building(building_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)) -> BuildingResponse:
+    building = db.get(Building, building_id)
+    if not building:
+        raise HTTPException(404, "Building not found")
+    if user.role == UserRole.citizen:
+        linked = db.scalar(select(PropertyOwnership.id).join(VolumetricProperty, PropertyOwnership.property_id == VolumetricProperty.id).where(
+            PropertyOwnership.citizen_id == user.id,
+            VolumetricProperty.building_id == building_id,
+        ))
+        if not linked:
+            raise HTTPException(403, "Building is not linked to this citizen")
+    floors = list(db.scalars(select(BuildingFloor).where(BuildingFloor.building_id == building_id).order_by(BuildingFloor.floor_number)))
+    response = BuildingResponse.model_validate(building)
+    return response.model_copy(update={"floors": [BuildingFloorResponse.model_validate(floor) for floor in floors]})
+
+
+@app.get("/api/properties/{property_id}/building", response_model=BuildingResponse)
+def get_property_building(property_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)) -> BuildingResponse:
+    property_record = db.get(VolumetricProperty, property_id)
+    if not property_record or not property_record.building_id:
+        raise HTTPException(404, "Building not found for property")
+    return get_building(property_record.building_id, db, user)
+
+
+@app.get("/api/properties/{property_id}", response_model=PropertyResponse)
+def get_property(property_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)) -> VolumetricProperty:
+    property_record = db.get(VolumetricProperty, property_id)
+    if not property_record:
+        raise HTTPException(404, "Property not found")
+    if user.role == UserRole.citizen:
+        owns = db.scalar(select(PropertyOwnership.id).where(PropertyOwnership.property_id == property_id, PropertyOwnership.citizen_id == user.id))
+        if not owns:
+            raise HTTPException(403, "Property is not linked to this citizen")
+    return property_record
+
+
+@app.get("/api/properties/by-ulpin/{property_ulpin}", response_model=PropertyResponse)
+def get_property_by_ulpin(property_ulpin: str, db: Session = Depends(get_db), user: User = Depends(current_user)) -> VolumetricProperty:
+    property_record = db.scalar(select(VolumetricProperty).where(VolumetricProperty.property_ulpin == property_ulpin))
+    if not property_record:
+        raise HTTPException(404, "ULPIN not found")
+    return get_property(property_record.id, db, user)
+
+
+@app.get("/api/title-applications", response_model=list[TitleApplicationResponse])
+def list_title_applications(db: Session = Depends(get_db), citizen: User = Depends(require_roles(UserRole.citizen))) -> list[TitleApplication]:
+    return list(db.scalars(select(TitleApplication).where(TitleApplication.citizen_id == citizen.id).order_by(TitleApplication.created_at.desc())))
+
+
+@app.post("/api/title-applications", response_model=TitleApplicationResponse, status_code=status.HTTP_201_CREATED)
+def create_title_application(payload: TitleApplicationCreate, db: Session = Depends(get_db), citizen: User = Depends(require_roles(UserRole.citizen))) -> TitleApplication:
+    property_record = None
+    if payload.requested_unit_id:
+        property_record = db.scalar(select(VolumetricProperty).where(VolumetricProperty.unit_id == payload.requested_unit_id))
+        if not property_record:
+            raise HTTPException(404, "Requested 3D property unit not found")
+        if property_record.status != "available":
+            raise HTTPException(409, "Requested property is not available")
+    application = TitleApplication(
+        citizen_id=citizen.id,
+        property_id=property_record.id if property_record else None,
+        requested_unit_id=payload.requested_unit_id,
+        requested_ulpin=payload.requested_ulpin,
+        notes=payload.notes,
+    )
+    db.add(application)
+    db.commit()
+    db.refresh(application)
+    return application
 
 
 @app.get("/api/me", response_model=UserResponse)

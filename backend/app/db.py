@@ -28,3 +28,10 @@ def initialize_database() -> None:
     with engine.begin() as connection:
         connection.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
     Base.metadata.create_all(bind=engine)
+    try:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS unit_id VARCHAR(40) DEFAULT 'U1204'"))
+    except Exception:
+        pass
+    with engine.begin() as connection:
+        connection.execute(text("ALTER TABLE volumetric_properties ADD COLUMN IF NOT EXISTS building_id INTEGER REFERENCES buildings(id)"))

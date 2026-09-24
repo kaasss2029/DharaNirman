@@ -15,6 +15,35 @@ let isAutoRotating = false;
 let isWireframeMode = false;
 let clippingPlane;
 let activeRole = null;
+let activePropertyUnit = 'U1204';
+let activeBuilding = {
+  above_ground_floors: 12,
+  basement_levels: 2,
+  height_m: 46.8,
+  building_code: 'BLDG-2187-4930-1049-A'
+};
+
+function populateFloorSelector() {
+  const selector = document.getElementById('floor-idx');
+  if (!selector || !activeBuilding.floors) return;
+  selector.replaceChildren();
+  activeBuilding.floors.forEach(floor => {
+    const option = document.createElement('option');
+    option.value = floor.floor_code;
+    option.textContent = `Floor ${String(floor.floor_number).padStart(2, '0')} (${floor.floor_code})`;
+    selector.appendChild(option);
+  });
+  for (let level = 1; level <= (activeBuilding.basement_levels || 0); level += 1) {
+    const option = document.createElement('option');
+    option.value = `B${String(level).padStart(2, '0')}`;
+    option.textContent = `Basement ${level} (B${String(level).padStart(2, '0')})`;
+    selector.appendChild(option);
+  }
+  const surface = document.createElement('option');
+  surface.value = 'S00';
+  surface.textContent = 'Surface Ground (S00)';
+  selector.appendChild(surface);
+}
 
 let currentLanguage = 'en';
 const i18n = {
@@ -57,6 +86,11 @@ const authProfiles = {
   officer: { name: 'R. K. Iyer (DoLR)', label: 'DoLR Registry Officer', copy: 'Review submissions, run AI 3D building extraction, validate topology, and issue official 3D ULPIN titles.' },
   surveyor: { name: 'Neha Kulkarni', label: 'Licensed Surveyor (SoI)', copy: 'Upload LiDAR survey data, inspect strata boundaries, and submit field demarcation results.' }
 };
+
+function propertyFloorCode(floor) {
+  const match = String(floor || '').match(/(\d+)/);
+  return match ? `F${match[1].padStart(2, '0')}` : 'F12';
+}
 
 // Spatial Object Groups
 let groupGround, groupBasement, groupMetro, groupBuilding, groupAirRights, groupLiDAR, groupDrone;
@@ -111,6 +145,38 @@ const cadastralData = {
     status: 'Verified Freehold Title',
     tax: '₹ 13,500 / yr (Paid)',
     strataShare: '1.71% of Base Parcel',
+    lod: 'LoD 3 Cadastre'
+  },
+  'U0401': {
+    id: 'U0401',
+    title: 'Apartment Unit #401',
+    ulpin: 'IN-2187-4930-1049-A-F04-U0401-R6',
+    zone: 'A',
+    floor: 'Floor 04',
+    zMin: '+10.8m',
+    zMax: '+14.4m',
+    volume: '354.0 m³',
+    area: '118.0 m²',
+    owner: 'Registered Title Holder',
+    status: 'Available for title application',
+    tax: '₹ 13,200 / yr',
+    strataShare: '1.68% of Base Parcel',
+    lod: 'LoD 3 Cadastre'
+  },
+  'U0101': {
+    id: 'U0101',
+    title: 'Apartment Unit #101 (Garden View)',
+    ulpin: 'IN-2187-4930-1049-A-F01-U0101-T3',
+    zone: 'A',
+    floor: 'Floor 01',
+    zMin: '+0.8m',
+    zMax: '+4.4m',
+    volume: '375.0 m³',
+    area: '125.0 m²',
+    owner: 'Registered Title Holder',
+    status: 'Available for title application',
+    tax: '₹ 13,900 / yr',
+    strataShare: '1.75% of Base Parcel',
     lod: 'LoD 3 Cadastre'
   },
   'SURFACE': {
@@ -182,16 +248,30 @@ const cadastralData = {
 // ==================================================================
 // INITIALIZATION
 // ==================================================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   restoreSession();
   if (!activeRole) return;
+  if (activeRole === 'citizen' && window.apiListProperties) {
+    try {
+      const properties = await apiListProperties();
+      const property = properties.find(item => item.unit_id === activePropertyUnit) || properties[0];
+      if (property?.building_id) {
+        activePropertyUnit = property.unit_id;
+        activeBuilding = await apiGetBuilding(property.building_id);
+      }
+    } catch (error) {
+      console.warn('Using illustrative building fallback:', error.message);
+    }
+  }
+  populateFloorSelector();
   if (window.lucide) {
     lucide.createIcons();
   }
   initThreeJS();
+  onWindowResize();
   initEventListeners();
   generateULPIN();
-  selectUnit('U1204');
+  selectUnit(activeRole === 'citizen' ? activePropertyUnit : 'U1204');
 });
 
 function restoreSession() {
@@ -199,9 +279,11 @@ function restoreSession() {
     const session = JSON.parse(sessionStorage.getItem('ulpin-session') || 'null');
     if (session && authProfiles[session.role]) {
       activeRole = session.role;
+      activePropertyUnit = session.unit_id || 'U1204';
       applyRoleUI();
       if (activeRole === 'citizen') {
-        setTimeout(focusCitizenProperty, 600);
+        const unitId = session.unit_id || 'U1204';
+        setTimeout(() => focusCitizenProperty(unitId), 600);
       }
       return;
     }
@@ -213,17 +295,20 @@ function restoreSession() {
 
 function applyRoleUI() {
   const profile = authProfiles[activeRole];
-  const session = document.getElementById('active-session');
-  document.getElementById('session-name').innerText = profile.name;
-  document.getElementById('session-role').innerText = profile.label;
-  session.classList.remove('hidden');
-  session.classList.add('flex');
+  const userSession = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
+  const activeSession = document.getElementById('active-session');
+  document.getElementById('session-name').innerText = userSession.name || profile.name;
+  document.getElementById('session-role').innerText = activeRole === 'citizen' && userSession.unit_id
+    ? `Citizen / ${userSession.unit_id} Owner`
+    : profile.label;
+  activeSession.classList.remove('hidden');
+  activeSession.classList.add('flex');
 
   const aiButton = document.getElementById('btn-run-ai');
   const topologyButton = document.getElementById('btn-topology');
   const demarcationButton = document.getElementById('btn-demarcation');
   const canRunAI = activeRole === 'officer' || activeRole === 'surveyor';
-  
+
   if (aiButton) aiButton.classList.toggle('hidden', !canRunAI);
   if (topologyButton) topologyButton.classList.toggle('hidden', activeRole === 'citizen');
   if (demarcationButton) {
@@ -236,7 +321,7 @@ function applyRoleUI() {
   // Refresh current unit selection to update badges
   const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
   const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
-  selectUnit(cadastralData[unitId] ? unitId : 'U1204');
+  selectUnit(cadastralData[unitId] ? unitId : (activeRole === 'citizen' ? activePropertyUnit : 'U1204'));
 
   if (window.lucide) lucide.createIcons();
 }
@@ -258,7 +343,7 @@ function applyVisualizerRoleAccess() {
   const copy = {
     citizen: {
       title: 'Citizen property view',
-      text: 'Read-only view of your registered Unit #1204, title certificate, and demarcation request.'
+      text: `Read-only view of your registered ${activePropertyUnit}, title certificate, and demarcation request.`
     },
     officer: {
       title: 'DoLR officer registry workspace',
@@ -303,12 +388,21 @@ function logout() {
   window.location.href = 'login.html';
 }
 
-function focusCitizenProperty() {
-  selectUnit('U1204');
+function focusCitizenProperty(unitId = 'U1204') {
+  // Select the specified unit (default to U1204)
+  selectUnit(unitId);
+
   if (camera && controls) {
-    // Smoothly animate camera to frame Unit #1204
-    const targetPos = new THREE.Vector3(12, 28, 22);
-    const lookAtPos = new THREE.Vector3(0, 18, 0);
+    // Determine a vertical offset based on the unit's elevation if available
+    const unitData = cadastralData[unitId];
+    let baseY = 0;
+    if (unitData && unitData.zMin) {
+      const num = parseFloat(unitData.zMin.replace('+', '').replace('m', '').trim());
+      if (!isNaN(num)) baseY = num;
+    }
+    // Compute camera target and position with some offsets
+    const targetPos = new THREE.Vector3(12, baseY + 28, 22);
+    const lookAtPos = new THREE.Vector3(0, baseY + 18, 0);
     controls.target.copy(lookAtPos);
     camera.position.copy(targetPos);
     controls.update();
@@ -322,7 +416,7 @@ function openDemarcationModal() {
   const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
   const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
   const data = cadastralData[unitId] || cadastralData['U1204'];
-  
+
   const unitLabel = document.getElementById('demarcation-unit-label');
   const ulpinLabel = document.getElementById('demarcation-ulpin-label');
   if (unitLabel) unitLabel.innerText = data.title;
@@ -342,7 +436,7 @@ function submitDemarcation() {
   const reason = document.getElementById('demarcation-reason').value;
   const notes = document.getElementById('demarcation-notes').value;
   const randomTicket = `DoLR-DEM-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
-  
+
   document.getElementById('ticket-number').innerText = randomTicket;
   document.getElementById('demarcation-form').classList.add('hidden');
   document.getElementById('demarcation-success').classList.remove('hidden');
@@ -384,16 +478,16 @@ function processTaxPayment() {
   if (cadastralData[unitId]) {
     cadastralData[unitId].tax = '₹ 14,820 / yr (Paid)';
   }
-  
+
   const statusBadge = document.getElementById('tax-badge-status');
   if (statusBadge) {
     statusBadge.innerText = 'PAID (Txn Ref #DL-9941)';
-    statusBadge.className = 'px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono text-[10px] font-bold';
+    statusBadge.className = 'px-2.5 py-1 bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono text-[10px] font-bold';
   }
-  
+
   const propTaxElem = document.getElementById('prop-tax');
   if (propTaxElem) propTaxElem.innerText = '₹ 14,820 / yr (Paid)';
-  
+
   alert('Payment of ₹14,820 successfully verified via Bharat BillPay (BBPS). 3D Tax Clearance Certificate is now active.');
 }
 
@@ -401,7 +495,7 @@ function downloadTaxReceipt() {
   const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
   const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
   const data = cadastralData[unitId] || cadastralData['U1204'];
-  
+
   const receiptText = `========================================================================
 MINISTRY OF RURAL DEVELOPMENT • DEPT OF LAND RESOURCES (DoLR)
 3D BHU-AADHAAR PROPERTY TAX CLEARANCE CERTIFICATE (BBPS VERIFIED)
@@ -491,8 +585,8 @@ function initThreeJS() {
 
   // Scene Setup
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a1120); // Crisp Deep Navy Viewport
-  scene.fog = new THREE.FogExp2(0x0a1120, 0.01);
+  scene.background = new THREE.Color(0xb9d5e6);
+  scene.fog = new THREE.Fog(0xb9d5e6, 85, 190);
 
   // Camera Setup
   camera = new THREE.PerspectiveCamera(45, width / height, 0.5, 1000);
@@ -502,6 +596,9 @@ function initThreeJS() {
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
   renderer.setSize(width, height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.localClippingEnabled = true;
@@ -537,29 +634,29 @@ function initThreeJS() {
 }
 
 function setupLights() {
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+  const ambientLight = new THREE.HemisphereLight(0xeaf6ff, 0x66705f, 1.55);
   scene.add(ambientLight);
 
-  const sunLight = new THREE.DirectionalLight(0xffffff, 0.9);
-  sunLight.position.set(40, 70, 30);
+  const sunLight = new THREE.DirectionalLight(0xfff2cf, 2.8);
+  sunLight.position.set(35, 85, 25);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.width = 2048;
   sunLight.shadow.mapSize.height = 2048;
   sunLight.shadow.camera.near = 10;
   sunLight.shadow.camera.far = 150;
-  sunLight.shadow.camera.left = -35;
-  sunLight.shadow.camera.right = 35;
-  sunLight.shadow.camera.top = 35;
-  sunLight.shadow.camera.bottom = -35;
+  sunLight.shadow.camera.left = -45;
+  sunLight.shadow.camera.right = 45;
+  sunLight.shadow.camera.top = 45;
+  sunLight.shadow.camera.bottom = -45;
   scene.add(sunLight);
 
-  const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.35);
-  fillLight.position.set(-30, 20, -30);
+  const fillLight = new THREE.DirectionalLight(0xa8d4f2, 0.95);
+  fillLight.position.set(-35, 28, -30);
   scene.add(fillLight);
 
-  const groundGlow = new THREE.PointLight(0x10b981, 0.8, 40);
-  groundGlow.position.set(0, 5, 0);
-  scene.add(groundGlow);
+  const entranceLight = new THREE.PointLight(0xffd38a, 0.45, 22);
+  entranceLight.position.set(0, 4, 9);
+  scene.add(entranceLight);
 }
 
 // ==================================================================
@@ -587,14 +684,14 @@ function buildCadastreScene() {
   scene.add(groupDrone);
 
   // 1. Grid & Ground Surface Datum (Z = 0.0m)
-  const gridHelper = new THREE.GridHelper(70, 28, 0x10b981, 0x1e293b);
+  const gridHelper = new THREE.GridHelper(70, 28, 0x78a98b, 0x9ab3a4);
   gridHelper.position.y = 0.02;
   groupGround.add(gridHelper);
 
   // Ground Surface Parcel Base Mesh
   const groundGeo = new THREE.BoxGeometry(26, 0.6, 26);
   const groundMat = new THREE.MeshStandardMaterial({
-    color: 0x0f172a,
+    color: 0x6f806f,
     roughness: 0.8,
     metalness: 0.2,
     clippingPlanes: [clippingPlane]
@@ -661,7 +758,7 @@ function buildCadastreScene() {
   groupMetro.add(tunnelGroup);
 
   // 4. Above-Ground Multi-Storey Residential & Commercial Tower
-  const totalFloors = 7;
+  const totalFloors = activeBuilding.above_ground_floors || 12;
   const floorHeight = 3.6;
   const floorSize = 16;
 
@@ -688,10 +785,10 @@ function buildCadastreScene() {
     const unitHeight = floorHeight - 0.5;
 
     const unitOffsets = [
-      { x: unitHalf / 2 + 0.2, z: unitHalf / 2 + 0.2, id: f === 5 ? 'U1204' : `U${(f + 1) * 100 + 4}` },
-      { x: -unitHalf / 2 - 0.2, z: unitHalf / 2 + 0.2, id: f === 5 ? 'U1201' : (f === 2 ? 'U0602' : `U${(f + 1) * 100 + 1}`) },
-      { x: -unitHalf / 2 - 0.2, z: -unitHalf / 2 - 0.2, id: `U${(f + 1) * 100 + 2}` },
-      { x: unitHalf / 2 + 0.2, z: -unitHalf / 2 - 0.2, id: `U${(f + 1) * 100 + 3}` }
+      { x: unitHalf / 2 + 0.2, z: unitHalf / 2 + 0.2, id: `U${String(f + 1).padStart(2, '0')}04` },
+      { x: -unitHalf / 2 - 0.2, z: unitHalf / 2 + 0.2, id: f === 2 ? 'U0602' : `U${String(f + 1).padStart(2, '0')}01` },
+      { x: -unitHalf / 2 - 0.2, z: -unitHalf / 2 - 0.2, id: `U${String(f + 1).padStart(2, '0')}02` },
+      { x: unitHalf / 2 + 0.2, z: -unitHalf / 2 - 0.2, id: `U${String(f + 1).padStart(2, '0')}03` }
     ];
 
     unitOffsets.forEach((u) => {
@@ -700,7 +797,7 @@ function buildCadastreScene() {
       const isTarget0602 = u.id === 'U0602';
 
       const unitGeo = new THREE.BoxGeometry(unitHalf, unitHeight, unitHalf);
-      
+
       let unitColor = 0x162e51; // Gov Deep Navy Default
       let opacity = 0.65;
 
@@ -753,6 +850,8 @@ function buildCadastreScene() {
     groupBuilding.add(floorObj);
   }
 
+  createArchitecturalDetails();
+
   // 5. Air Rights Envelope (+45m to +65m)
   const airGeo = new THREE.BoxGeometry(18, 12, 18);
   const airMat = new THREE.MeshStandardMaterial({
@@ -778,6 +877,153 @@ function buildCadastreScene() {
 
   // 7. Drone Photogrammetry Envelope & Camera Path
   createDroneFlightOverlay();
+}
+
+function createArchitecturalDetails() {
+  const concrete = new THREE.MeshStandardMaterial({ color: 0xb8c0c5, roughness: 0.78, metalness: 0.02 });
+  const concreteDark = new THREE.MeshStandardMaterial({ color: 0x6e7880, roughness: 0.72 });
+  const facade = new THREE.MeshStandardMaterial({ color: 0x9ca8ad, roughness: 0.82, metalness: 0.03 });
+  const glass = new THREE.MeshPhysicalMaterial({
+    color: 0x6da8c7,
+    metalness: 0.12,
+    roughness: 0.16,
+    transmission: 0.12,
+    transparent: true,
+    opacity: 0.88
+  });
+  const glassDark = new THREE.MeshStandardMaterial({ color: 0x244d68, roughness: 0.2, metalness: 0.35 });
+  const metal = new THREE.MeshStandardMaterial({ color: 0x303b43, roughness: 0.32, metalness: 0.75 });
+  const warmGlass = new THREE.MeshStandardMaterial({
+    color: 0xf2b35f,
+    emissive: 0x3a2410,
+    emissiveIntensity: 0.28,
+    roughness: 0.2,
+    metalness: 0.15
+  });
+
+  const addBox = (parent, size, position, material, options = {}) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material);
+    mesh.position.set(...position);
+    mesh.castShadow = options.castShadow !== false;
+    mesh.receiveShadow = options.receiveShadow !== false;
+    parent.add(mesh);
+    return mesh;
+  };
+
+  // A substantial podium makes the tower read as a built structure rather than stacked solids.
+  addBox(groupBuilding, [17.6, 1.4, 17.6], [0, 0.7, 0], concreteDark);
+  addBox(groupBuilding, [16.7, 0.55, 16.7], [0, 1.52, 0], concrete);
+  addBox(groupBuilding, [16.35, 0.35, 16.35], [0, 2.0, 0], facade);
+
+  // Recessed glazing and mullions on all four elevations.
+  const floorLevels = Array.from({ length: activeBuilding.above_ground_floors || 12 }, (_, index) => index + 1);
+  floorLevels.forEach((level, index) => {
+    const y = 1.25 + index * 3.6;
+    const windowHeight = 1.45;
+    const windowWidth = 2.75;
+    [-5.95, -2.0, 2.0, 5.95].forEach(x => {
+      addBox(groupBuilding, [windowWidth, windowHeight, 0.12], [x, y, 8.08], glass);
+      addBox(groupBuilding, [windowWidth, windowHeight, 0.12], [x, y, -8.08], glassDark);
+      addBox(groupBuilding, [windowWidth + 0.16, 0.11, 0.2], [x, y + 0.78, 8.16], metal);
+      addBox(groupBuilding, [windowWidth + 0.16, 0.11, 0.2], [x, y - 0.78, 8.16], metal);
+    });
+    [-5.95, -2.0, 2.0, 5.95].forEach(z => {
+      addBox(groupBuilding, [0.12, windowHeight, windowWidth], [8.08, y, z], glass);
+      addBox(groupBuilding, [0.12, windowHeight, windowWidth], [-8.08, y, z], glassDark);
+      addBox(groupBuilding, [0.2, 0.11, windowWidth + 0.16], [8.16, y + 0.78, z], metal);
+      addBox(groupBuilding, [0.2, 0.11, windowWidth + 0.16], [8.16, y - 0.78, z], metal);
+    });
+
+    // Horizontal sun-shade bands give the facade a realistic floor rhythm.
+    addBox(groupBuilding, [16.45, 0.12, 0.18], [0, y - 0.92, 8.18], concrete);
+    addBox(groupBuilding, [16.45, 0.12, 0.18], [0, y - 0.92, -8.18], concrete);
+  });
+
+  // Corner columns and vertical fins.
+  const towerHeight = (activeBuilding.above_ground_floors || 12) * 3.6 + 0.6;
+  const towerCenter = towerHeight / 2 + 0.5;
+  [-8.2, 8.2].forEach(x => {
+    [-8.15, 8.15].forEach(z => addBox(groupBuilding, [0.38, towerHeight, 0.38], [x, towerCenter, z], concreteDark));
+  });
+  [-4.05, 4.05].forEach(x => addBox(groupBuilding, [0.16, 25.2, 0.28], [x, 13.2, 8.22], metal));
+  [-4.05, 4.05].forEach(z => addBox(groupBuilding, [0.28, 25.2, 0.16], [8.22, 13.2, z], metal));
+
+  // Balconies on the front and right elevations, with simple guardrails.
+  [1, 3, 5, 7].forEach(level => {
+    const y = 1.35 + (level - 1) * 3.6;
+    addBox(groupBuilding, [4.8, 0.18, 1.25], [4.0, y - 0.7, 8.7], concrete);
+    addBox(groupBuilding, [4.8, 0.9, 0.08], [4.0, y - 0.2, 9.28], glass);
+    addBox(groupBuilding, [0.08, 0.9, 1.25], [1.6, y - 0.2, 8.7], metal);
+    addBox(groupBuilding, [0.08, 0.9, 1.25], [6.4, y - 0.2, 8.7], metal);
+    [-1.0, -0.3, 0.4, 1.1].forEach(offset => {
+      addBox(groupBuilding, [0.045, 0.9, 0.045], [4.0 + offset, y - 0.2, 9.25], metal);
+    });
+  });
+
+  // Ground-floor lobby, canopy and entry frame.
+  addBox(groupBuilding, [5.2, 3.0, 0.18], [0, 2.65, 8.28], glass);
+  addBox(groupBuilding, [6.1, 0.25, 2.6], [0, 4.25, 9.25], concrete);
+  addBox(groupBuilding, [0.24, 3.7, 0.24], [-3.0, 2.35, 8.55], metal);
+  addBox(groupBuilding, [0.24, 3.7, 0.24], [3.0, 2.35, 8.55], metal);
+
+  // Flat roof parapet and compact plant-room equipment.
+  const roofY = towerHeight + 0.8;
+  addBox(groupBuilding, [17.1, 0.65, 17.1], [0, roofY, 0], concreteDark);
+  addBox(groupBuilding, [8.0, 1.2, 5.4], [0, roofY + 0.85, -0.8], concrete);
+  addBox(groupBuilding, [2.2, 1.8, 1.8], [-4.5, roofY + 1.35, 3.8], metal);
+  addBox(groupBuilding, [2.2, 1.8, 1.8], [4.5, roofY + 1.35, 3.8], metal);
+  addBox(groupBuilding, [6.5, 0.1, 0.12], [0, roofY + 1.8, 6.2], glass);
+
+  // Rooftop photovoltaic array and exhaust stacks.
+  const solar = new THREE.MeshStandardMaterial({ color: 0x172d47, roughness: 0.28, metalness: 0.55 });
+  for (let row = 0; row < 3; row++) {
+    for (let column = 0; column < 4; column++) {
+      const panel = addBox(groupBuilding, [1.35, 0.08, 1.9], [-2.4 + column * 1.6, roofY + 1.8, -3.0 + row * 2.0], solar);
+      panel.rotation.x = -0.12;
+    }
+  }
+  [-2.7, 2.7].forEach(x => {
+    addBox(groupBuilding, [0.55, 2.2, 0.55], [x, roofY + 2.55, -0.5], metal);
+    addBox(groupBuilding, [0.9, 0.12, 0.9], [x, roofY + 3.65, -0.5], metal);
+  });
+
+  // Warm lobby and a few occupied apartments add depth to the facade.
+  addBox(groupBuilding, [2.2, 2.5, 0.15], [-1.5, 2.55, 8.3], warmGlass);
+  addBox(groupBuilding, [1.4, 2.2, 0.15], [3.8, 5.1, 8.3], warmGlass);
+  addBox(groupBuilding, [1.4, 2.2, 0.15], [-4.2, 12.3, 8.3], warmGlass);
+
+  // Paved site strips and a small planted perimeter.
+  const paving = new THREE.MeshStandardMaterial({ color: 0x8f989e, roughness: 0.9 });
+  const asphalt = new THREE.MeshStandardMaterial({ color: 0x343b40, roughness: 0.96 });
+  const laneMark = new THREE.MeshBasicMaterial({ color: 0xe8d27b });
+  addBox(groupGround, [32, 0.12, 5], [0, 0.06, 15], paving, { castShadow: false });
+  addBox(groupGround, [5, 0.12, 32], [15, 0.06, 0], paving, { castShadow: false });
+  addBox(groupGround, [4.8, 0.12, 18], [0, 0.07, 12], concrete, { castShadow: false });
+  addBox(groupGround, [32, 0.08, 5.8], [0, 0.02, 19], asphalt, { castShadow: false });
+  for (let i = -12; i <= 12; i += 4) {
+    addBox(groupGround, [1.8, 0.03, 0.08], [i, 0.08, 19], laneMark, { castShadow: false });
+  }
+  [-9, -3, 3, 9].forEach(x => {
+    addBox(groupGround, [2.6, 0.04, 0.12], [x, 0.1, 16.2], laneMark, { castShadow: false });
+  });
+
+  createSiteTree(-11, 10, groupGround);
+  createSiteTree(11, 10, groupGround);
+  createSiteTree(-11, -10, groupGround);
+  createSiteTree(11, -10, groupGround);
+}
+
+function createSiteTree(x, z, parent) {
+  const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x5a3926, roughness: 0.95 });
+  const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x2f7652, roughness: 0.9 });
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 2.2, 8), trunkMaterial);
+  trunk.position.set(x, 1.1, z);
+  trunk.castShadow = true;
+  parent.add(trunk);
+  const crown = new THREE.Mesh(new THREE.SphereGeometry(1.25, 10, 8), leafMaterial);
+  crown.position.set(x, 2.8, z);
+  crown.castShadow = true;
+  parent.add(crown);
 }
 
 function createCornerBeacons(x, z, parent) {
@@ -914,8 +1160,8 @@ function onMouseClick(event) {
 }
 
 function selectUnit(unitId, meshObj) {
-  if (activeRole === 'citizen' && unitId !== 'U1204') {
-    unitId = 'U1204';
+  if (activeRole === 'citizen' && unitId !== activePropertyUnit) {
+    unitId = activePropertyUnit;
     meshObj = null;
   }
   const data = cadastralData[unitId] || {
@@ -961,17 +1207,24 @@ function selectUnit(unitId, meshObj) {
 
   const ownedBadge = document.getElementById('owned-badge');
   if (ownedBadge) {
-    const isOwned = (activeRole === 'citizen' && (data.id === 'U1204' || data.id === '1204'));
+    const isOwned = activeRole === 'citizen' && data.id === activePropertyUnit;
     ownedBadge.classList.toggle('hidden', !isOwned);
     ownedBadge.classList.toggle('flex', isOwned);
   }
 
   // Sync with 3D ULPIN Form in Left Panel
-  document.getElementById('unit-tag').value = data.id.replace('U', '') ? data.id : 'U1204';
+  document.getElementById('unit-tag').value = data.id || 'U1204';
   if (data.zone) {
     document.getElementById('zone-type').value = data.zone;
   }
+  const floorSelect = document.getElementById('floor-idx');
+  if (floorSelect) floorSelect.value = propertyFloorCode(data.floor);
   generateULPIN();
+  const checksum = data.ulpin.split('-').pop();
+  const checksumInput = document.getElementById('checksum-tag');
+  if (checksumInput) checksumInput.value = checksum;
+  const generatedUlpIn = document.getElementById('result-ulpin');
+  if (generatedUlpIn) generatedUlpIn.innerText = data.ulpin;
 
   // Certificate Modal Data Sync
   const certUlpin = document.getElementById('cert-ulpin');
@@ -1089,7 +1342,7 @@ function generateULPIN() {
   const zone = document.getElementById('zone-type').value;
   const floor = document.getElementById('floor-idx').value;
   const unit = document.getElementById('unit-tag').value.trim() || 'U1204';
-  
+
   // Calculate standard 2-char checksum
   const rawString = `${base}-${zone}-${floor}-${unit.toUpperCase()}`;
   const checksum = computeModulo97Checksum(rawString);
@@ -1123,13 +1376,13 @@ function setViewMode(mode) {
   const crossCanvas = document.getElementById('crossSectionCanvas');
 
   if (mode === 'cross') {
-    document.getElementById('btn-cross').className = 'px-3 py-1.5 text-xs rounded-lg bg-emerald-600 text-white font-medium shadow transition';
-    document.getElementById('btn-3d').className = 'px-3 py-1.5 text-xs rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition';
+    document.getElementById('btn-cross').className = 'px-3 py-1.5 text-xs bg-emerald-600 text-white font-medium shadow transition';
+    document.getElementById('btn-3d').className = 'px-3 py-1.5 text-xs hover:bg-slate-800 text-slate-300 font-medium transition';
     crossCanvas.classList.remove('hidden');
     draw2DCrossSection(crossCanvas);
   } else {
-    document.getElementById('btn-3d').className = 'px-3 py-1.5 text-xs rounded-lg bg-emerald-600 text-white font-medium shadow transition';
-    document.getElementById('btn-cross').className = 'px-3 py-1.5 text-xs rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition';
+    document.getElementById('btn-3d').className = 'px-3 py-1.5 text-xs bg-emerald-600 text-white font-medium shadow transition';
+    document.getElementById('btn-cross').className = 'px-3 py-1.5 text-xs hover:bg-slate-800 text-slate-300 font-medium transition';
     crossCanvas.classList.add('hidden');
   }
 }
@@ -1175,9 +1428,15 @@ function draw2DCrossSection(canvasElem) {
   const bldgX = w * 0.35;
   const bldgW = w * 0.35;
 
-  for (let i = 0; i < 7; i++) {
+  const floors = activeBuilding.floors || Array.from(
+    { length: activeBuilding.above_ground_floors || 12 },
+    (_, index) => ({ floor_number: index + 1, floor_code: `F${String(index + 1).padStart(2, '0')}` })
+  );
+  const selectedFloor = Number((unitData[activePropertyUnit]?.floor || 'F12').replace('F', '')) || 12;
+  for (let i = 0; i < floors.length; i++) {
     const floorY = zeroY - (i + 1) * 22;
-    const isSelected = i === 5; // Floor 12 (Unit 1204)
+    const floor = floors[i];
+    const isSelected = floor.floor_number === selectedFloor;
 
     ctx.fillStyle = isSelected ? 'rgba(16, 185, 129, 0.7)' : 'rgba(30, 41, 59, 0.85)';
     ctx.strokeStyle = isSelected ? '#34d399' : '#475569';
@@ -1187,7 +1446,7 @@ function draw2DCrossSection(canvasElem) {
     ctx.strokeRect(bldgX, floorY, bldgW, 19);
 
     ctx.fillStyle = isSelected ? '#ffffff' : '#94a3b8';
-    ctx.fillText(`Floor ${i === 5 ? '12 (Unit #1204)' : i + 1} [${isSelected ? 'IN-2187-4930-1049-A-F12-U1204' : 'ULPIN-A'}]`, bldgX + 10, floorY + 13);
+    ctx.fillText(`Floor ${floor.floor_number} [${isSelected ? activePropertyUnit : 'ULPIN-A'}]`, bldgX + 10, floorY + 13);
   }
 
   // Basement 1
@@ -1227,7 +1486,7 @@ function runAIPipeline() {
   const badge = document.getElementById('ai-status-badge');
   btn.disabled = true;
   badge.innerText = 'PROCESSING...';
-  badge.className = 'text-[9px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded';
+  badge.className = 'text-[9px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 ';
 
   document.getElementById('ai-logs').innerHTML = '';
   addLog('[Phase 1/4] Ingesting Drone Photogrammetry & LiDAR Point Cloud (LAS 1.4)...');
@@ -1249,7 +1508,7 @@ function runAIPipeline() {
     addLog('✓ SUCCESS: 14 Volumetric 3D Parcels Successfully Extracted & Validated.');
     btn.disabled = false;
     badge.innerText = 'COMPLETED';
-    badge.className = 'text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded';
+    badge.className = 'text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 ';
   }, 3000);
 }
 
@@ -1263,7 +1522,7 @@ function runTopologyValidation() {
   setTimeout(() => {
     addLog('[Topology Audit] RESULT: 0 Overlaps, 0 Slivers. 100% Water-tight Volumetric Polyhedrons.');
     const topCard = document.getElementById('topology-card');
-    topCard.className = 'mt-auto p-3 rounded-xl bg-emerald-950/60 border border-emerald-500 text-xs glow-emerald';
+    topCard.className = 'mt-auto p-3 bg-emerald-950/60 border border-emerald-500 text-xs glow-emerald';
     alert('✓ 3D Topology Audit Passed!\n- Standard: ISO 19152 LADM v2 3D Cadastre\n- Volumetric Overlaps: 0\n- Boundary Enclosure: 100% Valid Closed 2-Manifolds');
   }, 700);
 }

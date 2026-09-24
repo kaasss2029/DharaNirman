@@ -1,153 +1,214 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Roboto+Mono:wght@400;500;600;700&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap');
 
 :root {
   --gov-navy: #162E51;
+  --gov-navy-dark: #0f1f38;
   --gov-blue: #005EA2;
-  --gov-bg: #F0F0F0;
-  --gov-gray-cool: #DFE1E2;
-  --gov-ink: #1B1B1B;
-  --gov-red: #D83933;
-  --gov-amber: #C05600;
-  --gov-amber-light: #FA9441;
-  --gov-green: #008852;
-  --gov-cyan: #00BDE3;
-  --gov-accent-blue: #0050D8;
+  --gov-blue-dark: #004c82;
+  --gov-blue-light: #e8f3fa;
+  --gov-bg: #eaedf1;
+  --gov-surface: #ffffff;
+  --gov-gray-light: #f8fafc;
+  --gov-gray-cool: #cbd5e1;
+  --gov-gray-border: #94a3b8;
+  --gov-ink: #0f172a;
+  --gov-ink-muted: #475569;
+  --gov-red: #d9381e;
+  --gov-amber: #b45309;
+  --gov-amber-light: #fef3c7;
+  --gov-green: #047857;
+  --gov-green-light: #ecfdf5;
+  --gov-cyan: #0284c7;
+  --font-ui: 'Public Sans', 'Roboto', 'Open Sans', 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'Roboto Mono', Menlo, Consolas, Monaco, monospace;
 }
 
-body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+/* Global sharp-cornered CAD & enterprise standard */
+*, *::before, *::after {
+  box-sizing: border-box;
+  border-radius: 0 !important;
+}
+
+html, body {
+  font-family: var(--font-ui);
   color: var(--gov-ink);
   background-color: var(--gov-bg);
-  user-select: none;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .font-mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono) !important;
+  letter-spacing: -0.02em;
 }
 
-/* Accessible Interactive Focus Rings (WCAG 2.1 AA) */
+/* Accessible, crisp focus rings */
 *:focus-visible {
-  outline: 3px solid var(--gov-cyan) !important;
-  outline-offset: 2px !important;
+  outline: 2px solid var(--gov-blue) !important;
+  outline-offset: 1px !important;
 }
 
-/* Custom Scrollbars */
+/* Technical square scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--gov-gray-cool);
+  background: #e2e8f0;
 }
 ::-webkit-scrollbar-thumb {
-  background: #A6AAAE;
-  border-radius: 9999px;
+  background: #94a3b8;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--gov-blue);
 }
 
-/* Government Card & Surface Styles */
+/* Header Authority Bar */
+header.bg-gov-navy {
+  min-height: 56px;
+  padding: 8px 20px !important;
+  background-color: var(--gov-navy) !important;
+  border-bottom: 3px solid var(--gov-blue) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Government Card & Surface Panels */
 .gov-card {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--gov-gray-cool);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .gov-card-inset {
-  background: #F8F9FA;
+  background: var(--gov-gray-light);
   border: 1px solid var(--gov-gray-cool);
 }
 
 .gov-panel-sidebar {
-  background: #F0F0F0;
+  background: #f1f5f9;
   border-color: var(--gov-gray-cool);
 }
 
-/* Government Navigation & Action Controls */
-.bg-gov-navy {
-  background-color: var(--gov-navy);
-}
-
-.bg-gov-blue {
-  background-color: var(--gov-blue);
-}
-
-.text-gov-ink {
+/* Inputs, Selects, Buttons */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+select,
+textarea {
+  font-family: var(--font-ui);
+  background-color: #ffffff;
+  border: 1px solid var(--gov-gray-border);
   color: var(--gov-ink);
+  padding: 6px 10px;
+  font-size: 12px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.text-gov-navy {
-  color: var(--gov-navy);
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--gov-blue) !important;
+  outline: none;
 }
 
-.text-gov-blue {
-  color: var(--gov-blue);
-}
-
-.border-gov-gray {
-  border-color: var(--gov-gray-cool);
-}
-
-/* Auth Role Switcher Tabs */
-.auth-role-tab {
-  padding: 0.65rem 0.4rem;
-  border: 1.5px solid var(--gov-gray-cool);
-  border-radius: 0.55rem;
-  color: #565C65;
-  background: #FFFFFF;
-  font-size: 0.75rem;
-  font-weight: 700;
-  transition: all 0.2s ease;
+button {
+  font-family: var(--font-ui);
   cursor: pointer;
-}
-
-.auth-role-tab:hover {
-  border-color: var(--gov-blue);
-  color: var(--gov-blue);
-  background: #F8F9FA;
-}
-
-.auth-role-tab.active {
-  color: #FFFFFF;
-  border-color: var(--gov-navy);
-  background: var(--gov-navy);
-  box-shadow: 0 2px 6px -1px rgba(22, 46, 81, 0.35);
+  font-weight: 600;
+  transition: background-color 0.1s ease, border-color 0.1s ease;
 }
 
 /* Status Badges */
 .badge-green {
-  background-color: rgba(0, 136, 82, 0.12);
-  color: #006B40;
-  border: 1px solid rgba(0, 136, 82, 0.3);
+  background-color: var(--gov-green-light);
+  color: var(--gov-green);
+  border: 1px solid #a7f3d0;
+  font-weight: 700;
 }
 
 .badge-amber {
-  background-color: rgba(192, 86, 0, 0.12);
-  color: #9E4600;
-  border: 1px solid rgba(192, 86, 0, 0.3);
+  background-color: var(--gov-amber-light);
+  color: var(--gov-amber);
+  border: 1px solid #fde68a;
+  font-weight: 700;
 }
 
 .badge-red {
-  background-color: rgba(216, 57, 51, 0.12);
-  color: #B52B26;
-  border: 1px solid rgba(216, 57, 51, 0.3);
+  background-color: #fef2f2;
+  color: var(--gov-red);
+  border: 1px solid #fecaca;
+  font-weight: 700;
 }
 
 .badge-blue {
-  background-color: rgba(0, 94, 162, 0.12);
-  color: #005EA2;
-  border: 1px solid rgba(0, 94, 162, 0.3);
+  background-color: var(--gov-blue-light);
+  color: var(--gov-blue);
+  border: 1px solid #bae6fd;
+  font-weight: 700;
 }
 
-/* Three.js Canvas Container */
+/* 3D WebGL Canvas Viewport */
+#cadastreCanvasContainer {
+  background-color: #0b1320;
+  border: 1px solid var(--gov-gray-border) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
 #cadastreCanvasContainer canvas {
   outline: none;
   width: 100% !important;
   height: 100% !important;
 }
 
-/* Certificate Print Styles */
+/* Precision CAD Slider Controls */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: #cbd5e1;
+  outline: none;
+  border: 1px solid #94a3b8;
+  border-radius: 0 !important;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--gov-blue);
+  border: 1px solid #0f1f38;
+  cursor: pointer;
+  border-radius: 0 !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--gov-blue);
+  border: 1px solid #0f1f38;
+  cursor: pointer;
+  border-radius: 0 !important;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: var(--gov-cyan);
+}
+
+/* Telemetry HUD & Overlays */
+#unitTooltip {
+  background: rgba(15, 23, 42, 0.96) !important;
+  border: 1px solid var(--gov-cyan) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+  font-family: var(--font-mono);
+}
+
+/* Print Certificate Rules */
 @media print {
   body * {
     visibility: hidden;
@@ -161,7 +222,7 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background: white !important;
-    color: #1B1B1B !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
   }
 }

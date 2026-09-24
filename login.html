@@ -2,51 +2,282 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>DharaNirman | Secure Access Gateway</title>
-  <link rel="stylesheet" href="portal.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DharaNirman | Government of India - Secure Cadastral Access Gateway</title>
+  <link rel="stylesheet" href="portal.css?v=5">
   <style>
-    .login-shell { width:min(460px, 92vw); margin:7vh auto; }
-    .login-head { background:var(--navy); color:#fff; padding:28px; border-radius:14px 14px 0 0; }
-    .login-body { background:#fff; border:1px solid var(--line); border-top:0; padding:28px; border-radius:0 0 14px 14px; }
-    .role-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px; }
-    .role-tab { padding:10px 4px; border:1px solid var(--line); border-radius:7px; background:#f8fafc; color:var(--muted); font-weight:700; cursor:pointer; }
-    .role-tab.active { color:var(--blue); border-color:var(--blue); background:#e8f5fb; }
-    label { display:block; color:var(--muted); font-weight:700; font-size:12px; margin:12px 0 6px; }
-    input { width:100%; padding:11px; border:1px solid var(--line); border-radius:7px; font:inherit; }
-    .login-error { color:var(--red); font-size:12px; font-weight:700; margin-top:8px; }
-    .demo { width:100%; margin-top:10px; border:0; background:transparent; color:var(--blue); font-weight:700; cursor:pointer; padding:8px; }
-    .login-note { color:var(--muted); text-align:center; font-size:11px; margin-top:18px; }
+    body {
+      background-color: #eaedf1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .gov-top-bar {
+      background: #0f1f38;
+      color: #94a3b8;
+      font-size: 11px;
+      padding: 4px 20px;
+      border-bottom: 1px solid #1e3a5f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .login-container {
+      width: min(500px, 94vw);
+      margin: 30px auto 20px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+    }
+    .login-header {
+      background: #162e51;
+      color: #ffffff;
+      padding: 22px 24px;
+      border-bottom: 3px solid #005ea2;
+    }
+    .auth-mode-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 2px solid #cbd5e1;
+      background: #f1f5f9;
+    }
+    .auth-mode-btn {
+      padding: 11px;
+      border: none;
+      background: transparent;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      color: #475569;
+      text-align: center;
+      transition: all 0.1s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .auth-mode-btn.active {
+      background: #ffffff;
+      color: #005ea2;
+      border-bottom: 3px solid #005ea2;
+      margin-bottom: -2px;
+    }
+    .login-body {
+      padding: 22px 24px;
+    }
+    .role-nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin-bottom: 18px;
+      border: 1px solid #cbd5e1;
+      background: #f1f5f9;
+    }
+    .role-tab-btn {
+      padding: 9px 4px;
+      border: none;
+      border-right: 1px solid #cbd5e1;
+      background: transparent;
+      color: #475569;
+      font-weight: 700;
+      font-size: 11px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.1s ease;
+    }
+    .role-tab-btn:last-child {
+      border-right: none;
+    }
+    .role-tab-btn.active {
+      background: #005ea2;
+      color: #ffffff;
+    }
+    .role-info-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 3px solid #005ea2;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+    }
+    .role-info-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      color: #162e51;
+      margin: 0 0 2px;
+    }
+    .role-info-box p {
+      font-size: 11.5px;
+      color: #475569;
+      margin: 0;
+      line-height: 1.4;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #94a3b8;
+      background: #ffffff;
+      font-size: 13px;
+      font-family: inherit;
+      color: #0f172a;
+    }
+    .form-input:focus {
+      border-color: #005ea2;
+      outline: none;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 10px;
+      background: #005ea2;
+      color: #ffffff;
+      border: 1px solid #004c82;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.1s ease;
+    }
+    .btn-submit:hover {
+      background: #004c82;
+    }
+    .btn-demo-access {
+      width: 100%;
+      padding: 8px;
+      margin-top: 8px;
+      background: transparent;
+      border: 1px dashed #005ea2;
+      color: #005ea2;
+      font-weight: 700;
+      font-size: 11.5px;
+      cursor: pointer;
+    }
+    .btn-demo-access:hover {
+      background: #eff6ff;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .login-footer-text {
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 14px;
+    }
+    .gov-footer {
+      margin-top: auto;
+      text-align: center;
+      padding: 14px;
+      font-size: 11px;
+      color: #64748b;
+      border-top: 1px solid #cbd5e1;
+    }
   </style>
 </head>
 <body>
-  <main class="login-shell">
-    <section class="login-head">
-      <div class="eyebrow">Secure access gateway</div>
-      <h1>DharaNirman</h1>
-      <p style="margin-top:10px;color:#dbeafe;line-height:1.5">Official workspace for 3D Bhu-Aadhaar, volumetric titles, and ISO 19152 land administration.</p>
-    </section>
-    <section class="login-body">
-      <div class="role-tabs" role="tablist" aria-label="Login portals">
-        <button class="role-tab active" data-role="citizen" onclick="selectLoginRole('citizen')">Citizen</button>
-        <button class="role-tab" data-role="officer" onclick="selectLoginRole('officer')">DoLR Officer</button>
-        <button class="role-tab" data-role="surveyor" onclick="selectLoginRole('surveyor')">Surveyor</button>
+  <div class="gov-top-bar">
+    <span>Government of India • Ministry of Rural Development</span>
+    <span class="font-mono">DoLR PS ID: 26011 • ISO 19152 LADM v2</span>
+  </div>
+
+  <div class="login-container">
+    <div class="login-header">
+      <div class="eyebrow" style="color:#7dd3fc; margin-bottom:2px;">Authoritative Cadastral Gateway</div>
+      <h1 style="font-size:19px; font-weight:800; margin:0 0 4px;">DharaNirman</h1>
+      <p style="color:#cbd5e1; font-size:11.5px; margin:0; line-height:1.4;">
+        3D Volumetric Land Administration & Bhu-Aadhaar Registry.
+      </p>
+    </div>
+
+    <!-- Mode Selector Tabs: Sign In vs Citizen Registration -->
+    <div class="auth-mode-bar">
+      <button id="tab-mode-login" class="auth-mode-btn active" onclick="setAuthMode('login')">Sign In (Roles)</button>
+      <button id="tab-mode-register" class="auth-mode-btn" onclick="setAuthMode('register')">Register New Citizen</button>
+    </div>
+
+    <div class="login-body">
+      <!-- 1. SIGN IN MODE -->
+      <div id="login-section">
+        <!-- Role Tabs (Sharp Rectangles) -->
+        <div id="role-selector-nav" class="role-nav" role="tablist" aria-label="Portal Selection">
+          <button class="role-tab-btn active" data-role="citizen" onclick="selectLoginRole('citizen')">Citizen</button>
+          <button class="role-tab-btn" data-role="officer" onclick="selectLoginRole('officer')">DoLR Officer</button>
+          <button class="role-tab-btn" data-role="surveyor" onclick="selectLoginRole('surveyor')">Surveyor</button>
+        </div>
+
+        <!-- Selected Role Info -->
+        <div id="login-role-copy" class="role-info-box">
+          <h3>Citizen Property Portal</h3>
+          <p>View registered 3D titles, certificates, tax status, and demarcation requests.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="login-identifier" class="form-label">Official User ID / Email / Phone</label>
+          <input id="login-identifier" class="form-input" value="ananya.sharma@digital.gov.in" autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="login-password" class="form-label">Password / OTP Key</label>
+          <input id="login-password" type="password" class="form-input" value="demo-access" autocomplete="current-password">
+        </div>
+
+        <button class="btn-submit" onclick="submitLogin()">Sign in to Workspace</button>
+        <button class="btn-demo-access" onclick="demoLogin()">Use 1-Click Prototype Access</button>
       </div>
-      <div id="login-role-copy" class="card" style="padding:14px;margin-bottom:16px">
-        <h3>Citizen property portal</h3>
-        <p>View registered 3D titles, certificates, tax status, and demarcation requests.</p>
+
+      <!-- 2. CITIZEN REGISTRATION MODE -->
+      <div id="register-section" class="hidden">
+        <div class="role-info-box" style="border-left-color: #047857; background: #ecfdf5;">
+          <h3 style="color: #047857;">New 3D Property Registration</h3>
+          <p>Register your volumetric unit ownership into the National 3D Cadastral Database.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-name" class="form-label">Full Legal Name</label>
+          <input id="reg-name" class="form-input" placeholder="e.g. Vikram Malhotra" value="Vikram Malhotra">
+        </div>
+
+        <div class="form-group">
+          <label for="reg-identifier" class="form-label">Mobile Number / Email / Aadhaar ID</label>
+          <input id="reg-identifier" class="form-input" placeholder="e.g. vikram.m@digital.gov.in" value="vikram.m@digital.gov.in">
+        </div>
+
+        <div class="form-group">
+          <label for="reg-unit" class="form-label">Select Registered 3D Property Unit</label>
+          <select id="reg-unit" class="form-input" style="font-weight: 600;">
+            <option value="U0602">Unit #602 (Floor 6 · Mid-Rise · 120.0 m² · 360 m³)</option>
+            <option value="U1204">Unit #1204 (Floor 12 · Top Tier · 128.0 m² · 384 m³)</option>
+            <option value="U1201">Unit #1201 (Floor 12 · Corner Suite · 137.5 m² · 412 m³)</option>
+            <option value="U0401">Unit #401 (Floor 4 · Standard Suite · 118.0 m² · 354 m³)</option>
+            <option value="U0101">Unit #101 (Floor 1 · Garden View · 125.0 m² · 375 m³)</option>
+            <option value="SURFACE">Surface Ground Parcel S00 (1,600.0 m² Master Title)</option>
+            <option value="BASEMENT1">Basement Parking Bay B1-04 (Underground -6.0m)</option>
+          </select>
+        </div>
+
+        <button class="btn-submit" style="background: #047857; border-color: #065f46;" onclick="submitCitizenRegister()">
+          Register & Open 3D Bhu-Aadhaar
+        </button>
       </div>
-      <label for="login-identifier">Mobile / official identifier</label>
-      <input id="login-identifier" value="ananya.sharma@digital.gov.in" autocomplete="username">
-      <label for="login-password">One-time password / password</label>
-      <input id="login-password" type="password" value="demo-access" autocomplete="current-password">
-      <p id="login-error" class="login-error" hidden></p>
-      <button class="btn btn-primary" style="width:100%;margin-top:18px" onclick="submitLogin()">Continue to portal</button>
-      <button class="demo" onclick="demoLogin()">Use 1-click demo access</button>
-      <p class="login-note">Prototype access only · no real identity data is transmitted</p>
-    </section>
-  </main>
-  <script src="api.js"></script>
-  <script src="auth.js"></script>
+
+      <p id="login-error" style="color:#d9381e; font-size:12px; font-weight:700; margin:8px 0 0;" hidden></p>
+      <p class="login-footer-text">Protected government prototype. Authorized role verification active.</p>
+    </div>
+  </div>
+
+  <footer class="gov-footer">
+    Department of Land Resources (DoLR) • National 3D Cadastre Registry • Survey of India CORS Network
+  </footer>
+
+  <script src="api.js?v=5"></script>
+  <script src="auth.js?v=5"></script>
 </body>
 </html>
