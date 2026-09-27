@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .models import CaseStatus, UserRole
 
@@ -11,6 +11,7 @@ from .models import CaseStatus, UserRole
 class LoginRequest(BaseModel):
     identifier: str
     role: UserRole
+    password: str = Field(min_length=1, max_length=128)
 
 
 class RegisterRequest(BaseModel):
@@ -18,6 +19,16 @@ class RegisterRequest(BaseModel):
     identifier: str = Field(min_length=3, max_length=255)
     role: UserRole = UserRole.citizen
     unit_id: Optional[str] = "U1204"
+    state: Optional[str] = Field(default=None, min_length=2, max_length=100)
+    city: Optional[str] = Field(default=None, min_length=2, max_length=100)
+    password: str = Field(min_length=8, max_length=128)
+    confirm_password: str = Field(min_length=8, max_length=128)
+
+    @model_validator(mode="after")
+    def verify_passwords_match(self) -> "RegisterRequest":
+        if self.password != self.confirm_password:
+            raise ValueError("Create Password and Confirm Password must match")
+        return self
 
 
 class TokenResponse(BaseModel):
@@ -34,6 +45,19 @@ class UserResponse(BaseModel):
     identifier: str
     role: UserRole
     unit_id: Optional[str] = "U1204"
+    state: Optional[str] = None
+    city: Optional[str] = None
+
+
+class RegulationProfileResponse(BaseModel):
+    state: str
+    city: str
+    jurisdiction: str
+    policy_status: str
+    height_rule_summary: str
+    basement_rule_summary: str
+    source_note: str
+    illustrative_scenario: Dict[str, Union[int, float]]
 
 
 class PropertyResponse(BaseModel):
@@ -81,7 +105,7 @@ class BuildingResponse(BaseModel):
     built_up_area: float
     volume: float
     status: str
-    floors: list[BuildingFloorResponse] = []
+    floors: List[BuildingFloorResponse] = []
 
 
 class TitleApplicationCreate(BaseModel):
@@ -138,7 +162,7 @@ class ReviewRequest(BaseModel):
 
 class ValidationResponse(BaseModel):
     status: CaseStatus
-    checks: dict[str, bool]
+    checks: Dict[str, bool]
     overall_valid: bool
 
 

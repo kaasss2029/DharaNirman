@@ -4,40 +4,62 @@ function apiToken() {
   return sessionStorage.getItem('ulpin-access-token');
 }
 
+function apiErrorMessage(payload, status) {
+  if (typeof payload === 'object' && payload && payload.detail) {
+    return typeof payload.detail === 'string' ? payload.detail : JSON.stringify(payload.detail);
+  }
+  return `Request failed (${status})`;
+}
+
 async function apiRequest(path, options = {}) {
   const headers = new Headers(options.headers || {});
   const token = apiToken();
   if (token) headers.set('Authorization', `Bearer ${token}`);
   if (options.body && !(options.body instanceof FormData)) headers.set('Content-Type', 'application/json');
 
-  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
+  } catch (error) {
+    throw new Error('Cannot reach the DharaNirman API. Start the backend and try again.');
+  }
   const contentType = response.headers.get('content-type') || '';
   const payload = contentType.includes('application/json') ? await response.json() : await response.text();
   if (!response.ok) {
-    const message = typeof payload === 'object' && payload.detail ? payload.detail : `Request failed (${response.status})`;
-    throw new Error(message);
+    throw new Error(apiErrorMessage(payload, response.status));
   }
   return payload;
 }
 
-async function apiLogin(identifier, role) {
+async function apiLogin(identifier, role, password) {
   const result = await apiRequest('/api/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ identifier, role })
+    body: JSON.stringify({ identifier, role, password })
   });
   sessionStorage.setItem('ulpin-access-token', result.access_token);
   sessionStorage.setItem('ulpin-user', JSON.stringify(result.user));
   return result.user;
 }
 
-async function apiRegister(name, identifier, role = 'citizen', unit_id = 'U1204') {
+async function apiRegister(name, identifier, role = 'citizen', unit_id = 'U1204', state = null, city = null, password = '', confirm_password = '') {
+  if (password !== confirm_password) {
+    throw new Error("Create Password and Confirm Password must match.");
+  }
+  if (password.length < 8) {
+    throw new Error("Password must be at least 8 characters.");
+  }
+
   const result = await apiRequest('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ name, identifier, role, unit_id })
+    body: JSON.stringify({ name, identifier, role, unit_id, state, city, password, confirm_password })
   });
   sessionStorage.setItem('ulpin-access-token', result.access_token);
   sessionStorage.setItem('ulpin-user', JSON.stringify(result.user));
   return result.user;
+}
+
+async function apiGetRegulationProfile(state, city) {
+  return apiRequest(`/api/regulations/profile?state=${encodeURIComponent(state)}&city=${encodeURIComponent(city)}`);
 }
 
 async function apiListProperties() {
@@ -59,4 +81,5 @@ function clearApiSession() {
   sessionStorage.removeItem('ulpin-access-token');
   sessionStorage.removeItem('ulpin-user');
   sessionStorage.removeItem('ulpin-session');
+  localStorage.removeItem('dharanirman_registered_users');
 }

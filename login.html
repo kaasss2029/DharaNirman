@@ -221,16 +221,16 @@
 
         <div class="form-group">
           <label for="login-identifier" class="form-label">Official User ID / Email / Phone</label>
-          <input id="login-identifier" class="form-input" value="ananya.sharma@digital.gov.in" autocomplete="username">
+          <input id="login-identifier" class="form-input" placeholder="e.g. your.email@digital.gov.in" autocomplete="username">
         </div>
 
         <div class="form-group">
-          <label for="login-password" class="form-label">Password / OTP Key</label>
-          <input id="login-password" type="password" class="form-input" value="demo-access" autocomplete="current-password">
+          <label for="login-password" class="form-label">Password</label>
+          <input id="login-password" type="password" class="form-input" placeholder="Enter your password" autocomplete="current-password">
         </div>
 
         <button class="btn-submit" onclick="submitLogin()">Sign in to Workspace</button>
-        <button class="btn-demo-access" onclick="demoLogin()">Use 1-Click Prototype Access</button>
+        <button class="btn-demo-access" onclick="demoLogin()">Use 1-Click Official Prototype Access</button>
       </div>
 
       <!-- 2. CITIZEN REGISTRATION MODE -->
@@ -242,13 +242,40 @@
 
         <div class="form-group">
           <label for="reg-name" class="form-label">Full Legal Name</label>
-          <input id="reg-name" class="form-input" placeholder="e.g. Vikram Malhotra" value="Vikram Malhotra">
+          <input id="reg-name" class="form-input" placeholder="e.g. Ramesh Kumar">
         </div>
 
         <div class="form-group">
           <label for="reg-identifier" class="form-label">Mobile Number / Email / Aadhaar ID</label>
-          <input id="reg-identifier" class="form-input" placeholder="e.g. vikram.m@digital.gov.in" value="vikram.m@digital.gov.in">
+          <input id="reg-identifier" class="form-input" placeholder="e.g. ramesh.kumar@example.com">
         </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label for="reg-state" class="form-label">State / UT</label>
+            <select id="reg-state" class="form-input" onchange="onStateChange()" style="font-weight: 500;">
+              <option value="">-- Select State / UT --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="reg-city" class="form-label">City / District / Town</label>
+            <select id="reg-city" class="form-input" style="font-weight: 500;">
+              <option value="">-- Select City / Town --</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label for="reg-password" class="form-label">Create Password</label>
+            <input id="reg-password" type="password" class="form-input" minlength="8" autocomplete="new-password" placeholder="At least 8 characters" oninput="checkPasswordMatch()">
+          </div>
+          <div class="form-group">
+            <label for="reg-confirm-password" class="form-label">Confirm Password</label>
+            <input id="reg-confirm-password" type="password" class="form-input" minlength="8" autocomplete="new-password" placeholder="Repeat password" oninput="checkPasswordMatch()">
+          </div>
+        </div>
+        <div id="password-match-status" style="font-size:11px; font-weight:700; margin:-6px 0 10px; min-height:14px;"></div>
 
         <div class="form-group">
           <label for="reg-unit" class="form-label">Select Registered 3D Property Unit</label>
@@ -269,6 +296,7 @@
       </div>
 
       <p id="login-error" style="color:#d9381e; font-size:12px; font-weight:700; margin:8px 0 0;" hidden></p>
+      <p id="login-success" style="color:#059669; font-size:12px; font-weight:700; margin:8px 0 0;" hidden></p>
       <p class="login-footer-text">Protected government prototype. Authorized role verification active.</p>
     </div>
   </div>

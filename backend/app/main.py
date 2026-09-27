@@ -9,15 +9,44 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .auth import create_access_token, current_user, require_roles
+from .auth import create_access_token, current_user, hash_password, require_roles, verify_password
 from .config import get_settings
 from .db import get_db, initialize_database
 from .models import Building, BuildingFloor, CaseEvent, CaseFile, CaseStatus, PropertyOwnership, TitleApplication, User, UserRole, VolumetricProperty, WorkflowCase
-from .schemas import AssignmentRequest, BuildingFloorResponse, BuildingResponse, CaseCreate, CaseResponse, LoginRequest, PropertyResponse, RegisterRequest, ReviewRequest, TitleApplicationCreate, TitleApplicationResponse, TokenResponse, UserResponse, ValidationResponse
+from .schemas import AssignmentRequest, BuildingFloorResponse, BuildingResponse, CaseCreate, CaseResponse, LoginRequest, PropertyResponse, RegisterRequest, RegulationProfileResponse, ReviewRequest, TitleApplicationCreate, TitleApplicationResponse, TokenResponse, UserResponse, ValidationResponse
+from .validation import evaluate_case_validation
 
 app = FastAPI(title="DharaNirman Workflow API", description="3D volumetric land administration workflow service.", version="0.1.0")
 settings = get_settings()
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origin_list, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+REGULATION_PROFILES = {
+    ("jharkhand", "ranchi"): {
+        "jurisdiction": "Ranchi planning / municipal authority",
+        "height_rule_summary": "Check the applicable master plan, road width, FAR/FSI, setbacks, fire category and airport constraints.",
+        "basement_rule_summary": "Basement count is approval-dependent; verify soil, groundwater, access, ventilation and fire-safety provisions.",
+        "source_note": "Illustrative regulatory profile; confirm against the current Jharkhand and local building bye-laws before approval.",
+    },
+    ("delhi", "delhi"): {
+        "jurisdiction": "DDA / MCD / NDMC jurisdiction as applicable",
+        "height_rule_summary": "Height and floor count depend on the applicable Master Plan, UBBL, plot category, road width, FAR/FSI and fire approval.",
+        "basement_rule_summary": "Basements require compliance with local parking, access, ventilation, fire and structural provisions.",
+        "source_note": "Illustrative regulatory profile; confirm with the responsible Delhi planning authority.",
+    },
+    ("maharashtra", "mumbai"): {
+        "jurisdiction": "Municipal / development authority jurisdiction as applicable",
+        "height_rule_summary": "Height is controlled by the applicable DCPR, zoning, road width, FAR/FSI, aviation limits and fire requirements.",
+        "basement_rule_summary": "Basement and high-rise provisions are triggered by the approved use, height, site and fire strategy.",
+        "source_note": "Illustrative regulatory profile; confirm against the current local DCPR and sanctioned plan.",
+    },
+}
+
+DEFAULT_REGULATION_PROFILE = {
+    "jurisdiction": "State and local planning authority",
+    "height_rule_summary": "No single India-wide maximum; calculate from the applicable local plan, road width, FAR/FSI, setbacks, aviation and fire rules.",
+    "basement_rule_summary": "No single India-wide basement limit; obtain local approval supported by geotechnical, structural and fire-safety checks.",
+    "source_note": "Model-code guidance only. This output is not a legal approval or a substitute for the current local regulations.",
+}
 
 
 @app.on_event("startup")
@@ -26,11 +55,42 @@ def startup() -> None:
     Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
     seed_properties()
     seed_building_data()
+    seed_default_users()
 
 
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "service": "dharanirman-api"}
+
+
+def seed_default_users() -> None:
+    db = next(get_db())
+    try:
+        officer = db.scalar(select(User).where(User.identifier == "officer@nic.gov.in"))
+        if not officer:
+            db.add(User(
+                name="R. K. Iyer (DoLR)",
+                identifier="officer@nic.gov.in",
+                role=UserRole.officer,
+                password_hash=hash_password("demo-access")
+            ))
+        elif not officer.password_hash:
+            officer.password_hash = hash_password("demo-access")
+
+        surveyor = db.scalar(select(User).where(User.identifier == "surveyor@survey.gov.in"))
+        if not surveyor:
+            db.add(User(
+                name="Neha Kulkarni",
+                identifier="surveyor@survey.gov.in",
+                role=UserRole.surveyor,
+                password_hash=hash_password("demo-access")
+            ))
+        elif not surveyor.password_hash:
+            surveyor.password_hash = hash_password("demo-access")
+
+        db.commit()
+    finally:
+        db.close()
 
 
 def seed_properties() -> None:
@@ -44,6 +104,8 @@ def seed_properties() -> None:
             ("U1201", "IN-2187-4930-1049-A-F12-U1201-J4", "Apartment Unit #1201 (Corner Suite)", "F12", 36.5, 39.8, 137.5, 412.5),
             ("U0401", "IN-2187-4930-1049-A-F04-U0401-R6", "Apartment Unit #401", "F04", 10.8, 14.4, 118.0, 354.0),
             ("U0101", "IN-2187-4930-1049-A-F01-U0101-T3", "Apartment Unit #101 (Garden View)", "F01", 0.8, 4.4, 125.0, 375.0),
+            ("SURFACE", "IN-2187-4930-1049-A-S00-SURFACE-P1", "Surface Ground Parcel S00 (Master Title)", "S00", 0.0, 0.5, 1600.0, 800.0),
+            ("BASEMENT1", "IN-2187-4930-1049-A-B01-BASEMENT-04", "Basement Parking Bay B1-04", "B01", -6.0, -3.0, 45.0, 135.0),
         ]
         for unit_id, ulpin, title, floor, z_min, z_max, area, volume in records:
             db.add(VolumetricProperty(
@@ -98,19 +160,26 @@ def seed_building_data() -> None:
 
 @app.post("/api/auth/login", response_model=TokenResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
-    profiles = {
-        UserRole.citizen: ("Dr. Ananya Sharma", "ananya.sharma@digital.gov.in"),
-        UserRole.officer: ("R. K. Iyer (DoLR)", "officer@nic.gov.in"),
-        UserRole.surveyor: ("Neha Kulkarni", "surveyor@survey.gov.in"),
-    }
-    name, default_identifier = profiles[payload.role]
-    identifier = payload.identifier.strip() or default_identifier
+    identifier = payload.identifier.strip()
+    if not identifier:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Identifier / Email is required")
+
     user = db.scalar(select(User).where(User.identifier == identifier, User.role == payload.role))
     if not user:
-        user = User(name=name, identifier=identifier, role=payload.role, unit_id="U1204")
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+        if payload.role == UserRole.citizen:
+            raise HTTPException(
+                status.HTTP_401_UNAUTHORIZED,
+                "Citizen account not found. Please register your account first on the 'Register New Citizen' tab."
+            )
+        else:
+            raise HTTPException(
+                status.HTTP_401_UNAUTHORIZED,
+                "Account not found for this role. Please verify your official User ID."
+            )
+
+    if not user.password_hash or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Incorrect password. Please verify and try again.")
+
     return TokenResponse(access_token=create_access_token(user), user=UserResponse.model_validate(user))
 
 
@@ -128,14 +197,30 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenRe
     if payload.unit_id:
         property_record = db.scalar(select(VolumetricProperty).where(VolumetricProperty.unit_id == payload.unit_id))
         if not property_record:
-            raise HTTPException(404, "Registered 3D property unit not found")
-        if property_record.status != "available":
-            raise HTTPException(409, "This property is not available for a new citizen registration")
+            property_record = VolumetricProperty(
+                unit_id=payload.unit_id,
+                property_ulpin=f"IN-2187-4930-1049-A-{payload.unit_id}",
+                title=f"3D Cadastral Unit #{payload.unit_id}",
+                base_parcel="2187-4930-1049",
+                zone="A",
+                floor="F01",
+                z_min=0.8,
+                z_max=4.4,
+                area=120.0,
+                volume=360.0,
+                status="available",
+            )
+            db.add(property_record)
+            db.flush()
+
     user = User(
         name=payload.name.strip(),
         identifier=identifier,
         role=payload.role,
-        unit_id=payload.unit_id or "U1204"
+        password_hash=hash_password(payload.password),
+        unit_id=payload.unit_id or "U1204",
+        state=payload.state.strip() if payload.state else None,
+        city=payload.city.strip() if payload.city else None,
     )
     db.add(user)
     db.flush()
@@ -146,6 +231,25 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenRe
     db.commit()
     db.refresh(user)
     return TokenResponse(access_token=create_access_token(user), user=UserResponse.model_validate(user))
+
+
+@app.get("/api/regulations/profile", response_model=RegulationProfileResponse)
+def regulation_profile(state: str, city: str, user: User = Depends(current_user)) -> RegulationProfileResponse:
+    normalized_state = state.strip()
+    normalized_city = city.strip()
+    profile = REGULATION_PROFILES.get((normalized_state.lower(), normalized_city.lower()), DEFAULT_REGULATION_PROFILE)
+    return RegulationProfileResponse(
+        state=normalized_state,
+        city=normalized_city,
+        policy_status="planning context — verify with the competent authority",
+        illustrative_scenario={
+            "max_height_m": 12.0,
+            "above_ground_floors": 4,
+            "basement_levels": 1,
+            "parking_levels": 1,
+        },
+        **profile,
+    )
 
 
 @app.get("/api/properties", response_model=list[PropertyResponse])
@@ -311,11 +415,19 @@ def validate_case(case_id: int, db: Session = Depends(get_db), user: User = Depe
     case = db.get(WorkflowCase, case_id)
     if not case or (user.role == UserRole.surveyor and case.surveyor_id != user.id):
         raise HTTPException(404, "Case not found")
-    checks = {"crs_epsg_7755": True, "closed_geometry": True, "volume_positive": True, "no_3d_overlap": True, "no_gaps_or_slivers": True, "air_rights_clear": True}
+    checks = evaluate_case_validation(db, case)
     case.validation = checks
-    add_event(db, case, user, CaseStatus.validated, "Automated volumetric validation completed", checks)
+    overall_valid = all(checks.values())
+    add_event(
+        db,
+        case,
+        user,
+        CaseStatus.validated if overall_valid else CaseStatus.returned,
+        "Automated volumetric validation completed" if overall_valid else "Automated volumetric validation failed",
+        checks,
+    )
     db.commit()
-    return ValidationResponse(status=case.status, checks=checks, overall_valid=all(checks.values()))
+    return ValidationResponse(status=case.status, checks=checks, overall_valid=overall_valid)
 
 
 @app.post("/api/cases/{case_id}/submit-survey", response_model=CaseResponse)

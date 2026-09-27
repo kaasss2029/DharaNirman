@@ -31,6 +31,9 @@ def initialize_database() -> None:
     try:
         with engine.begin() as connection:
             connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS unit_id VARCHAR(40) DEFAULT 'U1204'"))
+            connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255)"))
+            connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS state VARCHAR(100)"))
+            connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR(100)"))
     except Exception:
         pass
     with engine.begin() as connection:

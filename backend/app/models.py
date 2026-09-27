@@ -37,7 +37,10 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(160))
     identifier: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     role: Mapped[UserRole] = mapped_column(SqlEnum(UserRole, native_enum=False), index=True)
+    password_hash: Mapped[Optional[str]] = mapped_column(String(255))
     unit_id: Mapped[Optional[str]] = mapped_column(String(40), default="U1204")
+    state: Mapped[Optional[str]] = mapped_column(String(100))
+    city: Mapped[Optional[str]] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

@@ -16,6 +16,7 @@ let isWireframeMode = false;
 let clippingPlane;
 let activeRole = null;
 let activePropertyUnit = 'U1204';
+let activeRegisteredOwner = null;
 let activeBuilding = {
   above_ground_floors: 12,
   basement_levels: 2,
@@ -251,12 +252,21 @@ const cadastralData = {
 document.addEventListener('DOMContentLoaded', async () => {
   restoreSession();
   if (!activeRole) return;
+  await loadRegulationContext();
   if (activeRole === 'citizen' && window.apiListProperties) {
     try {
       const properties = await apiListProperties();
       const property = properties.find(item => item.unit_id === activePropertyUnit) || properties[0];
-      if (property?.building_id) {
+      if (property) {
         activePropertyUnit = property.unit_id;
+        activeRegisteredOwner = property.owner_name || null;
+        const cadastralUnit = cadastralData[property.unit_id];
+        if (cadastralUnit) {
+          cadastralUnit.owner = activeRegisteredOwner || JSON.parse(sessionStorage.getItem('ulpin-session') || '{}').name || 'Registered Title Holder';
+          cadastralUnit.status = property.status || cadastralUnit.status;
+        }
+      }
+      if (property?.building_id) {
         activeBuilding = await apiGetBuilding(property.building_id);
       }
     } catch (error) {
@@ -272,7 +282,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   initEventListeners();
   generateULPIN();
   selectUnit(activeRole === 'citizen' ? activePropertyUnit : 'U1204');
+  updateRegisteredOwnerDisplay();
 });
+
+function updateRegisteredOwnerDisplay() {
+  if (activeRole !== 'citizen') return;
+  const session = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
+  const ownerName = activeRegisteredOwner || session.name;
+  if (!ownerName) return;
+  const property = cadastralData[activePropertyUnit];
+  if (property) property.owner = ownerName;
+  const ownerElement = document.getElementById('prop-owner');
+  if (ownerElement) ownerElement.textContent = ownerName;
+}
+
+async function loadRegulationContext() {
+  const session = JSON.parse(sessionStorage.getItem('ulpin-session') || 'null');
+  const jurisdiction = document.getElementById('regulation-jurisdiction');
+  const summary = document.getElementById('regulation-summary');
+  if (!session?.state || !session?.city || !window.apiGetRegulationProfile) return;
+  try {
+    const profile = await apiGetRegulationProfile(session.state, session.city);
+    if (jurisdiction) jurisdiction.textContent = `${profile.city}, ${profile.state} · ${profile.jurisdiction}`;
+    if (summary) summary.textContent = profile.height_rule_summary;
+    const scenario = profile.illustrative_scenario || {};
+    const envelope = document.getElementById('regulation-envelope');
+    const basement = document.getElementById('regulation-basement');
+    if (envelope) envelope.textContent = `${scenario.max_height_m} m · ${scenario.above_ground_floors} floors`;
+    if (basement) basement.textContent = `${scenario.basement_levels} basement · ${scenario.parking_levels} parking`;
+  } catch (error) {
+    if (summary) summary.textContent = 'Planning profile unavailable; verify the applicable local authority rules.';
+    console.warn('Unable to load planning context:', error.message);
+  }
+}
 
 function restoreSession() {
   try {
@@ -301,6 +343,10 @@ function applyRoleUI() {
   document.getElementById('session-role').innerText = activeRole === 'citizen' && userSession.unit_id
     ? `Citizen / ${userSession.unit_id} Owner`
     : profile.label;
+  if (activeRole === 'citizen' && userSession.name) {
+    activeRegisteredOwner = userSession.name;
+    updateRegisteredOwnerDisplay();
+  }
   activeSession.classList.remove('hidden');
   activeSession.classList.add('flex');
 
@@ -1180,6 +1226,13 @@ function selectUnit(unitId, meshObj) {
     strataShare: '1.75% of Base Parcel',
     lod: 'LoD 3 Cadastre'
   };
+  const session = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
+  if (activeRole === 'citizen' && data.id === activePropertyUnit && session.name) {
+    data.owner = session.name;
+  }
+  if (activeRole === 'citizen' && data.id === activePropertyUnit && activeRegisteredOwner) {
+    data.owner = activeRegisteredOwner;
+  }
 
   // Update Right Panel UI
   document.getElementById('prop-title').innerText = data.title;
