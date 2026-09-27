@@ -21,7 +21,7 @@
 <body data-role="officer">
   <div class="gov-strip">
     <span>Government of India • Ministry of Rural Development</span>
-    <span class="font-mono">DoLR PS ID: 26011 • Official Registry Console</span>
+    <span class="font-mono" id="officer-id-strip">DoLR PS ID: 26011 • Official Registry Console</span>
   </div>
 
   <header>
@@ -33,7 +33,7 @@
       </div>
     </div>
     <div class="header-actions">
-      <span id="portal-user" style="font-weight: 700; font-size: 12px; color: #e2e8f0;">R. K. Iyer (DoLR)</span>
+      <span id="portal-user" style="font-weight: 700; font-size: 12px; color: #e2e8f0;">Loading Officer...</span>
       <button class="btn btn-light" onclick="portalLogout()">Sign out</button>
     </div>
   </header>
@@ -45,7 +45,7 @@
         <h2>Review, Validate, and Issue 3D Titles</h2>
         <p>Authoritative case management, volumetric conflict resolution, and legally binding 3D ULPIN title issuance under ISO 19152 LADM v2.</p>
       </div>
-      <span class="role-badge" style="border: 1px solid #005ea2; background: #e8f3fa; color: #005ea2;">DoLR Registry Officer</span>
+      <span class="role-badge" id="officer-role-badge" style="border: 1px solid #005ea2; background: #e8f3fa; color: #005ea2;">DoLR Registry Officer</span>
     </section>
 
     <div id="portal-notice" class="card" hidden style="margin-bottom: 16px; border-top: 3px solid var(--blue); background: #f0fdf4; color: #166534; font-weight: 600;"></div>
@@ -66,19 +66,19 @@
         <h3>Spatial Registry Health</h3>
         <div class="status">
           <span>Topology Audit:</span>
-          <strong class="ok">0 Overlaps Detected</strong>
+          <strong class="ok" id="health-topology">0 Overlaps Detected</strong>
         </div>
         <div class="status">
-          <span>Closed 2-Manifolds:</span>
-          <strong class="ok">100% Validated</strong>
+          <span>Validated Polyhedrons:</span>
+          <strong class="ok" id="health-validated">0% Verified</strong>
         </div>
         <div class="status">
           <span>SoI CORS Network:</span>
-          <strong class="ok">Active (RTK ±1.2cm)</strong>
+          <strong class="ok" id="health-cors">Active (RTK ±1.2cm)</strong>
         </div>
         <div class="status">
-          <span>Audit Log Sync:</span>
-          <strong class="font-mono">Immutable State</strong>
+          <span>Backend PostGIS Sync:</span>
+          <strong class="font-mono" id="health-audit">Connected</strong>
         </div>
       </article>
 
@@ -99,24 +99,15 @@
           <button class="btn btn-primary" style="width:100%;" onclick="approveSelectedCase()">Approve and Issue 3D ULPIN</button>
         </div>
         <div class="actions" style="margin-top:12px;">
-          <a class="btn" style="width:100%; text-align: center; display: block;" href="index.html">Open 3D Registry Explorer</a>
+          <button class="btn" style="width:100%; text-align: center; display: block; background: #fff;" onclick="openOfficerCase3D()">Open 3D Registry Explorer for Selected Case</button>
         </div>
       </article>
 
       <!-- Priority Review Cases -->
       <article class="card wide">
         <h3>Priority Boundary Reviews</h3>
-        <div class="status">
-          <span>Volumetric balcony encroachment · Parcel 2187-4930-1049</span>
-          <strong class="danger">Review Now</strong>
-        </div>
-        <div class="status">
-          <span>Metro easement crossing · U-TUN-DMRC-T7</span>
-          <strong class="pending">Survey Evidence Attached</strong>
-        </div>
-        <div class="status">
-          <span>Strata subdivision · Tower B, Floor 06</span>
-          <strong class="pending">Awaiting Final Approval</strong>
+        <div id="officer-priority-cases">
+          <p class="muted">Loading priority cases...</p>
         </div>
       </article>
     </section>

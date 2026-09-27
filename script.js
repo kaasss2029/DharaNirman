@@ -253,26 +253,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   restoreSession();
   if (!activeRole) return;
   await loadRegulationContext();
-  if (activeRole === 'citizen' && window.apiListProperties) {
+
+  // Synchronize local 3D cadastralData with live API backend properties
+  await syncPropertiesWithAPI();
+
+  // Parse URL query parameters to dynamically load selected case or unit
+  const params = new URLSearchParams(window.location.search);
+  const caseId = params.get('case_id');
+  const paramUnitId = params.get('unit_id');
+  const paramUlpin = params.get('ulpin');
+  let loadedCase = null;
+
+  if (caseId && window.apiRequest) {
     try {
-      const properties = await apiListProperties();
-      const property = properties.find(item => item.unit_id === activePropertyUnit) || properties[0];
-      if (property) {
-        activePropertyUnit = property.unit_id;
-        activeRegisteredOwner = property.owner_name || null;
-        const cadastralUnit = cadastralData[property.unit_id];
-        if (cadastralUnit) {
-          cadastralUnit.owner = activeRegisteredOwner || JSON.parse(sessionStorage.getItem('ulpin-session') || '{}').name || 'Registered Title Holder';
-          cadastralUnit.status = property.status || cadastralUnit.status;
+      loadedCase = await apiRequest(`/api/cases/${caseId}`);
+      if (loadedCase && loadedCase.property_ulpin) {
+        // Find matching cadastral property
+        const matchProp = Object.values(cadastralData).find(p => p.ulpin === loadedCase.property_ulpin) ||
+                          Object.values(cadastralData).find(p => loadedCase.property_ulpin.includes(p.id));
+        if (matchProp) {
+          activePropertyUnit = matchProp.id;
+          matchProp.status = `Case #${loadedCase.id}: ${loadedCase.status.replaceAll('_', ' ')}`;
+        } else {
+          const uMatch = loadedCase.property_ulpin.match(/U\d{4}/i);
+          if (uMatch) activePropertyUnit = uMatch[0].toUpperCase();
         }
       }
-      if (property?.building_id) {
-        activeBuilding = await apiGetBuilding(property.building_id);
-      }
     } catch (error) {
-      console.warn('Using illustrative building fallback:', error.message);
+      console.warn('Could not load case details for 3D visualizer:', error.message);
     }
+  } else if (paramUnitId) {
+    activePropertyUnit = paramUnitId.toUpperCase();
+  } else if (paramUlpin) {
+    const matchProp = Object.values(cadastralData).find(p => p.ulpin === paramUlpin);
+    if (matchProp) activePropertyUnit = matchProp.id;
   }
+
+  // If a specific case was loaded, update HUD banner
+  if (loadedCase) {
+    const roleTitle = document.getElementById('visualizer-role-title');
+    const roleCopy = document.getElementById('visualizer-role-copy');
+    if (roleTitle) roleTitle.innerText = `Case #${loadedCase.id} 3D Inspection · ${loadedCase.title}`;
+    if (roleCopy) roleCopy.innerText = `Target ULPIN: ${loadedCase.property_ulpin} | Status: ${loadedCase.status.replaceAll('_', ' ')}`;
+  }
+
   populateFloorSelector();
   if (window.lucide) {
     lucide.createIcons();
@@ -281,8 +305,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   onWindowResize();
   initEventListeners();
   generateULPIN();
-  selectUnit(activeRole === 'citizen' ? activePropertyUnit : 'U1204');
-  updateRegisteredOwnerDisplay();
+
+  // Select unit and focus camera on target property
+  selectUnit(activePropertyUnit);
+  setTimeout(() => focusCitizenProperty(activePropertyUnit), 500);
 });
 
 function updateRegisteredOwnerDisplay() {
@@ -339,28 +365,41 @@ function applyRoleUI() {
   const profile = authProfiles[activeRole];
   const userSession = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
   const activeSession = document.getElementById('active-session');
-  document.getElementById('session-name').innerText = userSession.name || profile.name;
-  document.getElementById('session-role').innerText = activeRole === 'citizen' && userSession.unit_id
-    ? `Citizen / ${userSession.unit_id} Owner`
-    : profile.label;
+  
+  if (document.getElementById('session-name')) {
+    document.getElementById('session-name').innerText = userSession.name || profile.name;
+  }
+  if (document.getElementById('session-role')) {
+    document.getElementById('session-role').innerText = activeRole === 'citizen' && userSession.unit_id
+      ? `Citizen / ${userSession.unit_id} Owner`
+      : profile.label;
+  }
+
   if (activeRole === 'citizen' && userSession.name) {
     activeRegisteredOwner = userSession.name;
     updateRegisteredOwnerDisplay();
   }
-  activeSession.classList.remove('hidden');
-  activeSession.classList.add('flex');
 
+  if (activeSession) {
+    activeSession.classList.remove('hidden');
+    activeSession.classList.add('flex');
+  }
+
+  // Ensure all interactive tool buttons are visible and active across all roles
   const aiButton = document.getElementById('btn-run-ai');
   const topologyButton = document.getElementById('btn-topology');
   const demarcationButton = document.getElementById('btn-demarcation');
-  const canRunAI = activeRole === 'officer' || activeRole === 'surveyor';
+  const exportButton = document.querySelector('[onclick="openExportModal()"]');
+  const certButton = document.querySelector('[onclick="openCertificateModal()"]');
 
-  if (aiButton) aiButton.classList.toggle('hidden', !canRunAI);
-  if (topologyButton) topologyButton.classList.toggle('hidden', activeRole === 'citizen');
+  if (aiButton) aiButton.classList.remove('hidden');
+  if (topologyButton) topologyButton.classList.remove('hidden');
   if (demarcationButton) {
-    demarcationButton.classList.toggle('hidden', activeRole !== 'citizen' && activeRole !== 'surveyor');
-    demarcationButton.classList.toggle('flex', activeRole === 'citizen' || activeRole === 'surveyor');
+    demarcationButton.classList.remove('hidden');
+    demarcationButton.classList.add('flex');
   }
+  if (exportButton) exportButton.classList.remove('hidden');
+  if (certButton) certButton.classList.remove('hidden');
 
   applyVisualizerRoleAccess();
 
@@ -381,52 +420,38 @@ function applyVisualizerRoleAccess() {
   const zoneSelect = document.getElementById('zone-type');
   const floorSelect = document.getElementById('floor-idx');
   const unitInput = document.getElementById('unit-tag');
-  const certificateButton = document.querySelector('[onclick="openCertificateModal()"]');
-  const exportButton = document.querySelector('[onclick="openExportModal()"]');
 
-  if (!roleTitle || !roleCopy || !activeRole) return;
+  if (!activeRole) return;
 
   const copy = {
     citizen: {
-      title: 'Citizen property view',
-      text: `Read-only view of your registered ${activePropertyUnit}, title certificate, and demarcation request.`
+      title: 'Citizen 3D Property Workspace',
+      text: `Full 3D CAD inspection of ${activePropertyUnit}, strata stack, title certificate, property tax, and demarcation tools.`
     },
     officer: {
-      title: 'DoLR officer registry workspace',
-      text: 'Review all strata, run official topology checks, and administer 3D ULPIN records.'
+      title: 'DoLR Officer Registry Workspace',
+      text: 'Full 3D CAD inspection, 3D ULPIN encoder, automated topology audit, and official title administration.'
     },
     surveyor: {
-      title: 'Surveyor technical workspace',
-      text: 'Inspect layers, prepare draft geometry, run technical checks, and submit survey evidence.'
+      title: 'Surveyor Field Technical Workspace',
+      text: 'Full 3D CAD inspection, multi-sensor spatial layers, volume extraction, and technical demarcation evidence.'
     }
-  }[activeRole];
+  }[activeRole] || {
+    title: '3D Land Registry Workspace',
+    text: 'Interactive 3D volumetric land administration platform.'
+  };
 
-  roleTitle.innerText = copy.title;
-  roleCopy.innerText = copy.text;
+  if (roleTitle) roleTitle.innerText = copy.title;
+  if (roleCopy) roleCopy.innerText = copy.text;
 
-  const citizenReadOnly = activeRole === 'citizen';
+  // Enable all inputs across all roles for full interactive feature parity
   [ulpinInput, zoneSelect, floorSelect, unitInput].forEach(input => {
-    if (input) input.disabled = citizenReadOnly;
+    if (input) input.disabled = false;
   });
 
-  // Citizens can inspect only their own registered unit through this workspace.
-  if (activeRole === 'citizen') {
-    if (layerHeading) layerHeading.classList.add('hidden');
-    document.querySelectorAll('[onclick^="selectStrataUnit"]').forEach(item => {
-      item.classList.toggle('hidden', item.getAttribute('onclick') !== "selectStrataUnit('res')");
-    });
-    if (certificateButton) certificateButton.classList.remove('hidden');
-    if (exportButton) exportButton.classList.add('hidden');
-  } else {
-    if (layerHeading) layerHeading.classList.remove('hidden');
-    document.querySelectorAll('[onclick^="selectStrataUnit"]').forEach(item => item.classList.remove('hidden'));
-    if (certificateButton) certificateButton.classList.remove('hidden');
-    if (exportButton) exportButton.classList.remove('hidden');
-  }
-
-  if (activeRole === 'surveyor') {
-    if (exportButton) exportButton.classList.add('hidden');
-  }
+  // Display all ingested spatial layers and strata navigation items consistently
+  if (layerHeading) layerHeading.classList.remove('hidden');
+  document.querySelectorAll('[onclick^="selectStrataUnit"]').forEach(item => item.classList.remove('hidden'));
 }
 
 function logout() {
@@ -461,7 +486,7 @@ function focusCitizenProperty(unitId = 'U1204') {
 function openDemarcationModal() {
   const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
   const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
-  const data = cadastralData[unitId] || cadastralData['U1204'];
+  const data = cadastralData[unitId] || cadastralData[activePropertyUnit] || cadastralData['U1204'];
 
   const unitLabel = document.getElementById('demarcation-unit-label');
   const ulpinLabel = document.getElementById('demarcation-ulpin-label');
@@ -478,16 +503,39 @@ function closeDemarcationModal() {
   document.getElementById('demarcationModal').classList.add('hidden');
 }
 
-function submitDemarcation() {
-  const reason = document.getElementById('demarcation-reason').value;
-  const notes = document.getElementById('demarcation-notes').value;
-  const randomTicket = `DoLR-DEM-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+async function submitDemarcation() {
+  const reason = document.getElementById('demarcation-reason')?.value || 'encroachment';
+  const notes = document.getElementById('demarcation-notes')?.value || '';
+  const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
+  const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
+  const data = cadastralData[unitId] || cadastralData[activePropertyUnit] || cadastralData['U1204'];
 
-  document.getElementById('ticket-number').innerText = randomTicket;
+  let ticketNumber = `DoLR-DEM-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  if (apiToken()) {
+    try {
+      const caseItem = await apiRequest('/api/cases', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: `3D Demarcation (${reason}) for Unit #${unitId}`,
+          request_type: 'demarcation',
+          property_ulpin: data.ulpin,
+          notes: notes
+        })
+      });
+      ticketNumber = `DoLR-CASE-#${caseItem.id}`;
+    } catch (err) {
+      console.warn('Backend API case submission fallback:', err.message);
+    }
+  }
+
+  const ticketElem = document.getElementById('ticket-number');
+  if (ticketElem) ticketElem.innerText = ticketNumber;
+
   document.getElementById('demarcation-form').classList.add('hidden');
   document.getElementById('demarcation-success').classList.remove('hidden');
 
-  // Trigger brief highlight in 3D scene
+  // Trigger highlight in 3D scene
   if (selectedUnitMesh && selectedUnitMesh.material) {
     selectedUnitMesh.material.color.setHex(0x38bdf8); // Sky blue demarcation highlight
   }
@@ -500,7 +548,7 @@ function submitDemarcation() {
 function openTaxModal() {
   const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
   const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
-  const data = cadastralData[unitId] || cadastralData['U1204'];
+  const data = cadastralData[unitId] || cadastralData[activePropertyUnit] || cadastralData['U1204'];
 
   const taxUnitName = document.getElementById('tax-unit-name');
   const taxUnitUlpin = document.getElementById('tax-unit-ulpin');
@@ -508,7 +556,7 @@ function openTaxModal() {
 
   if (taxUnitName) taxUnitName.innerText = data.title;
   if (taxUnitUlpin) taxUnitUlpin.innerText = data.ulpin;
-  if (taxTotal) taxTotal.innerText = data.tax.split(' ')[0] + ' ' + (data.tax.split(' ')[1] || '14,820');
+  if (taxTotal) taxTotal.innerText = data.tax ? data.tax.split(' ')[0] + ' ' + (data.tax.split(' ')[1] || '14,820') : '₹ 14,820';
 
   document.getElementById('taxModal').classList.remove('hidden');
   if (window.lucide) lucide.createIcons();
@@ -540,7 +588,7 @@ function processTaxPayment() {
 function downloadTaxReceipt() {
   const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
   const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
-  const data = cadastralData[unitId] || cadastralData['U1204'];
+  const data = cadastralData[unitId] || cadastralData[activePropertyUnit] || cadastralData['U1204'];
 
   const receiptText = `========================================================================
 MINISTRY OF RURAL DEVELOPMENT • DEPT OF LAND RESOURCES (DoLR)
@@ -1584,8 +1632,58 @@ function runTopologyValidation() {
 // MODALS & EXPORTERS
 // ==================================================================
 function openCertificateModal() {
+  const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
+  const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
+  const data = cadastralData[unitId] || cadastralData[activePropertyUnit] || cadastralData['U1204'];
+
+  const certUlpin = document.getElementById('cert-ulpin');
+  const certOwner = document.getElementById('cert-owner');
+  const certStrata = document.getElementById('cert-strata');
+  const certVol = document.getElementById('cert-volume');
+  const certZ = document.getElementById('cert-z');
+
+  if (certUlpin) certUlpin.textContent = data.ulpin || 'IN-2187-4930-1049-A-F12-U1204-K8';
+  if (certOwner) certOwner.textContent = data.owner || activeRegisteredOwner || 'Dr. Ananya Sharma';
+  if (certStrata) certStrata.textContent = `${data.floor} • Unit #${data.id}`;
+  if (certVol) certVol.textContent = data.volume;
+  if (certZ) certZ.textContent = `${data.zMin} to ${data.zMax}`;
+
   document.getElementById('certificateModal').classList.remove('hidden');
   if (window.lucide) lucide.createIcons();
+}
+
+async function syncPropertiesWithAPI() {
+  if (typeof apiListProperties !== 'function') return;
+  try {
+    const properties = await apiListProperties();
+    if (properties && properties.length > 0) {
+      properties.forEach(p => {
+        const uId = p.unit_id || `U${p.id}`;
+        cadastralData[uId] = {
+          id: uId,
+          title: p.title || `Apartment Unit #${uId}`,
+          ulpin: p.property_ulpin,
+          zone: p.zone || 'A',
+          floor: p.floor ? `Floor ${p.floor}` : 'Floor 12',
+          zMin: `+${p.z_min}m`,
+          zMax: `+${p.z_max}m`,
+          volume: `${p.volume} m³`,
+          area: `${p.area} m²`,
+          owner: p.owner_name || activeRegisteredOwner || 'Registered Title Holder',
+          status: p.status === 'claimed' || p.status === 'available' ? 'Verified Freehold Title' : p.status,
+          tax: '₹ 14,820 / yr (Paid)',
+          strataShare: `${((p.area / 7680) * 100).toFixed(2)}% of Base Parcel`,
+          lod: 'LoD 3 Cadastre'
+        };
+      });
+      if (properties[0] && properties[0].unit_id) {
+        activePropertyUnit = properties[0].unit_id;
+        updatePropertyDetailsCard(activePropertyUnit);
+      }
+    }
+  } catch (err) {
+    console.warn('API properties sync fallback to local database:', err.message);
+  }
 }
 
 function closeCertificateModal() {

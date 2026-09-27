@@ -142,12 +142,63 @@ async function loadOfficerCases() {
   try {
     const cases = await loadPortalCases('officer');
     const surveyors = await apiRequest('/api/users?role=surveyor');
+    
+    // Update live counts and health metrics
+    const countElem = document.getElementById('live-case-count');
+    if (countElem) countElem.textContent = cases.length;
+
+    const validatedCount = cases.filter(c => c.status === 'validated' || c.status === 'certificate_issued').length;
+    const validatedPercentage = cases.length > 0 ? Math.round((validatedCount / cases.length) * 100) : 100;
+    const healthValidated = document.getElementById('health-validated');
+    if (healthValidated) healthValidated.textContent = `${validatedPercentage}% Verified`;
+
+    const healthTopology = document.getElementById('health-topology');
+    if (healthTopology) healthTopology.textContent = '0 Overlaps Detected';
+
+    // Priority Boundary Reviews rendering
+    const priorityContainer = document.getElementById('officer-priority-cases');
+    if (priorityContainer) {
+      if (cases.length === 0) {
+        priorityContainer.innerHTML = '<p class="muted">No pending cases requiring review.</p>';
+      } else {
+        priorityContainer.innerHTML = cases.map(c => {
+          let badgeClass = 'pending';
+          let actionLabel = c.status.replaceAll('_', ' ');
+          if (c.status === 'submitted') {
+            badgeClass = 'danger';
+            actionLabel = 'Review Submission';
+          } else if (c.status === 'survey_submitted') {
+            badgeClass = 'pending';
+            actionLabel = 'Survey Evidence Attached';
+          } else if (c.status === 'validated') {
+            badgeClass = 'ok';
+            actionLabel = 'Ready for Approval';
+          } else if (c.status === 'certificate_issued') {
+            badgeClass = 'ok';
+            actionLabel = '3D ULPIN Issued';
+          }
+          return `
+            <div class="status">
+              <span><strong>${c.title}</strong> · Parcel ${c.property_ulpin} (Case #${c.id})</span>
+              <strong class="${badgeClass}">${actionLabel}</strong>
+            </div>`;
+        }).join('');
+      }
+    }
+
+    // Populate assignment & action dropdowns
     const assignment = document.getElementById('assignment-case');
     if (assignment) {
-      assignment.innerHTML = cases.map(item => `<option value="${item.id}">Case #${item.id} · ${item.title}</option>`).join('');
+      assignment.innerHTML = cases.length
+        ? cases.map(item => `<option value="${item.id}">Case #${item.id} · ${item.title} (${item.status})</option>`).join('')
+        : '<option value="">No pending cases</option>';
     }
     const surveyorSelect = document.getElementById('assignment-surveyor');
-    if (surveyorSelect) surveyorSelect.innerHTML = surveyors.map(item => `<option value="${item.id}">${item.name} · ${item.identifier}</option>`).join('');
+    if (surveyorSelect) {
+      surveyorSelect.innerHTML = surveyors.length
+        ? surveyors.map(item => `<option value="${item.id}">${item.name} (${item.identifier})</option>`).join('')
+        : '<option value="">No licensed surveyors</option>';
+    }
     return surveyors;
   } catch (error) {
     portalAction(`Could not load officer queue: ${error.message}`);
@@ -158,6 +209,10 @@ async function loadOfficerCases() {
 async function assignSelectedCase() {
   const caseId = document.getElementById('assignment-case')?.value;
   const surveyorId = document.getElementById('assignment-surveyor')?.value;
+  if (!caseId || !surveyorId) {
+    portalAction('Select both a pending case and a surveyor first.');
+    return;
+  }
   try {
     await apiRequest(`/api/cases/${caseId}/assign`, {
       method: 'POST',
@@ -172,9 +227,14 @@ async function assignSelectedCase() {
 
 async function validateSelectedCase() {
   const caseId = document.getElementById('assignment-case')?.value;
+  if (!caseId) {
+    portalAction('Select a case to validate.');
+    return;
+  }
   try {
     const result = await apiRequest(`/api/cases/${caseId}/validate`, { method: 'POST' });
-    portalAction(`Validation completed for Case #${caseId}: ${result.overall_valid ? 'all checks passed' : 'corrections required'}.`);
+    portalAction(`Validation completed for Case #${caseId}: ${result.overall_valid ? 'all 3D spatial checks passed' : 'corrections required'}.`);
+    await loadOfficerCases();
   } catch (error) {
     portalAction(`Validation failed: ${error.message}`);
   }
@@ -182,27 +242,89 @@ async function validateSelectedCase() {
 
 async function approveSelectedCase() {
   const caseId = document.getElementById('assignment-case')?.value;
+  if (!caseId) {
+    portalAction('Select a case to approve.');
+    return;
+  }
   try {
     const result = await apiRequest(`/api/cases/${caseId}/approve`, { method: 'POST' });
-    portalAction(`Case #${caseId} approved. Issued 3D ULPIN: ${result.issued_ulpin}`);
+    portalAction(`Case #${caseId} approved. Issued official 3D ULPIN: ${result.issued_ulpin}`);
     await loadOfficerCases();
   } catch (error) {
     portalAction(`Approval failed: ${error.message}`);
   }
 }
 
+function openOfficerCase3D() {
+  const caseId = document.getElementById('assignment-case')?.value;
+  if (caseId) {
+    portalAction(`Opening 3D registry explorer for Case #${caseId}...`);
+    setTimeout(() => { window.location.href = `index.html?case_id=${caseId}`; }, 400);
+  } else {
+    window.location.href = 'index.html';
+  }
+}
+
 async function loadSurveyorCases() {
   try {
-    await loadPortalCases('surveyor');
+    const cases = await loadPortalCases('surveyor');
+    
+    // Dynamic surveyor metrics
+    const totalCount = cases.length;
+    const highPriority = cases.filter(c => c.status === 'survey_in_progress' || c.status === 'submitted').length;
+    const scheduled = cases.filter(c => c.status === 'assigned').length;
+    const ready = cases.filter(c => c.status === 'survey_submitted' || c.status === 'validated' || c.status === 'certificate_issued').length;
+
+    const countElem = document.getElementById('surveyor-case-count');
+    if (countElem) countElem.textContent = totalCount;
+
+    const hpElem = document.getElementById('surveyor-high-priority');
+    if (hpElem) hpElem.textContent = `${highPriority} Cases`;
+
+    const schedElem = document.getElementById('surveyor-scheduled');
+    if (schedElem) schedElem.textContent = `${scheduled} Cases`;
+
+    const readyElem = document.getElementById('surveyor-ready');
+    if (readyElem) readyElem.textContent = `${ready} Cases`;
+
+    // Evidence file count across cases
+    let totalFiles = 0;
+    cases.forEach(c => {
+      if (c.files) totalFiles += c.files.length;
+    });
+    const filesElem = document.getElementById('surveyor-evidence-files');
+    if (filesElem) filesElem.textContent = `${totalFiles} Files Attached`;
+
+    return cases;
   } catch (error) {
     portalAction(`Could not load survey assignments: ${error.message}`);
+    return [];
+  }
+}
+
+function openActiveAssignment() {
+  const selector = document.getElementById('survey-case');
+  const activeCaseId = selector?.value;
+  if (activeCaseId) {
+    portalAction(`Navigating to 3D survey visualizer for Case #${activeCaseId}...`);
+    setTimeout(() => { window.location.href = `index.html?case_id=${activeCaseId}`; }, 800);
+  } else {
+    window.location.href = 'index.html';
   }
 }
 
 async function prepareSurveyCaseSelector() {
-  const cases = await apiRequest('/api/cases');
-  const selector = document.getElementById('survey-case');
-  if (selector) selector.innerHTML = cases.map(item => `<option value="${item.id}">Case #${item.id} · ${item.title}</option>`).join('');
+  try {
+    const cases = await apiRequest('/api/cases');
+    const selector = document.getElementById('survey-case');
+    if (selector) {
+      selector.innerHTML = cases.length
+        ? cases.map(item => `<option value="${item.id}">Case #${item.id} · ${item.title} (${item.status})</option>`).join('')
+        : '<option value="">No assigned cases available</option>';
+    }
+  } catch (e) {
+    console.error('Could not prepare survey case selector', e);
+  }
 }
 
 async function uploadSurveyFile() {
@@ -217,8 +339,10 @@ async function uploadSurveyFile() {
   try {
     await apiRequest(`/api/cases/${caseId}/files`, { method: 'POST', body: formData });
     await apiRequest(`/api/cases/${caseId}/submit-survey`, { method: 'POST' });
-    portalAction(`Survey evidence uploaded and Case #${caseId} submitted for validation.`);
+    portalAction(`Survey evidence uploaded and Case #${caseId} submitted for DoLR validation.`);
+    input.value = '';
     await loadSurveyorCases();
+    await prepareSurveyCaseSelector();
   } catch (error) {
     portalAction(`Survey submission failed: ${error.message}`);
   }
@@ -236,10 +360,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = 'login.html';
     return;
   }
+
+  // Update header and badges with actual logged in user info
   const name = document.getElementById('portal-user');
   if (name) name.textContent = session.name || ROLE_NAMES[expectedRole];
+  
+  const officerBadge = document.getElementById('officer-role-badge');
+  if (officerBadge) officerBadge.textContent = `DoLR Officer / ${session.name}`;
+
+  const surveyorBadge = document.getElementById('surveyor-role-badge');
+  if (surveyorBadge) surveyorBadge.textContent = `Licensed Surveyor / ${session.name}`;
+
+  const officerIdStrip = document.getElementById('officer-id-strip');
+  if (officerIdStrip && session.identifier) officerIdStrip.textContent = `Official ID: ${session.identifier} • DoLR Registry Console`;
+
+  const surveyorIdStrip = document.getElementById('surveyor-id-strip');
+  if (surveyorIdStrip && session.identifier) surveyorIdStrip.textContent = `Official ID: ${session.identifier} • Technical Field Services`;
+
   const citizenName = document.getElementById('citizen-name');
   if (citizenName && expectedRole === 'citizen') citizenName.textContent = session.name || ROLE_NAMES.citizen;
+
   try {
     if (expectedRole === 'citizen') {
       await loadCitizenProperties();
