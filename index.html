@@ -617,31 +617,31 @@
 
         <div>
           <h2 class="text-base font-black text-gov-navy">Export 3D Cadastral Datasets</h2>
-          <p class="text-xs text-gov-ink-muted font-medium">Standardized Interoperable Formats (ISO & OGC)</p>
+          <p class="text-xs text-gov-ink-muted font-medium">Interoperable cadastral data exports</p>
         </div>
       </div>
 
       <div class="space-y-3 text-xs">
         <button onclick="downloadCityGML()" class="w-full p-3 bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue flex justify-between items-center transition group text-left shadow-sm">
           <div>
-            <span class="font-bold text-gov-navy group-hover:text-gov-blue block">OGC CityGML 3.0 (LoD-3 Building Polyhedrons)</span>
-            <span class="text-[10px] text-gov-ink-muted">XML format including interior room geometries and 3D ULPIN tags.</span>
+            <span class="font-bold text-gov-navy group-hover:text-gov-blue block">OGC CityGML 3.0 Building and Apartment Solid</span>
+            <span class="text-[10px] text-gov-ink-muted">Includes an illustrative LOD1 apartment solid in local model coordinates; it is not georeferenced or surveyed.</span>
           </div>
           <i data-lucide="file-code" class="w-5 h-5 text-gov-blue"></i>
         </button>
 
         <button onclick="downloadLADM()" class="w-full p-3 bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue flex justify-between items-center transition group text-left shadow-sm">
           <div>
-            <span class="font-bold text-gov-navy group-hover:text-gov-blue block">ISO 19152 (LADM v2) Cadastre JSON</span>
-            <span class="text-[10px] text-gov-ink-muted">Standardized land administration domain model with 3D spatial units.</span>
+            <span class="font-bold text-gov-navy group-hover:text-gov-blue block">LADM v2-Aligned Application JSON</span>
+            <span class="text-[10px] text-gov-ink-muted">Project-specific JSON representation of 3D spatial units; ISO 19152 does not define this JSON serialization.</span>
           </div>
           <i data-lucide="file-json" class="w-5 h-5 text-gov-blue"></i>
         </button>
 
-        <button onclick="downloadGeoJSON3D()" class="w-full p-3 bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue flex justify-between items-center transition group text-left shadow-sm">
+        <button onclick="downloadGeoJSONFootprint()" class="w-full p-3 bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue flex justify-between items-center transition group text-left shadow-sm">
           <div>
-            <span class="font-bold text-gov-navy group-hover:text-gov-blue block">3D GeoJSON / PostGIS 3D Polyhedrons</span>
-            <span class="text-[10px] text-gov-ink-muted">Compatible with QGIS 3D, ArcGIS Pro, and PostGIS databases.</span>
+            <span class="font-bold text-gov-navy group-hover:text-gov-blue block">RFC 7946 GeoJSON Footprint and Elevation Bounds</span>
+            <span class="text-[10px] text-gov-ink-muted">WGS 84 footprint with vertical bounds in properties; GeoJSON geometry does not encode a PostGIS solid.</span>
           </div>
           <i data-lucide="database" class="w-5 h-5 text-gov-blue"></i>
         </button>
@@ -829,6 +829,6 @@
 
   <!-- Custom JavaScript -->
   <script src="api.js?v=6"></script>
-  <script src="script.js?v=6"></script>
+  <script src="script.js?v=10"></script>
 </body>
 </html>

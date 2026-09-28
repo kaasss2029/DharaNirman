@@ -1708,49 +1708,161 @@ function downloadFile(content, fileName, mimeType) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportUnitDetails() {
+  const unitId = document.getElementById('unit-tag')?.value || activePropertyUnit || 'U1204';
+  const unit = cadastralData[unitId] || cadastralData.U1204;
+  const parseMeasurement = (value, fallback) => {
+    const measurement = Number.parseFloat(String(value).replace(',', '.'));
+    return Number.isFinite(measurement) ? measurement : fallback;
+  };
+  return {
+    unitId: unit.id,
+    title: unit.title,
+    ulpin: unit.ulpin,
+    floor: parseMeasurement(unit.floor, 12),
+    zMin: parseMeasurement(unit.zMin, 36.5),
+    zMax: parseMeasurement(unit.zMax, 39.8),
+    volumeM3: parseMeasurement(unit.volume, 384.2),
+    owner: unit.owner
+  };
+}
+
+function escapeXml(value) {
+  return String(value).replace(/[<>&'"]/g, character => ({
+    '<': '&lt;',
+    '>': '&gt;',
+    '&': '&amp;',
+    "'": '&apos;',
+    '"': '&quot;'
+  })[character]);
+}
+
+function apartmentSolidFaces(unit) {
+  const unitId = unit.unitId.toUpperCase();
+  const unitNumber = Number.parseInt(unitId.slice(-2), 10);
+  const halfSize = 3.8;
+  const positiveX = unitNumber === 3 || unitNumber === 4;
+  const positiveZ = unitNumber === 1 || unitNumber === 4;
+  const centerX = positiveX ? 4 : -4;
+  const centerZ = positiveZ ? 4 : -4;
+  const xMin = centerX - halfSize;
+  const xMax = centerX + halfSize;
+  const zMin = centerZ - halfSize;
+  const zMax = centerZ + halfSize;
+  const bottom = unit.zMin;
+  const top = unit.zMax;
+
+  return [
+    [[xMin, bottom, zMin], [xMax, bottom, zMin], [xMax, bottom, zMax], [xMin, bottom, zMax], [xMin, bottom, zMin]],
+    [[xMin, top, zMin], [xMin, top, zMax], [xMax, top, zMax], [xMax, top, zMin], [xMin, top, zMin]],
+    [[xMin, bottom, zMin], [xMin, top, zMin], [xMax, top, zMin], [xMax, bottom, zMin], [xMin, bottom, zMin]],
+    [[xMax, bottom, zMin], [xMax, top, zMin], [xMax, top, zMax], [xMax, bottom, zMax], [xMax, bottom, zMin]],
+    [[xMax, bottom, zMax], [xMax, top, zMax], [xMin, top, zMax], [xMin, bottom, zMax], [xMax, bottom, zMax]],
+    [[xMin, bottom, zMax], [xMin, top, zMax], [xMin, top, zMin], [xMin, bottom, zMin], [xMin, bottom, zMax]]
+  ];
 }
 
 function downloadCityGML() {
+  const unit = exportUnitDetails();
+  const unitId = escapeXml(unit.ulpin.replace(/[^A-Za-z0-9_.-]/g, '_'));
+  const apartmentFaces = apartmentSolidFaces(unit).map(face => `              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">${face.flat().join(' ')}</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>`).join('\n');
   const cityGMLContent = `<?xml version="1.0" encoding="UTF-8"?>
-<CityModel xmlns="http://www.opengis.net/citygml/3.0"
+<core:CityModel xmlns:core="http://www.opengis.net/citygml/3.0"
            xmlns:bldg="http://www.opengis.net/citygml/building/3.0"
+           xmlns:gen="http://www.opengis.net/citygml/generics/3.0"
            xmlns:gml="http://www.opengis.net/gml/3.2">
-  <gml:name>3D_ULPIN_Cadastral_Model_2187-4930-1049</gml:name>
-  <cityObjectMember>
+  <gml:name>DharaNirman 3D cadastral building metadata</gml:name>
+  <core:cityObjectMember>
     <bldg:Building gml:id="IN-2187-4930-1049">
       <bldg:class>Residential Condominium</bldg:class>
       <bldg:usage>Multi-Family Strata</bldg:usage>
-      <bldg:measuredHeight uom="m">42.5</bldg:measuredHeight>
-      <bldg:storeysAboveGround>14</bldg:storeysAboveGround>
-      <bldg:storeysBelowGround>2</bldg:storeysBelowGround>
-      <bldg:buildingUnit>
-        <bldg:BuildingUnit gml:id="IN-2187-4930-1049-A-F12-U1204-K8">
-          <bldg:usage>Apartment Unit #1204</bldg:usage>
-          <bldg:owner>Dr. Ananya Sharma</bldg:owner>
-          <bldg:netVolume uom="m3">384.2</bldg:netVolume>
-          <bldg:zElevationMin uom="m">36.5</bldg:zElevationMin>
-          <bldg:zElevationMax uom="m">39.8</bldg:zElevationMax>
+      <bldg:measuredHeight uom="m">${activeBuilding.height_m}</bldg:measuredHeight>
+      <bldg:storeysAboveGround>${activeBuilding.above_ground_floors}</bldg:storeysAboveGround>
+      <bldg:storeysBelowGround>${activeBuilding.basement_levels}</bldg:storeysBelowGround>
+      <bldg:buildingSubdivision>
+        <bldg:BuildingUnit gml:id="${unitId}">
+          <bldg:usage>${escapeXml(unit.title)}</bldg:usage>
+          <core:genericAttribute>
+            <gen:StringAttribute>
+              <gen:name>ulpin3D</gen:name>
+              <gen:value>${escapeXml(unit.ulpin)}</gen:value>
+            </gen:StringAttribute>
+          </core:genericAttribute>
+          <core:genericAttribute>
+            <gen:StringAttribute>
+              <gen:name>titleHolder</gen:name>
+              <gen:value>${escapeXml(unit.owner)}</gen:value>
+            </gen:StringAttribute>
+          </core:genericAttribute>
+          <core:genericAttribute>
+            <gen:StringAttribute>
+              <gen:name>geometryCoordinateSpace</gen:name>
+              <gen:value>Illustrative local model coordinates in meters ordered as x, elevation, z; no geodetic CRS or survey control is assigned.</gen:value>
+            </gen:StringAttribute>
+          </core:genericAttribute>
+          <core:genericAttribute>
+            <gen:DoubleAttribute>
+              <gen:name>volumeM3</gen:name>
+              <gen:value>${unit.volumeM3}</gen:value>
+            </gen:DoubleAttribute>
+          </core:genericAttribute>
+          <core:genericAttribute>
+            <gen:DoubleAttribute>
+              <gen:name>zMinMeters</gen:name>
+              <gen:value>${unit.zMin}</gen:value>
+            </gen:DoubleAttribute>
+          </core:genericAttribute>
+          <core:genericAttribute>
+            <gen:DoubleAttribute>
+              <gen:name>zMaxMeters</gen:name>
+              <gen:value>${unit.zMax}</gen:value>
+            </gen:DoubleAttribute>
+          </core:genericAttribute>
+          <core:lod1Solid>
+            <gml:Solid>
+              <gml:exterior>
+                <gml:Shell>
+${apartmentFaces}
+                </gml:Shell>
+              </gml:exterior>
+            </gml:Solid>
+          </core:lod1Solid>
         </bldg:BuildingUnit>
-      </bldg:buildingUnit>
+      </bldg:buildingSubdivision>
     </bldg:Building>
-  </cityObjectMember>
-</CityModel>`;
+  </core:cityObjectMember>
+</core:CityModel>`;
   downloadFile(cityGMLContent, '3D_ULPIN_Parcel_2187-4930-1049.gml', 'application/xml');
 }
 
 function downloadLADM() {
+  const unit = exportUnitDetails();
   const ladmContent = JSON.stringify({
-    schema: "ISO 19152 LADM Edition 2 - Part 2: 3D Land Administration",
+    standard: "ISO 19152 LADM Edition 2",
+    serializationProfile: "DharaNirman application JSON; not an ISO-defined JSON encoding",
+    dataStatus: "Illustrative prototype data; verify before official use",
     baseParcelULPIN: "2187-4930-1049-S00",
-    spatialReferenceSystem: "EPSG:7755 + Indian Geoid Datum",
+    spatialReferenceSystem: null,
     spatialUnits3D: [
       {
-        ulpin3D: "IN-2187-4930-1049-A-F12-U1204-K8",
+        ulpin3D: unit.ulpin,
+        unitId: unit.unitId,
+        name: unit.title,
         stratumType: "Air/AboveGround",
-        elevationBounds: { zMin: 36.5, zMax: 39.8, uom: "meter" },
-        calculatedVolumeM3: 384.2,
-        titleHolder: "Dr. Ananya Sharma",
+        elevationBounds: { zMin: unit.zMin, zMax: unit.zMax, uom: "meter" },
+        calculatedVolumeM3: unit.volumeM3,
+        titleHolder: unit.owner,
         titleType: "Freehold Strata",
         topologyVerified: true
       },
@@ -1768,31 +1880,36 @@ function downloadLADM() {
   downloadFile(ladmContent, 'LADM_3D_Cadastre_ISO19152.json', 'application/json');
 }
 
-function downloadGeoJSON3D() {
+function downloadGeoJSONFootprint() {
+  const unit = exportUnitDetails();
   const geojson3D = JSON.stringify({
     type: "FeatureCollection",
-    crs: { type: "name", properties: { name: "urn:ogc:def:crs:EPSG::7755" } },
     features: [
       {
         type: "Feature",
         properties: {
-          ulpin: "IN-2187-4930-1049-A-F12-U1204-K8",
-          unit: "Apartment 1204",
-          volumeM3: 384.2,
-          floor: 12,
-          zMin: 36.5,
-          zMax: 39.8
+          coordinateReferenceSystem: "OGC:CRS84",
+          ulpin: unit.ulpin,
+          unitId: unit.unitId,
+          unit: unit.title,
+          owner: unit.owner,
+          volumeM3: unit.volumeM3,
+          floor: unit.floor,
+          zMinMeters: unit.zMin,
+          zMaxMeters: unit.zMax,
+          verticalReference: "Project elevation bounds in meters; not transformed to WGS 84 ellipsoidal height",
+          geometryProvenance: "Illustrative footprint; replace with surveyed coordinates before official use"
         },
         geometry: {
           type: "Polygon",
           coordinates: [
-            [[77.2090, 28.6139, 36.5], [77.2092, 28.6139, 36.5], [77.2092, 28.6141, 36.5], [77.2090, 28.6141, 36.5], [77.2090, 28.6139, 36.5]]
+            [[77.2090, 28.6139], [77.2092, 28.6139], [77.2092, 28.6141], [77.2090, 28.6141], [77.2090, 28.6139]]
           ]
         }
       }
     ]
   }, null, 2);
-  downloadFile(geojson3D, '3D_ULPIN_Polyhedrons.geojson', 'application/geo+json');
+  downloadFile(geojson3D, '3D_ULPIN_Footprint_ElevationBounds.geojson', 'application/geo+json');
 }
 
 // ==================================================================
