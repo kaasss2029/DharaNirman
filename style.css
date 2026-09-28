@@ -208,6 +208,277 @@ input[type="range"]::-webkit-slider-thumb:hover {
   font-family: var(--font-mono);
 }
 
+/* ==================================================================
+   DARK THEME SPECIFICATION (Low Strain & Zero Uncanny Contrast)
+   ================================================================== */
+:root {
+  color-scheme: light dark;
+}
+
+html.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --gov-navy: #0c1829;
+  --gov-navy-dark: #060e1a;
+  --gov-blue: #0284c7;
+  --gov-blue-dark: #0369a1;
+  --gov-blue-light: #0d2238;
+  --gov-bg: #0b111e;
+  --gov-surface: #131d2e;
+  --gov-gray-light: #162236;
+  --gov-gray-cool: #24344d;
+  --gov-gray-border: #384c68;
+  --gov-ink: #f1f5f9;
+  --gov-ink-muted: #94a3b8;
+  --gov-red: #f87171;
+  --gov-amber: #fbbf24;
+  --gov-amber-light: #3a2208;
+  --gov-green: #34d399;
+  --gov-green-light: #063728;
+  --gov-cyan: #38bdf8;
+}
+
+/* Background & Main text */
+html.dark,
+html.dark body {
+  background-color: #0b111e !important;
+  color: #f1f5f9 !important;
+}
+
+/* Header Authority Bar in Dark Mode */
+html.dark header.bg-gov-navy {
+  background-color: #0c1829 !important;
+  border-bottom: 3px solid #0284c7 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Cards and Panels */
+html.dark .gov-card {
+  background: #131d2e !important;
+  border-color: #24344d !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+html.dark .gov-card-inset {
+  background: #101a2b !important;
+  border-color: #24344d !important;
+}
+
+html.dark .gov-panel-sidebar {
+  background: #0f172a !important;
+  border-color: #24344d !important;
+}
+
+/* Inputs, Selects, and Textareas */
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark input[type="password"],
+html.dark select,
+html.dark textarea {
+  background-color: #101a2b !important;
+  border-color: #2e415e !important;
+  color: #f8fafc !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark textarea::placeholder,
+html.dark input::placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.85;
+}
+
+html.dark input[type="text"]:focus,
+html.dark input[type="number"]:focus,
+html.dark input[type="password"]:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #38bdf8 !important;
+}
+
+/* 3D Visualizer Role Workspace Banners (DoLR Officer, Surveyor, Citizen) */
+html.dark #visualizer-role-banner {
+  background-color: rgba(12, 24, 41, 0.95) !important;
+  border-color: rgba(56, 189, 248, 0.5) !important;
+  color: #f1f5f9 !important;
+}
+html.dark #visualizer-role-title {
+  color: #38bdf8 !important;
+}
+html.dark #visualizer-role-copy {
+  color: #cbd5e1 !important;
+}
+
+/* Dark mode scrollbars */
+html.dark ::-webkit-scrollbar-track {
+  background: #0b111e;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #24344d;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
+}
+
+/* Tailored Overrides for Tailwind Utility Classes in Dark Mode */
+html.dark .bg-gov-bg {
+  background-color: #0b111e !important;
+}
+html.dark .bg-gov-gray-light {
+  background-color: #162236 !important;
+}
+html.dark .bg-white {
+  background-color: #131d2e !important;
+  color: #f1f5f9 !important;
+}
+html.dark .text-gov-ink {
+  color: #f1f5f9 !important;
+}
+html.dark .text-gov-ink-muted {
+  color: #94a3b8 !important;
+}
+html.dark .text-gov-navy {
+  color: #e2e8f0 !important;
+}
+html.dark .border-gov-gray-cool {
+  border-color: #24344d !important;
+}
+html.dark .border-gov-gray-border {
+  border-color: #384c68 !important;
+}
+html.dark .border-slate-200 {
+  border-color: #24344d !important;
+}
+
+/* Layer & Category items */
+html.dark label.bg-gov-gray-light:hover {
+  border-color: #38bdf8 !important;
+  background-color: #1a2942 !important;
+}
+
+/* Badges in Dark Mode */
+html.dark .badge-green {
+  background-color: #063728 !important;
+  color: #34d399 !important;
+  border-color: #065f46 !important;
+}
+html.dark .badge-amber {
+  background-color: #3a2208 !important;
+  color: #fbbf24 !important;
+  border-color: #92400e !important;
+}
+html.dark .badge-red {
+  background-color: #3a0e0e !important;
+  color: #f87171 !important;
+  border-color: #991b1b !important;
+}
+html.dark .badge-blue {
+  background-color: #0d2238 !important;
+  color: #38bdf8 !important;
+  border-color: #0369a1 !important;
+}
+
+/* 3D CAD Dock & Overlays */
+html.dark #cadastreCanvasContainer {
+  background-color: #070d18 !important;
+  border-color: #24344d !important;
+}
+html.dark .bg-white\/95 {
+  background-color: rgba(19, 29, 46, 0.95) !important;
+  border-color: #24344d !important;
+  color: #f1f5f9 !important;
+}
+html.dark #result-ulpin {
+  background-color: #0d2238 !important;
+  border-color: #0284c7 !important;
+  color: #7dd3fc !important;
+}
+
+/* Range Sliders */
+html.dark input[type="range"] {
+  background: #1e2c40 !important;
+  border-color: #2e415e !important;
+}
+html.dark input[type="range"]::-webkit-slider-thumb {
+  background: #0284c7 !important;
+  border-color: #38bdf8 !important;
+}
+html.dark input[type="range"]::-moz-range-thumb {
+  background: #0284c7 !important;
+  border-color: #38bdf8 !important;
+}
+
+/* Planning Context Card */
+html.dark #regulation-context-card {
+  background-color: rgba(69, 26, 3, 0.22) !important;
+  border-color: rgba(180, 83, 9, 0.45) !important;
+}
+html.dark #regulation-context-card h2,
+html.dark #regulation-context-card #regulation-jurisdiction {
+  color: #fcd34d !important;
+}
+html.dark #regulation-context-card #regulation-summary,
+html.dark #regulation-context-card p {
+  color: #fde68a !important;
+}
+html.dark #regulation-context-card span {
+  background-color: rgba(19, 29, 46, 0.85) !important;
+  border-color: rgba(180, 83, 9, 0.4) !important;
+  color: #fde68a !important;
+}
+
+/* Strata Stack Navigator Items */
+html.dark #strata-air {
+  background-color: rgba(69, 26, 3, 0.28) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+html.dark #strata-res {
+  background-color: rgba(13, 34, 56, 0.6) !important;
+  border-color: #0284c7 !important;
+}
+html.dark #strata-surface {
+  background-color: rgba(6, 55, 40, 0.28) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+html.dark #strata-b1 {
+  background-color: #162236 !important;
+  border-color: #24344d !important;
+}
+html.dark #strata-metro {
+  background-color: rgba(58, 14, 14, 0.28) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+}
+html.dark #topology-card {
+  background-color: rgba(6, 55, 40, 0.28) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Modals */
+html.dark #certificateModal > div,
+html.dark #exportModal > div,
+html.dark #demarcationModal > div,
+html.dark #taxModal > div {
+  background-color: #131d2e !important;
+  border-color: #24344d !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+}
+html.dark #certificateModal .border-b-2 {
+  border-color: #24344d !important;
+}
+html.dark #certificateModal h2,
+html.dark #certificateModal h3,
+html.dark #exportModal h2,
+html.dark #demarcationModal h2,
+html.dark #taxModal h2 {
+  color: #f1f5f9 !important;
+}
+
+/* Interactive elements transition */
+body, header, aside, section, .gov-card, button, input, select {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
 /* Print Certificate Rules */
 @media print {
   body * {

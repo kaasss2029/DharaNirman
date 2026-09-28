@@ -4,6 +4,58 @@ const ROLE_NAMES = {
   surveyor: 'Neha Kulkarni'
 };
 
+function getTheme() {
+  const saved = localStorage.getItem('dharanirman_theme');
+  if (saved) return saved;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(theme, persist = true) {
+  const isDark = theme === 'dark';
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+
+  const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+  if (metaColorScheme) {
+    metaColorScheme.content = isDark ? 'dark' : 'light';
+  }
+
+  if (persist) {
+    localStorage.setItem('dharanirman_theme', theme);
+  }
+
+  updatePortalThemeButton(isDark);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next, true);
+}
+
+function updatePortalThemeButton(isDark) {
+  const btn = document.getElementById('btn-portal-theme-toggle');
+  if (btn) {
+    btn.innerHTML = isDark 
+      ? '<span style="color:#fbbf24;">☀</span> Light' 
+      : '<span style="color:#38bdf8;">☾</span> Dark';
+    btn.setAttribute('title', isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme');
+  }
+}
+
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('dharanirman_theme')) {
+      applyTheme(e.matches ? 'dark' : 'light', false);
+    }
+  });
+}
+
 function portalLogout() {
   clearApiSession();
   window.location.href = 'login.html';
@@ -426,6 +478,7 @@ async function uploadSurveyFile() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  updatePortalThemeButton(document.documentElement.classList.contains('dark'));
   const expectedRole = document.body.dataset.role;
   let session = null;
   try {

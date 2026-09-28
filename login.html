@@ -4,7 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DharaNirman | Government of India - Secure Cadastral Access Gateway</title>
-  <link rel="stylesheet" href="portal.css?v=5">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('dharanirman_theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="portal.css?v=6">
   <style>
     body {
       background-color: #eaedf1;
@@ -185,7 +201,10 @@
 <body>
   <div class="gov-top-bar">
     <span>Government of India • Ministry of Rural Development</span>
-    <span class="font-mono">DoLR PS ID: 26011 • ISO 19152 LADM v2</span>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="font-mono">DoLR PS ID: 26011 • ISO 19152 LADM v2</span>
+      <button class="btn btn-light" id="btn-portal-theme-toggle" onclick="toggleTheme()" style="padding:2px 8px; font-size:11px;" title="Toggle Theme"><span style="color:#38bdf8;">☾</span> Dark</button>
+    </div>
   </div>
 
   <div class="login-container">

@@ -11,7 +11,7 @@ let clickableUnits = [];
 let hoveredUnit = null;
 let selectedUnitMesh = null;
 let currentViewMode = '3d'; // '3d' or 'cross'
-let isAutoRotating = false;
+let isAutoRotating = true;
 let isWireframeMode = false;
 let clippingPlane;
 let activeRole = null;
@@ -87,6 +87,77 @@ const authProfiles = {
   officer: { name: 'R. K. Iyer (DoLR)', label: 'DoLR Registry Officer', copy: 'Review submissions, run AI 3D building extraction, validate topology, and issue official 3D ULPIN titles.' },
   surveyor: { name: 'Neha Kulkarni', label: 'Licensed Surveyor (SoI)', copy: 'Upload LiDAR survey data, inspect strata boundaries, and submit field demarcation results.' }
 };
+
+function getTheme() {
+  const saved = localStorage.getItem('dharanirman_theme');
+  if (saved) return saved;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(theme, persist = true) {
+  const isDark = theme === 'dark';
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+
+  const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+  if (metaColorScheme) {
+    metaColorScheme.content = isDark ? 'dark' : 'light';
+  }
+
+  if (persist) {
+    localStorage.setItem('dharanirman_theme', theme);
+  }
+
+  updateThemeButton(isDark);
+  updateThreeTheme(isDark);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next, true);
+}
+
+function updateThemeButton(isDark) {
+  const btn = document.getElementById('btn-theme-toggle');
+  const label = document.getElementById('theme-label');
+  const icon = document.getElementById('icon-theme');
+  if (label) {
+    label.textContent = isDark ? 'Light' : 'Dark';
+  }
+  if (icon) {
+    icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+    icon.className = isDark ? 'w-3.5 h-3.5 text-amber-300' : 'w-3.5 h-3.5 text-cyan-300';
+    if (window.lucide && window.lucide.createIcons) {
+      window.lucide.createIcons();
+    }
+  }
+  if (btn) {
+    btn.setAttribute('title', isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme');
+  }
+}
+
+function updateThreeTheme(isDark) {
+  if (!scene) return;
+  const bgColor = isDark ? 0x0c1524 : 0xb9d5e6;
+  scene.background = new THREE.Color(bgColor);
+  if (scene.fog) {
+    scene.fog.color = new THREE.Color(bgColor);
+  }
+}
+
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('dharanirman_theme')) {
+      applyTheme(e.matches ? 'dark' : 'light', false);
+    }
+  });
+}
 
 function propertyFloorCode(floor) {
   const match = String(floor || '').match(/(\d+)/);
@@ -298,6 +369,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   populateFloorSelector();
+  updateThemeButton(document.documentElement.classList.contains('dark'));
   if (window.lucide) {
     lucide.createIcons();
   }
@@ -678,9 +750,11 @@ function initThreeJS() {
   const height = container.clientHeight || 550;
 
   // Scene Setup
+  const isDark = document.documentElement.classList.contains('dark');
+  const bgColor = isDark ? 0x0c1524 : 0xb9d5e6;
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xb9d5e6);
-  scene.fog = new THREE.Fog(0xb9d5e6, 85, 190);
+  scene.background = new THREE.Color(bgColor);
+  scene.fog = new THREE.Fog(bgColor, 85, 190);
 
   // Camera Setup
   camera = new THREE.PerspectiveCamera(45, width / height, 0.5, 1000);
@@ -706,6 +780,8 @@ function initThreeJS() {
   controls.minDistance = 10;
   controls.maxDistance = 180;
   controls.target.set(0, 10, 0);
+  controls.autoRotate = isAutoRotating;
+  controls.autoRotateSpeed = 2.0;
 
   // Clipping Plane for Dynamic Strata Slicing
   clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 65);
@@ -1571,6 +1647,8 @@ function resetCamera() {
   controls.reset();
   camera.position.set(38, 42, 48);
   controls.target.set(0, 10, 0);
+  controls.autoRotate = isAutoRotating;
+  controls.autoRotateSpeed = 2.0;
 }
 
 function toggleWireframe() {

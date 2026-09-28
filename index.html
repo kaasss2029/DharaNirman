@@ -5,10 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>DharaNirman | 3D ULPIN & Volumetric Land Administration</title>
 
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('dharanirman_theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
@@ -49,7 +67,7 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
   <!-- Custom Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="style.css?v=4" />
 </head>
 <body class="bg-gov-bg text-gov-ink min-h-screen flex flex-col antialiased overflow-x-hidden">
 
@@ -90,6 +108,12 @@
         </span>
         <span id="txt-cors-status">SoI CORS Network: <strong>ACTIVE</strong> (RTK Fix ±1.2cm)</span>
       </div>
+
+      <!-- Theme Switcher -->
+      <button onclick="toggleTheme()" id="btn-theme-toggle" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3 py-1.5 font-semibold text-xs flex items-center gap-1.5 transition active:scale-95" title="Toggle Light/Dark Theme">
+        <i data-lucide="moon" id="icon-theme" class="w-3.5 h-3.5 text-cyan-300"></i>
+        <span id="theme-label">Dark</span>
+      </button>
 
       <!-- Language Switcher -->
       <button onclick="toggleLanguage()" id="btn-lang-toggle" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3 py-1.5 font-semibold text-xs flex items-center gap-1.5 transition active:scale-95" title="Switch Language / भाषा बदलें">
