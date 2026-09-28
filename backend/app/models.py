@@ -145,6 +145,12 @@ class WorkflowCase(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+    citizen: Mapped[Optional["User"]] = relationship("User", foreign_keys=[citizen_id], lazy="joined")
+
+    @property
+    def citizen_name(self) -> Optional[str]:
+        return self.citizen.name if self.citizen else None
+
 
 class CaseEvent(Base):
     __tablename__ = "case_events"

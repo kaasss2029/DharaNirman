@@ -1,0 +1,431 @@
+%PDF-1.4
+%����
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>
+endobj
+5 0 obj
+<< /Length 2202 >>
+stream
+1.00 w 1.000 1.000 1.000 rg 0.00 0.00 960.00 540.00 re f
+BT /F2 24.00 Tf 0.118 0.161 0.231 rg 1 0 0 1 380.00 491.00 Tm (SMART INDIA HACKATHON) Tj ET
+BT /F2 24.00 Tf 0.118 0.161 0.231 rg 1 0 0 1 540.00 461.00 Tm (2026) Tj ET
+1.50 w 0.976 0.451 0.086 RG 1.000 0.969 0.929 rg 50.00 440.00 80.00 80.00 re B
+BT /F2 18.00 Tf 0.976 0.451 0.086 rg 1 0 0 1 75.96 474.00 Tm (SIH) Tj ET
+BT /F2 12.00 Tf 0.063 0.725 0.506 rg 1 0 0 1 77.52 458.00 Tm (2026) Tj ET
+BT /F2 15.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 820.00 500.00 Tm (KAASSS2029) Tj ET
+1.00 w 0.796 0.835 0.882 RG 30.00 430.00 m 930.00 430.00 l S
+BT /F2 13.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 60.00 392.00 Tm (Problem Statement ID -) Tj ET
+BT /F2 13.00 Tf 0.118 0.161 0.231 rg 1 0 0 1 320.00 392.00 Tm (PS ID: 26011) Tj ET
+BT /F2 13.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 60.00 356.00 Tm (Problem Statement Title -) Tj ET
+BT /F2 13.00 Tf 0.118 0.161 0.231 rg 1 0 0 1 320.00 356.00 Tm (3D Cadastre & Volumetric Land Administration System \(3D Bhu-Aadhaar\)) Tj ET
+BT /F2 13.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 60.00 320.00 Tm (Theme -) Tj ET
+BT /F1 13.00 Tf 0.118 0.161 0.231 rg 1 0 0 1 320.00 320.00 Tm (Land Administration / Smart Cities & Governance) Tj ET
+BT /F2 13.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 60.00 284.00 Tm (PS Category -) Tj ET
+BT /F1 13.00 Tf 0.118 0.161 0.231 rg 1 0 0 1 320.00 284.00 Tm (Software) Tj ET
+BT /F2 13.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 60.00 248.00 Tm (Team ID -) Tj ET
+BT /F2 13.00 Tf 0.118 0.161 0.231 rg 1 0 0 1 320.00 248.00 Tm (kaasss2029) Tj ET
+BT /F2 13.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 60.00 212.00 Tm (Team Name \(Registered\) -) Tj ET
+BT /F1 13.00 Tf 0.118 0.161 0.231 rg 1 0 0 1 320.00 212.00 Tm (kaasss2029) Tj ET
+1.50 w 0.020 0.588 0.412 RG 0.973 0.980 0.988 rg 60.00 75.00 840.00 100.00 re B
+BT /F2 32.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 388.48 123.00 Tm (DHARANIRMAN) Tj ET
+BT /F2 12.00 Tf 0.016 0.471 0.341 rg 1 0 0 1 246.00 103.00 Tm (3D Volumetric Cadastre & Strata Land Administration System \(ISO 19152 LADM\)) Tj ET
+0.50 w 0.886 0.910 0.941 RG 30.00 40.00 m 930.00 40.00 l S
+BT /F1 9.00 Tf 0.392 0.455 0.545 rg 1 0 0 1 60.00 19.00 Tm (Ministry of Rural Development • Department of Land Resources \(DoLR\)) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Length 6534 >>
+stream
+1.00 w 1.000 1.000 1.000 rg 0.00 0.00 960.00 540.00 re f
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 30.00 490.00 900.00 35.00 re B
+0.50 w 1.000 1.000 1.000 RG 0.059 0.090 0.165 rg 40.00 501.00 53.60 17.00 re B
+BT /F2 9.00 Tf 1.000 1.000 1.000 rg 1 0 0 1 47.00 506.00 Tm (SIH 2026) Tj ET
+BT /F2 14.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 110.00 502.00 Tm (TECHNICAL APPROACH) Tj ET
+BT /F2 13.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 820.00 503.00 Tm (KAASSS2029) Tj ET
+0.50 w 0.886 0.910 0.941 RG 0.973 0.980 0.988 rg 30.00 13.00 900.00 22.00 re B
+BT /F1 8.50 Tf 0.392 0.455 0.545 rg 1 0 0 1 40.00 21.50 Tm (Smart India Hackathon 2026 • DharaNirman 3D Cadastre • Ministry of Rural Development \(DoLR\)) Tj ET
+BT /F2 8.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 840.00 21.50 Tm (Team kaasss2029) Tj ET
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 40.00 469.00 Tm (Core operational modules of the DharaNirman platform and flowchart:) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 325.00 214.00 135.00 re B
+1.00 w 0.000 0.369 0.635 rg 40.00 456.00 214.00 4.00 re f
+BT /F2 10.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 48.00 438.00 Tm (3D Digital Twin \(index.h) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 48.00 421.50 Tm (High-precision Three.js WebGL browser) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 48.00 406.50 Tm (globe/twin showcasing active 3D) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 48.00 391.50 Tm (residential units, elevation cross-sections,) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 48.00 376.50 Tm (and ground cadastral base) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 48.00 361.50 Tm (parcel.) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 262.00 325.00 214.00 135.00 re B
+1.00 w 0.016 0.471 0.341 rg 262.00 456.00 214.00 4.00 re f
+BT /F2 10.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 270.00 438.00 Tm (Citizen Portal \(citizen.) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 270.00 421.50 Tm (Aadhaar-authenticated owner dashboard for) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 270.00 406.50 Tm (3D boundary demarcation filing,) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 270.00 391.50 Tm (unit portfolio inspection, and) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 270.00 376.50 Tm (3D Bhu-Aadhaar title card) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 270.00 361.50 Tm (download.) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 484.00 325.00 214.00 135.00 re B
+1.00 w 0.494 0.133 0.808 rg 484.00 456.00 214.00 4.00 re f
+BT /F2 10.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 492.00 438.00 Tm (Officer Console \(officer) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 492.00 421.50 Tm (DoLR queue review, surveyor) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 492.00 406.50 Tm (delegation with SLA tracking,) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 492.00 391.50 Tm (6-rule 3D topology audit) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 492.00 376.50 Tm (validation, and hierarchical 14-digit) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 492.00 361.50 Tm (3D ULPIN issuance.) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 706.00 325.00 214.00 135.00 re B
+1.00 w 0.706 0.325 0.035 rg 706.00 456.00 214.00 4.00 re f
+BT /F2 10.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 714.00 438.00 Tm (Surveyor Field \(surveyor) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 714.00 421.50 Tm (SoI CORS RTK GNSS) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 714.00 406.50 Tm (\(+/-1.2cm\) geodetic anchoring, terrestrial) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 714.00 391.50 Tm (LiDAR point clouds \(.las\),) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 714.00 376.50 Tm (and BIM as-built mesh) Tj ET
+BT /F1 8.50 Tf 0.278 0.333 0.412 rg 1 0 0 1 714.00 361.50 Tm (ingestion workspace.) Tj ET
+1.00 w 0.200 0.255 0.333 RG 0.059 0.090 0.165 rg 40.00 237.00 880.00 75.00 re B
+BT /F2 9.50 Tf 0.220 0.741 0.973 rg 1 0 0 1 55.00 292.50 Tm (WORKFLOW PIPELINE & DATA RETRIEVAL FLOWCHART:) Tj ET
+0.80 w 0.000 0.369 0.635 RG 0.118 0.161 0.231 rg 55.00 246.00 160.00 42.00 re B
+BT /F2 8.50 Tf 1.000 1.000 1.000 rg 1 0 0 1 61.00 271.50 Tm (Web Client Operators) Tj ET
+BT /F1 7.50 Tf 0.580 0.639 0.722 rg 1 0 0 1 61.00 258.50 Tm (\(Citizen/Officer/Surveyor\)) Tj ET
+0.80 w 0.000 0.369 0.635 RG 0.118 0.161 0.231 rg 230.00 246.00 160.00 42.00 re B
+BT /F2 8.50 Tf 1.000 1.000 1.000 rg 1 0 0 1 236.00 271.50 Tm (Data Ingestion) Tj ET
+BT /F1 7.50 Tf 0.580 0.639 0.722 rg 1 0 0 1 236.00 258.50 Tm (\(CORS RTK / LiDAR .las\)) Tj ET
+0.80 w 0.000 0.369 0.635 RG 0.118 0.161 0.231 rg 405.00 246.00 160.00 42.00 re B
+BT /F2 8.50 Tf 1.000 1.000 1.000 rg 1 0 0 1 411.00 271.50 Tm (Frontend Application) Tj ET
+BT /F1 7.50 Tf 0.580 0.639 0.722 rg 1 0 0 1 411.00 258.50 Tm (\(Three.js WebGL HUD\)) Tj ET
+0.80 w 0.000 0.369 0.635 RG 0.118 0.161 0.231 rg 580.00 246.00 160.00 42.00 re B
+BT /F2 8.50 Tf 1.000 1.000 1.000 rg 1 0 0 1 586.00 271.50 Tm (Engine Server) Tj ET
+BT /F1 7.50 Tf 0.580 0.639 0.722 rg 1 0 0 1 586.00 258.50 Tm (\(FastAPI / 6-Rule Core\)) Tj ET
+0.80 w 0.000 0.369 0.635 RG 0.118 0.161 0.231 rg 755.00 246.00 160.00 42.00 re B
+BT /F2 8.50 Tf 1.000 1.000 1.000 rg 1 0 0 1 761.00 271.50 Tm (Cadastre Ledger) Tj ET
+BT /F1 7.50 Tf 0.580 0.639 0.722 rg 1 0 0 1 761.00 258.50 Tm (\(3D ULPIN / DB Cache\)) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 80.00 880.00 145.00 re B
+BT /F2 10.00 Tf 0.016 0.471 0.341 rg 1 0 0 1 55.00 202.00 Tm (RESTRICTED FUNCTIONAL MODULES \(ROLE-BASED AUTHORIZATION\)) Tj ET
+BT /F2 9.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 55.00 178.50 Tm (• Mission Officers: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 175.00 179.00 Tm (Inbound Demarcation Queue, Surveyor Delegation & SLA, 3D Topology Audit Sign-off, 3D ULPIN Generation) Tj ET
+BT /F2 9.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 55.00 150.50 Tm (• Field Surveyors: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 175.00 151.00 Tm (SoI CORS RTK Ground Control, Point Cloud / LiDAR Ingestion, As-Built 3D Mesh Reconciliation) Tj ET
+BT /F2 9.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 55.00 122.50 Tm (• Urban Citizens:  ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 175.00 123.00 Tm (3D Strata Unit Viewer, Boundary Demarcation Request, 3D Bhu-Aadhaar Card, Volumetric Property Tax) Tj ET
+1.00 w 0.118 0.161 0.231 rg 40.00 46.00 880.00 24.00 re f
+BT /F4 8.50 Tf 0.220 0.741 0.973 rg 1 0 0 1 55.00 53.50 Tm (HUD NAV:  3D Twin Viewer  •  Citizen Portal  •  Officer Console  •  Surveyor Field  •  Topology Audit  •  Certificate Generator) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Length 4540 >>
+stream
+1.00 w 1.000 1.000 1.000 rg 0.00 0.00 960.00 540.00 re f
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 30.00 490.00 900.00 35.00 re B
+0.50 w 1.000 1.000 1.000 RG 0.059 0.090 0.165 rg 40.00 501.00 53.60 17.00 re B
+BT /F2 9.00 Tf 1.000 1.000 1.000 rg 1 0 0 1 47.00 506.00 Tm (SIH 2026) Tj ET
+BT /F2 14.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 110.00 502.00 Tm (TECHNOLOGY STACK) Tj ET
+BT /F2 13.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 820.00 503.00 Tm (KAASSS2029) Tj ET
+0.50 w 0.886 0.910 0.941 RG 0.973 0.980 0.988 rg 30.00 13.00 900.00 22.00 re B
+BT /F1 8.50 Tf 0.392 0.455 0.545 rg 1 0 0 1 40.00 21.50 Tm (Smart India Hackathon 2026 • DharaNirman 3D Cadastre • Ministry of Rural Development \(DoLR\)) Tj ET
+BT /F2 8.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 840.00 21.50 Tm (Team kaasss2029) Tj ET
+0.80 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 429.00 880.00 46.00 re B
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 55.00 448.00 Tm (Frontend:) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 449.50 Tm (Three.js r128 Library, WebGL Custom Shaders, HTML5 Canvas API, CSS3 & Tailwind CSS, L) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 435.50 Tm (ucide Icons, Responsive Viewport HUD.) Tj ET
+0.80 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 374.00 880.00 46.00 re B
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 55.00 393.00 Tm (Backend:) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 394.50 Tm (Python FastAPI / Node.js Engine, SQLAlchemy ORM, SQLite / PostgreSQL Server, RESTful ) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 380.50 Tm (Endpoints, OAuth2 Session Guard.) Tj ET
+0.80 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 319.00 880.00 46.00 re B
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 55.00 338.00 Tm (AI & 3D Spatial:) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 339.50 Tm (3D Mesh 2-Manifold Solver, Gauss Divergence Theorem Volume Engine, EPSG:7755 CORS Geo) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 325.50 Tm (detic Transform, 3D Boolean Collision.) Tj ET
+0.80 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 264.00 880.00 46.00 re B
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 55.00 283.00 Tm (Standards & GIS:) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 284.50 Tm (ISO 19152:2012 LADM v2 \(LA_SpatialUnit\), OGC CityGML 3.0 LOD2/LOD3, GeoJSON-3D, LAS/L) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 270.50 Tm (AZ LiDAR Point Clouds, IFC 4.3 BIM.) Tj ET
+0.80 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 209.00 880.00 46.00 re B
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 55.00 228.00 Tm (Cloud & Database:) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 229.50 Tm (Docker Containerization, PostGIS Spatial Extension, Local Database Cache, Web Worker ) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 215.50 Tm (CPU Multithreading, Nginx Reverse Proxy.) Tj ET
+0.80 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 154.00 880.00 46.00 re B
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 55.00 173.00 Tm (Add-Ons & Core:) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 174.50 Tm (Automated 6-Rule 3D Cadastre Topology Audit, 14-Digit 3D ULPIN Generator, Cryptograph) Tj ET
+BT /F1 9.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 200.00 160.50 Tm (ic QR Verifier, 3D Tax Valuation Model.) Tj ET
+1.00 w 0.796 0.835 0.882 RG 1.000 1.000 1.000 rg 40.00 55.00 880.00 70.00 re B
+BT /F2 9.00 Tf 0.392 0.455 0.545 rg 1 0 0 1 306.84 106.00 Tm (INDIGENOUS OPEN-SOURCE ARCHITECTURE -- ZERO PROPRIETARY LICENSING OVERHEAD) Tj ET
+1.00 w 0.851 0.467 0.024 RG 0.945 0.961 0.976 rg 55.00 65.00 134.00 30.00 re B
+BT /F2 9.50 Tf 0.851 0.467 0.024 rg 1 0 0 1 84.95 75.50 Tm (JavaScript ES6+) Tj ET
+1.00 w 0.145 0.388 0.922 RG 0.945 0.961 0.976 rg 199.00 65.00 134.00 30.00 re B
+BT /F2 9.50 Tf 0.145 0.388 0.922 rg 1 0 0 1 236.36 75.50 Tm (HTML5 & CSS3) Tj ET
+1.00 w 0.486 0.227 0.929 RG 0.945 0.961 0.976 rg 343.00 65.00 134.00 30.00 re B
+BT /F2 9.50 Tf 0.486 0.227 0.929 rg 1 0 0 1 375.42 75.50 Tm (Three.js WebGL) Tj ET
+1.00 w 0.020 0.588 0.412 RG 0.945 0.961 0.976 rg 487.00 65.00 134.00 30.00 re B
+BT /F2 9.50 Tf 0.020 0.588 0.412 rg 1 0 0 1 519.42 75.50 Tm (Python FastAPI) Tj ET
+1.00 w 0.031 0.569 0.698 RG 0.945 0.961 0.976 rg 631.00 65.00 134.00 30.00 re B
+BT /F2 9.50 Tf 0.031 0.569 0.698 rg 1 0 0 1 658.48 75.50 Tm (SQLite & PostGIS) Tj ET
+1.00 w 0.008 0.518 0.780 RG 0.945 0.961 0.976 rg 775.00 65.00 134.00 30.00 re B
+BT /F2 9.50 Tf 0.008 0.518 0.780 rg 1 0 0 1 802.48 75.50 Tm (Docker Container) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Length 7486 >>
+stream
+1.00 w 1.000 1.000 1.000 rg 0.00 0.00 960.00 540.00 re f
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 30.00 490.00 900.00 35.00 re B
+0.50 w 1.000 1.000 1.000 RG 0.059 0.090 0.165 rg 40.00 501.00 53.60 17.00 re B
+BT /F2 9.00 Tf 1.000 1.000 1.000 rg 1 0 0 1 47.00 506.00 Tm (SIH 2026) Tj ET
+BT /F2 14.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 110.00 502.00 Tm (FEASIBILITY AND VIABILITY) Tj ET
+BT /F2 13.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 820.00 503.00 Tm (KAASSS2029) Tj ET
+0.50 w 0.886 0.910 0.941 RG 0.973 0.980 0.988 rg 30.00 13.00 900.00 22.00 re B
+BT /F1 8.50 Tf 0.392 0.455 0.545 rg 1 0 0 1 40.00 21.50 Tm (Smart India Hackathon 2026 • DharaNirman 3D Cadastre • Ministry of Rural Development \(DoLR\)) Tj ET
+BT /F2 8.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 840.00 21.50 Tm (Team kaasss2029) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 280.00 288.00 200.00 re B
+1.00 w 0.851 0.467 0.024 rg 40.00 476.00 288.00 4.00 re f
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 50.00 454.00 Tm (Feasibility:) Tj ET
+BT /F2 10.00 Tf 0.851 0.467 0.024 rg 1 0 0 1 50.00 432.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 433.50 Tm (Fully verified browser-based WebGL engine) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 421.50 Tm (with zero local software installs.) Tj ET
+BT /F2 10.00 Tf 0.851 0.467 0.024 rg 1 0 0 1 50.00 382.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 383.50 Tm (Direct integration with Survey of) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 371.50 Tm (India CORS RTK network \(EPSG:7755\).) Tj ET
+BT /F2 10.00 Tf 0.851 0.467 0.024 rg 1 0 0 1 50.00 332.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 333.50 Tm (Lightweight modular full-stack codebase runs) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 321.50 Tm (on commodity cloud servers.) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 336.00 280.00 288.00 200.00 re B
+1.00 w 0.145 0.388 0.922 rg 336.00 476.00 288.00 4.00 re f
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 346.00 454.00 Tm (Viability:) Tj ET
+BT /F2 10.00 Tf 0.145 0.388 0.922 rg 1 0 0 1 346.00 432.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 433.50 Tm (Eliminates expensive proprietary GIS licenses) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 421.50 Tm (\(ArcGIS\) via open ISO standards.) Tj ET
+BT /F2 10.00 Tf 0.145 0.388 0.922 rg 1 0 0 1 346.00 382.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 383.50 Tm (Indigenously built software stack requires) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 371.50 Tm (zero foreign licensing fees.) Tj ET
+BT /F2 10.00 Tf 0.145 0.388 0.922 rg 1 0 0 1 346.00 332.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 333.50 Tm (Scales horizontally across millions of) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 321.50 Tm (urban apartments without performance decay.) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 632.00 280.00 288.00 200.00 re B
+1.00 w 0.863 0.149 0.149 rg 632.00 476.00 288.00 4.00 re f
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 642.00 454.00 Tm (Challenges:) Tj ET
+BT /F2 10.00 Tf 0.863 0.149 0.149 rg 1 0 0 1 642.00 432.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 433.50 Tm (Heavy 3D point cloud rendering) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 421.50 Tm (can cause frame drops on) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 409.50 Tm (low-tier mobile devices.) Tj ET
+BT /F2 10.00 Tf 0.863 0.149 0.149 rg 1 0 0 1 642.00 382.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 383.50 Tm (Builder submission of non-watertight or) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 371.50 Tm (self-intersecting architectural BIM meshes.) Tj ET
+BT /F2 10.00 Tf 0.863 0.149 0.149 rg 1 0 0 1 642.00 332.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 333.50 Tm (Multi-tier vertical strata dispute litigation) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 321.50 Tm (in municipal revenue courts.) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 65.00 288.00 200.00 re B
+1.00 w 0.020 0.588 0.412 rg 40.00 261.00 288.00 4.00 re f
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 50.00 239.00 Tm (Its Solutions:) Tj ET
+BT /F2 10.00 Tf 0.020 0.588 0.412 rg 1 0 0 1 50.00 217.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 218.50 Tm (Offload geometry processing to CPU) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 206.50 Tm (Web Workers and instanced GPU) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 194.50 Tm (mesh buffers.) Tj ET
+BT /F2 10.00 Tf 0.020 0.588 0.412 rg 1 0 0 1 50.00 167.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 168.50 Tm (Automated 6-Rule Topology Engine validates) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 156.50 Tm (watertight 2-manifold enclosure.) Tj ET
+BT /F2 10.00 Tf 0.020 0.588 0.412 rg 1 0 0 1 50.00 117.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 118.50 Tm (CORS RTK EPSG:7755 baseline georeferences) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 106.50 Tm (every strata corner with sub-cm) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 60.00 94.50 Tm (accuracy.) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 336.00 65.00 288.00 200.00 re B
+1.00 w 0.486 0.227 0.929 rg 336.00 261.00 288.00 4.00 re f
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 346.00 239.00 Tm (Usages:) Tj ET
+BT /F2 10.00 Tf 0.486 0.227 0.929 rg 1 0 0 1 346.00 217.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 218.50 Tm (Urban apartment citizens verifying 3D) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 206.50 Tm (freehold title deeds and boundaries.) Tj ET
+BT /F2 10.00 Tf 0.486 0.227 0.929 rg 1 0 0 1 346.00 167.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 168.50 Tm (State Land Revenue Departments &) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 156.50 Tm (Sub-Registrars managing digital registries.) Tj ET
+BT /F2 10.00 Tf 0.486 0.227 0.929 rg 1 0 0 1 346.00 117.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 118.50 Tm (Commercial banks & financial institutions) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 356.00 106.50 Tm (validating spatial mortgage collateral.) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 632.00 65.00 288.00 200.00 re B
+1.00 w 0.031 0.569 0.698 rg 632.00 261.00 288.00 4.00 re f
+BT /F2 11.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 642.00 239.00 Tm (Business Approach:) Tj ET
+BT /F2 10.00 Tf 0.031 0.569 0.698 rg 1 0 0 1 642.00 217.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 218.50 Tm (Direct integration with DILRMP &) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 206.50 Tm (PM GatiShakti National Master Plan.) Tj ET
+BT /F2 10.00 Tf 0.031 0.569 0.698 rg 1 0 0 1 642.00 167.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 168.50 Tm (Tiered state-level SaaS / on-premise) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 156.50 Tm (air-gapped deployments for Land Records.) Tj ET
+BT /F2 10.00 Tf 0.031 0.569 0.698 rg 1 0 0 1 642.00 117.00 Tm (*) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 118.50 Tm (Volumetric property tax model generating) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 652.00 106.50 Tm (25-40% higher municipal revenue.) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Length 4340 >>
+stream
+1.00 w 1.000 1.000 1.000 rg 0.00 0.00 960.00 540.00 re f
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 30.00 490.00 900.00 35.00 re B
+0.50 w 1.000 1.000 1.000 RG 0.059 0.090 0.165 rg 40.00 501.00 53.60 17.00 re B
+BT /F2 9.00 Tf 1.000 1.000 1.000 rg 1 0 0 1 47.00 506.00 Tm (SIH 2026) Tj ET
+BT /F2 14.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 110.00 502.00 Tm (IMPACT AND BENEFITS) Tj ET
+BT /F2 13.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 820.00 503.00 Tm (KAASSS2029) Tj ET
+0.50 w 0.886 0.910 0.941 RG 0.973 0.980 0.988 rg 30.00 13.00 900.00 22.00 re B
+BT /F1 8.50 Tf 0.392 0.455 0.545 rg 1 0 0 1 40.00 21.50 Tm (Smart India Hackathon 2026 • DharaNirman 3D Cadastre • Ministry of Rural Development \(DoLR\)) Tj ET
+BT /F2 8.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 840.00 21.50 Tm (Team kaasss2029) Tj ET
+1.00 w 0.525 0.937 0.675 RG 0.941 0.992 0.957 rg 40.00 275.00 880.00 205.00 re B
+BT /F2 13.00 Tf 0.024 0.373 0.275 rg 1 0 0 1 55.00 452.00 Tm (>> Benefits:) Tj ET
+BT /F2 10.00 Tf 0.020 0.588 0.412 rg 1 0 0 1 65.00 430.00 Tm (*) Tj ET
+BT /F2 9.50 Tf 0.024 0.306 0.231 rg 1 0 0 1 78.00 430.50 Tm (Asset Protection: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 260.00 431.00 Tm (Safeguards multi-crore high-rise real estate titles from boundary encroachment and il) Tj ET
+BT /F2 10.00 Tf 0.020 0.588 0.412 rg 1 0 0 1 65.00 398.00 Tm (*) Tj ET
+BT /F2 9.50 Tf 0.024 0.306 0.231 rg 1 0 0 1 78.00 398.50 Tm (Optimized Dispute Resolution: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 260.00 399.00 Tm (Reduces strata boundary litigation in revenue courts by 80% through immutable 3D coor) Tj ET
+BT /F2 10.00 Tf 0.020 0.588 0.412 rg 1 0 0 1 65.00 366.00 Tm (*) Tj ET
+BT /F2 9.50 Tf 0.024 0.306 0.231 rg 1 0 0 1 78.00 366.50 Tm (Fair Volumetric Property Tax: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 260.00 367.00 Tm (Computes municipal tax using base surface, vertical floor premium, and 3D volume, boo) Tj ET
+BT /F2 10.00 Tf 0.020 0.588 0.412 rg 1 0 0 1 65.00 334.00 Tm (*) Tj ET
+BT /F2 9.50 Tf 0.024 0.306 0.231 rg 1 0 0 1 78.00 334.50 Tm (Democratized Web Access: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 260.00 335.00 Tm (Runs seamlessly on citizen smartphones and officer browsers with zero expensive CAD w) Tj ET
+BT /F2 10.00 Tf 0.020 0.588 0.412 rg 1 0 0 1 65.00 302.00 Tm (*) Tj ET
+BT /F2 9.50 Tf 0.024 0.306 0.231 rg 1 0 0 1 78.00 302.50 Tm (Instant Collateral Verification: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 260.00 303.00 Tm (Provides commercial banks with definitive 3D title proofs for rapid home mortgage cle) Tj ET
+1.00 w 0.576 0.773 0.992 RG 0.937 0.965 1.000 rg 40.00 55.00 880.00 205.00 re B
+BT /F2 13.00 Tf 0.118 0.251 0.686 rg 1 0 0 1 55.00 232.00 Tm (>> Impacts:) Tj ET
+BT /F2 10.00 Tf 0.145 0.388 0.922 rg 1 0 0 1 65.00 210.00 Tm (*) Tj ET
+BT /F2 9.50 Tf 0.118 0.227 0.541 rg 1 0 0 1 78.00 210.50 Tm (Legal Security for 400M+ Citizens: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 300.00 211.00 Tm (Establishes undisputed volumetric freehold property rights for India's urban apa) Tj ET
+BT /F2 10.00 Tf 0.145 0.388 0.922 rg 1 0 0 1 65.00 178.00 Tm (*) Tj ET
+BT /F2 9.50 Tf 0.118 0.227 0.541 rg 1 0 0 1 78.00 178.50 Tm (Sovereign Self-Reliance \(Atmanirbhar\): ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 300.00 179.00 Tm (Indigenous 3D GIS platform directly aligning with MoRD/DoLR DILRMP & Bhu-Aadhaar) Tj ET
+BT /F2 10.00 Tf 0.145 0.388 0.922 rg 1 0 0 1 65.00 146.00 Tm (*) Tj ET
+BT /F2 9.50 Tf 0.118 0.227 0.541 rg 1 0 0 1 78.00 146.50 Tm (PM GatiShakti Multi-Modal Fusion: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 300.00 147.00 Tm (Synchronizes above-ground flyovers, surface roads, and subsurface metro transit ) Tj ET
+BT /F2 10.00 Tf 0.145 0.388 0.922 rg 1 0 0 1 65.00 114.00 Tm (*) Tj ET
+BT /F2 9.50 Tf 0.118 0.227 0.541 rg 1 0 0 1 78.00 114.50 Tm (Smart City Disaster Management: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 300.00 115.00 Tm (Floor-level 3D digital twins empower emergency responders with rapid precision e) Tj ET
+BT /F2 10.00 Tf 0.145 0.388 0.922 rg 1 0 0 1 65.00 82.00 Tm (*) Tj ET
+BT /F2 9.50 Tf 0.118 0.227 0.541 rg 1 0 0 1 78.00 82.50 Tm (Global Geospatial Benchmark: ) Tj ET
+BT /F1 9.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 300.00 83.00 Tm (Sets an international gold standard for ISO 19152 LADM v2 compliance across emer) Tj ET
+endstream
+endobj
+10 0 obj
+<< /Length 4855 >>
+stream
+1.00 w 1.000 1.000 1.000 rg 0.00 0.00 960.00 540.00 re f
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 30.00 490.00 900.00 35.00 re B
+0.50 w 1.000 1.000 1.000 RG 0.059 0.090 0.165 rg 40.00 501.00 53.60 17.00 re B
+BT /F2 9.00 Tf 1.000 1.000 1.000 rg 1 0 0 1 47.00 506.00 Tm (SIH 2026) Tj ET
+BT /F2 14.00 Tf 0.059 0.090 0.165 rg 1 0 0 1 110.00 502.00 Tm (RESEARCH AND REFERENCES) Tj ET
+BT /F2 13.00 Tf 0.200 0.255 0.333 rg 1 0 0 1 820.00 503.00 Tm (KAASSS2029) Tj ET
+0.50 w 0.886 0.910 0.941 RG 0.973 0.980 0.988 rg 30.00 13.00 900.00 22.00 re B
+BT /F1 8.50 Tf 0.392 0.455 0.545 rg 1 0 0 1 40.00 21.50 Tm (Smart India Hackathon 2026 • DharaNirman 3D Cadastre • Ministry of Rural Development \(DoLR\)) Tj ET
+BT /F2 8.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 840.00 21.50 Tm (Team kaasss2029) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 348.00 436.00 132.00 re B
+1.00 w 0.118 0.227 0.541 rg 40.00 476.00 436.00 4.00 re f
+BT /F2 10.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 50.00 453.50 Tm (ISO 19152:2012 LADM v2 \(ISO / TC 211, 2022\)) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 50.00 435.50 Tm (* Defines international standard for 3D spatial units \(LA_SpatialUnit\) and strata rights.) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 50.00 415.50 Tm (* Establishes formal data model for parties, rights, restrictions, and 3D volumetric parcels.) Tj ET
+BT /F4 8.00 Tf 0.118 0.227 0.541 rg 1 0 0 1 50.00 390.00 Tm (https://www.iso.org/standard/51206.html) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 484.00 348.00 436.00 132.00 re B
+1.00 w 0.024 0.373 0.275 rg 484.00 476.00 436.00 4.00 re f
+BT /F2 10.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 494.00 453.50 Tm (OGC CityGML 3.0 & IndoorGML \(OGC, 2021\)) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 494.00 435.50 Tm (* Standardized volumetric data exchange format for 3D city models and interior strata parcels.) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 494.00 415.50 Tm (* Guarantees open geospatial interoperability across diverse municipal GIS platforms.) Tj ET
+BT /F4 8.00 Tf 0.024 0.373 0.275 rg 1 0 0 1 494.00 390.00 Tm (https://www.ogc.org/standard/citygml/) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 206.00 436.00 132.00 re B
+1.00 w 0.494 0.133 0.808 rg 40.00 334.00 436.00 4.00 re f
+BT /F2 10.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 50.00 311.50 Tm (Survey of India CORS Network \(SoI / DST, 2022\)) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 50.00 293.50 Tm (* Real-Time Kinematic \(RTK\) positioning in Indian Geodetic Reference Frame \(EPSG:7755\).) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 50.00 273.50 Tm (* Provides centimeter-level \(+/-1.2cm\) ground truth anchoring for drone and LiDAR surveys.) Tj ET
+BT /F4 8.00 Tf 0.494 0.133 0.808 rg 1 0 0 1 50.00 248.00 Tm (https://cors.surveyofindia.gov.in/) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 484.00 206.00 436.00 132.00 re B
+1.00 w 0.706 0.325 0.035 rg 484.00 334.00 436.00 4.00 re f
+BT /F2 10.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 494.00 311.50 Tm (DoLR Bhu-Aadhaar / ULPIN Policy \(MoRD, 2024\)) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 494.00 293.50 Tm (* National policy on 14-digit Unique Land Parcel Identification Number for vertical properties.) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 494.00 273.50 Tm (* Enforces hierarchical encoding for parent land parcels, tower blocks, and strata unit IDs.) Tj ET
+BT /F4 8.00 Tf 0.706 0.325 0.035 rg 1 0 0 1 494.00 248.00 Tm (https://dolr.gov.in/bhu-aadhaar-ulpin) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 40.00 64.00 436.00 132.00 re B
+1.00 w 0.059 0.463 0.431 rg 40.00 192.00 436.00 4.00 re f
+BT /F2 10.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 50.00 169.50 Tm (Euler-Poincare 3D Topology \(Euler, 1758\)) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 50.00 151.50 Tm (* Mathematical formulation V - E + F = 2 ensuring closed watertight 2-manifold boundary meshes.) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 50.00 131.50 Tm (* Eliminates open hole defects, non-manifold edges, and ambiguous boundary faces.) Tj ET
+BT /F4 8.00 Tf 0.059 0.463 0.431 rg 1 0 0 1 50.00 106.00 Tm (Topology Validation Engine Core) Tj ET
+1.00 w 0.796 0.835 0.882 RG 0.973 0.980 0.988 rg 484.00 64.00 436.00 132.00 re B
+1.00 w 0.745 0.071 0.235 rg 484.00 192.00 436.00 4.00 re f
+BT /F2 10.50 Tf 0.059 0.090 0.165 rg 1 0 0 1 494.00 169.50 Tm (Gauss Divergence Theorem \(Gauss, 1813\)) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 494.00 151.50 Tm (* Computes exact 3D parcel volume via discrete boundary surface triangle integration.) Tj ET
+BT /F1 8.50 Tf 0.200 0.255 0.333 rg 1 0 0 1 494.00 131.50 Tm (* Verifies positive volumetric bounds and prevents volumetric overlap collisions.) Tj ET
+BT /F4 8.00 Tf 0.745 0.071 0.235 rg 1 0 0 1 494.00 106.00 Tm (Volumetric Valuation & Overlap Engine) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 17 0 R
+/MediaBox [0 0 960 540]
+/Contents 5 0 R
+/Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >>
+>>
+endobj
+12 0 obj
+<< /Type /Page /Parent 17 0 R
+/MediaBox [0 0 960 540]
+/Contents 6 0 R
+/Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >>
+>>
+endobj
+13 0 obj
+<< /Type /Page /Parent 17 0 R
+/MediaBox [0 0 960 540]
+/Contents 7 0 R
+/Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >>
+>>
+endobj
+14 0 obj
+<< /Type /Page /Parent 17 0 R
+/MediaBox [0 0 960 540]
+/Contents 8 0 R
+/Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >>
+>>
+endobj
+15 0 obj
+<< /Type /Page /Parent 17 0 R
+/MediaBox [0 0 960 540]
+/Contents 9 0 R
+/Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >>
+>>
+endobj
+16 0 obj
+<< /Type /Page /Parent 17 0 R
+/MediaBox [0 0 960 540]
+/Contents 10 0 R
+/Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R /F4 4 0 R >> >>
+>>
+endobj
+17 0 obj
+<< /Type /Pages /Kids [11 0 R 12 0 R 13 0 R 14 0 R 15 0 R 16 0 R] /Count 6 >>
+endobj
+18 0 obj
+<< /Type /Catalog /Pages 17 0 R >>
+endobj
+xref
+0 19
+0000000000 65535 f 
+0000000015 00000 n 
+0000000085 00000 n 
+0000000160 00000 n 
+0000000228 00000 n 
+0000000301 00000 n 
+0000002557 00000 n 
+0000009163 00000 n 
+0000013759 00000 n 
+0000021301 00000 n 
+0000025697 00000 n 
+0000030609 00000 n 
+0000030767 00000 n 
+0000030925 00000 n 
+0000031083 00000 n 
+0000031241 00000 n 
+0000031399 00000 n 
+0000031558 00000 n 
+0000031652 00000 n 
+trailer
+<< /Size 19 /Root 18 0 R >>
+startxref
+31703
+%%EOF

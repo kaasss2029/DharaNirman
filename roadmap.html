@@ -3,6 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>DharaNirman | 3D ULPIN Implementation Roadmap</title>
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('dharanirman_theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=Open+Sans:wght@400;600;700&family=Public+Sans:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;600&display=swap');
 
@@ -219,6 +235,71 @@
       position: absolute;
       left: 0;
     }
+
+    /* Dark Mode Overrides */
+    html.dark, [data-theme="dark"] {
+      color-scheme: dark;
+    }
+    html.dark body {
+      background: #0b111e !important;
+      color: #f1f5f9 !important;
+    }
+    html.dark .header-banner {
+      border-bottom-color: #059669 !important;
+    }
+    html.dark .header-left h1 {
+      color: #34d399 !important;
+    }
+    html.dark .header-left p {
+      color: #cbd5e1 !important;
+    }
+    html.dark .info-card {
+      background: #131d2e !important;
+      border-color: #24344d !important;
+      color: #f1f5f9 !important;
+    }
+    html.dark .info-card p {
+      color: #cbd5e1 !important;
+    }
+    html.dark .info-card strong {
+      color: #34d399 !important;
+    }
+    html.dark .tech-card {
+      background: #131d2e !important;
+      border-color: #24344d !important;
+      color: #f1f5f9 !important;
+    }
+    html.dark .tech-card h4 {
+      color: #38bdf8 !important;
+    }
+    html.dark .tech-card p {
+      color: #cbd5e1 !important;
+    }
+    html.dark .section-title {
+      color: #f1f5f9 !important;
+      border-left-color: #059669 !important;
+    }
+    html.dark table th {
+      background: #162236 !important;
+      color: #38bdf8 !important;
+      border-color: #24344d !important;
+    }
+    html.dark table td {
+      border-color: #24344d !important;
+      color: #e2e8f0 !important;
+    }
+    html.dark tr:nth-child(even) td {
+      background: #101a2b !important;
+    }
+    html.dark .badge-secondary {
+      background: #1e293b !important;
+      color: #94a3b8 !important;
+      border-color: #334155 !important;
+    }
+    html.dark .footer-note {
+      border-top-color: #24344d !important;
+      color: #94a3b8 !important;
+    }
   </style>
 </head>
 <body>
@@ -233,6 +314,8 @@
       </p>
     </div>
     <div class="badge-container">
+      <a href="presentation.html" style="padding: 3px 8px; font-size: 10px; font-weight: 700; background: #005ea2; color: #ffffff; border: 1px solid #005ea2; text-decoration: none; margin-right: 4px; display: inline-block;" title="View Workflow Presentation">📊 Workflow PPT</a>
+      <button id="btn-portal-theme-toggle" onclick="toggleTheme()" style="padding: 3px 8px; font-size: 10px; font-weight: 700; background: #0f172a; color: #ffffff; border: 1px solid #334155; cursor: pointer; margin-bottom: 6px; display: inline-block;" title="Toggle Theme"><span style="color:#38bdf8;">☾</span> Dark</button><br>
       <span class="badge badge-primary">ISO 19152 LADM v2</span><br>
       <span class="badge badge-secondary">OGC CityGML 3.0 / IFC 4.3</span>
     </div>
@@ -455,5 +538,36 @@
     <span>Compliant with ISO 19152 (LADM v2) • Generated for PS ID: 26011</span>
   </div>
 
+  <script>
+    function applyTheme(theme, persist = true) {
+      const isDark = theme === 'dark';
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      if (persist) localStorage.setItem('dharanirman_theme', theme);
+      updatePortalThemeButton(isDark);
+    }
+    function toggleTheme() {
+      const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next, true);
+    }
+    function updatePortalThemeButton(isDark) {
+      const btn = document.getElementById('btn-portal-theme-toggle');
+      if (btn) {
+        btn.innerHTML = isDark 
+          ? '<span style="color:#fbbf24;">☀</span> Light' 
+          : '<span style="color:#38bdf8;">☾</span> Dark';
+        btn.setAttribute('title', isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme');
+      }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      updatePortalThemeButton(document.documentElement.classList.contains('dark'));
+    });
+  </script>
 </body>
 </html>

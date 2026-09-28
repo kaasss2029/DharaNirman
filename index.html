@@ -122,9 +122,9 @@
       </button>
 
       <!-- Action Buttons -->
-      <button onclick="runAIPipeline()" id="btn-run-ai" class="bg-gov-blue hover:bg-blue-700 text-white px-3.5 py-2 font-bold text-xs flex items-center gap-2 shadow transition active:scale-95 border border-blue-400/30">
-        <i data-lucide="cpu" class="w-4 h-4"></i> <span id="txt-btn-ai">Run AI 3D Extraction</span>
-      </button>
+      <a href="presentation.html" class="bg-gov-blue hover:bg-blue-600 text-white border border-blue-400/30 px-3 py-1.5 font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow" title="Open 3D Cadastre Workflow Presentation">
+        <i data-lucide="presentation" class="w-3.5 h-3.5 text-cyan-300"></i> <span id="txt-btn-ppt">Workflow PPT</span>
+      </a>
 
       <button onclick="openDemarcationModal()" id="btn-demarcation" class="hidden bg-gov-cyan hover:bg-cyan-500 text-gov-navy px-3.5 py-2 font-extrabold text-xs items-center gap-2 shadow transition active:scale-95">
         <i data-lucide="map-pin" class="w-4 h-4"></i> <span id="txt-btn-demarcation">Request Demarcation</span>
@@ -290,16 +290,22 @@
         </div>
       </div>
 
-      <!-- AI Delineation Telemetry Log (Deep Navy Terminal) -->
-      <div class="flex-1 min-h-[160px] bg-gov-navy text-slate-100 p-3.5 border border-gov-navy flex flex-col shadow">
+      <!-- 3D Cadastral & Case Verification Banner -->
+      <div id="case-inspection-card" class="flex-1 min-h-[140px] bg-gov-navy text-slate-100 p-3.5 border border-gov-navy flex flex-col justify-between shadow">
         <div class="flex items-center justify-between mb-2">
           <span class="text-[11px] font-mono text-cyan-300 flex items-center gap-1.5 font-bold">
-            <i data-lucide="terminal" class="w-3.5 h-3.5 text-cyan-300"></i> AI Extraction Terminal
+            <i data-lucide="database" class="w-3.5 h-3.5 text-cyan-300"></i> 3D Cadastre Registry
           </span>
-          <span id="ai-status-badge" class="text-[9px] font-mono bg-white/15 text-slate-200 px-1.5 py-0.5 font-bold">IDLE</span>
+          <span id="case-status-badge" class="text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 font-bold">ONLINE</span>
         </div>
-        <div id="ai-logs" class="text-[11px] font-mono text-slate-300 space-y-1 overflow-y-auto flex-1 max-h-36 pr-1">
-          <p class="text-slate-400">[System] Cadastre Core Initialized. Ready for 3D AI extraction.</p>
+        <div class="text-[11px] font-mono text-slate-300 space-y-1.5 pr-1">
+          <p class="text-slate-300 font-semibold" id="registry-case-title">DoLR Cadastral Framework</p>
+          <p class="text-[10px] text-slate-400" id="registry-case-meta">CRS: EPSG:7755 · ISO 19152 LADM v2</p>
+          <p class="text-[10px] text-cyan-200 truncate" id="registry-case-applicant">Citizen Title: Verified Freehold</p>
+        </div>
+        <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between text-[10px] font-mono text-slate-400">
+          <span>Authority: DoLR / MoRD</span>
+          <span class="text-emerald-400 font-bold">● PostGIS Active</span>
         </div>
       </div>
 
@@ -353,6 +359,17 @@
 
         <!-- Precision Sliders Group -->
         <div class="flex items-center gap-4 flex-wrap flex-1">
+          <!-- 3D Camera Zoom Slider -->
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-gov-ink font-bold flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="zoom-in" class="w-3.5 h-3.5 text-gov-blue"></i> Camera Zoom:</span>
+            <button onclick="adjustZoom(-0.1)" title="Zoom Out (-)" class="px-1.5 py-0.5 bg-gov-gray-light hover:bg-gov-gray-cool border border-gov-gray-border text-[11px] font-bold text-gov-ink flex items-center justify-center">-</button>
+            <input type="range" id="zoom-slider" min="0.6" max="2.2" step="0.1" value="0.6" oninput="onZoomChange(this.value)" class="w-20 sm:w-24 cursor-pointer" title="Slide to Zoom (0.6x to 2.2x)">
+            <button onclick="adjustZoom(0.1)" title="Zoom In (+)" class="px-1.5 py-0.5 bg-gov-gray-light hover:bg-gov-gray-cool border border-gov-gray-border text-[11px] font-bold text-gov-ink flex items-center justify-center">+</button>
+            <span id="zoom-val" class="font-mono text-[11px] text-gov-navy font-bold w-9 text-right">0.6x</span>
+          </div>
+
+          <div class="h-4 w-px bg-slate-300 hidden sm:block"></div>
+
           <!-- Exploded View Slider -->
           <div class="flex items-center gap-2 text-xs">
             <span class="text-gov-ink font-bold flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="layers" class="w-3.5 h-3.5 text-gov-blue"></i> Explode Strata:</span>
@@ -426,7 +443,7 @@
             </div>
             <div class="bg-gov-gray-light p-2 border border-gov-gray-cool">
               <span class="text-[10px] text-gov-ink-muted block font-semibold" id="lbl-prop-owner">Owner / Title Holder</span>
-              <span id="prop-owner" class="text-gov-green-dark font-bold truncate block">Dr. A. Sharma</span>
+              <span id="prop-owner" class="text-gov-green-dark font-bold truncate block">Registered Title Holder</span>
             </div>
           </div>
 
@@ -573,7 +590,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div class="bg-gov-gray-light p-3 border border-gov-gray-cool">
             <span class="text-gov-ink-muted block text-[10px] font-bold">Registered Property Owner</span>
-            <span id="cert-owner" class="font-extrabold text-gov-navy text-sm">Dr. Ananya Sharma</span>
+            <span id="cert-owner" class="font-extrabold text-gov-navy text-sm">Registered Title Holder</span>
             <span class="text-[10px] text-gov-ink-muted block mt-0.5">Aadhaar Vault Ref: ****-****-8812</span>
           </div>
           <div class="bg-gov-gray-light p-3 border border-gov-gray-cool">

@@ -143,11 +143,12 @@ class CaseResponse(BaseModel):
     notes: Optional[str]
     status: CaseStatus
     citizen_id: int
+    citizen_name: Optional[str] = None
     officer_id: Optional[int]
     surveyor_id: Optional[int]
     property_ulpin: str
-    validation: Optional[Dict[str, Any]]
-    issued_ulpin: Optional[str]
+    validation: Optional[Dict[str, Any]] = None
+    issued_ulpin: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

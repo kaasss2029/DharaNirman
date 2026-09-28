@@ -4,7 +4,7 @@
  */
 
 // Global State
-let scene, camera, renderer, controls;
+let scene, camera, renderer, controls, sunLight;
 let container;
 let raycaster, mouse;
 let clickableUnits = [];
@@ -181,7 +181,7 @@ const cadastralData = {
     zMax: '+39.8m',
     volume: '384.2 m³',
     area: '128.0 m²',
-    owner: 'Dr. Ananya Sharma',
+    owner: 'Registered Title Holder',
     status: 'Verified Freehold Title',
     tax: '₹ 14,820 / yr (Paid)',
     strataShare: '1.82% of Base Parcel',
@@ -197,7 +197,7 @@ const cadastralData = {
     zMax: '+39.8m',
     volume: '412.5 m³',
     area: '137.5 m²',
-    owner: 'Mr. Rajesh K. Verma',
+    owner: 'Registered Title Holder',
     status: 'Verified Freehold Title',
     tax: '₹ 15,900 / yr (Paid)',
     strataShare: '1.95% of Base Parcel',
@@ -213,7 +213,7 @@ const cadastralData = {
     zMax: '+21.2m',
     volume: '360.0 m³',
     area: '120.0 m²',
-    owner: 'Priya & Vikram Malhotra',
+    owner: 'Registered Title Holder',
     status: 'Verified Freehold Title',
     tax: '₹ 13,500 / yr (Paid)',
     strataShare: '1.71% of Base Parcel',
@@ -261,7 +261,7 @@ const cadastralData = {
     zMax: '+1.5m',
     volume: '2,400.0 m³',
     area: '1,600.0 m²',
-    owner: 'Greenfield Co-operative Housing Society',
+    owner: 'Property Holder / Title Holder',
     status: 'Master Registered Title',
     tax: '₹ 52,000 / yr (Paid)',
     strataShare: '100% Parent Parcel',
@@ -338,34 +338,63 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (caseId && window.apiRequest) {
     try {
       loadedCase = await apiRequest(`/api/cases/${caseId}`);
-      if (loadedCase && loadedCase.property_ulpin) {
-        // Find matching cadastral property
-        const matchProp = Object.values(cadastralData).find(p => p.ulpin === loadedCase.property_ulpin) ||
-                          Object.values(cadastralData).find(p => loadedCase.property_ulpin.includes(p.id));
-        if (matchProp) {
-          activePropertyUnit = matchProp.id;
-          matchProp.status = `Case #${loadedCase.id}: ${loadedCase.status.replaceAll('_', ' ')}`;
-        } else {
-          const uMatch = loadedCase.property_ulpin.match(/U\d{4}/i);
-          if (uMatch) activePropertyUnit = uMatch[0].toUpperCase();
-        }
-      }
     } catch (error) {
       console.warn('Could not load case details for 3D visualizer:', error.message);
     }
+  } else if (!caseId && window.apiRequest && (activeRole === 'officer' || activeRole === 'surveyor')) {
+    // If opened directly by Officer or Surveyor without a specific case query param,
+    // unified 3D viewer automatically selects the latest case from the workflow queue
+    try {
+      const cases = await apiRequest('/api/cases');
+      if (cases && cases.length > 0) {
+        loadedCase = cases[0];
+      }
+    } catch (error) {
+      console.warn('Could not load latest workflow case for 3D visualizer:', error.message);
+    }
+  }
+
+  if (loadedCase) {
+    if (loadedCase.property_ulpin) {
+      const matchProp = Object.values(cadastralData).find(p => p.ulpin === loadedCase.property_ulpin) ||
+                        Object.values(cadastralData).find(p => loadedCase.property_ulpin.includes(p.id));
+      if (matchProp) {
+        activePropertyUnit = matchProp.id;
+        matchProp.status = `Case #${loadedCase.id}: ${loadedCase.status.replaceAll('_', ' ')}`;
+        if (loadedCase.citizen_name) {
+          matchProp.owner = loadedCase.citizen_name;
+        }
+      } else {
+        const uMatch = loadedCase.property_ulpin.match(/U\d{4}/i);
+        if (uMatch) activePropertyUnit = uMatch[0].toUpperCase();
+      }
+    }
+
+    if (loadedCase.citizen_name) {
+      activeRegisteredOwner = loadedCase.citizen_name;
+      if (cadastralData[activePropertyUnit]) {
+        cadastralData[activePropertyUnit].owner = loadedCase.citizen_name;
+      }
+    }
+
+    const roleTitle = document.getElementById('visualizer-role-title');
+    const roleCopy = document.getElementById('visualizer-role-copy');
+    if (roleTitle) roleTitle.innerText = `Case #${loadedCase.id} 3D Inspection · ${loadedCase.title}`;
+    if (roleCopy) roleCopy.innerText = `Target ULPIN: ${loadedCase.property_ulpin} | Citizen: ${loadedCase.citizen_name || 'Applicant'} | Status: ${loadedCase.status.replaceAll('_', ' ')}`;
+
+    const caseRegTitle = document.getElementById('registry-case-title');
+    const caseRegApplicant = document.getElementById('registry-case-applicant');
+    const caseRegMeta = document.getElementById('registry-case-meta');
+    const caseStatusBadge = document.getElementById('case-status-badge');
+    if (caseRegTitle) caseRegTitle.innerText = `Case #${loadedCase.id} · ${loadedCase.title}`;
+    if (caseRegApplicant) caseRegApplicant.innerText = `Citizen: ${loadedCase.citizen_name || 'Applicant'} (Unit #${activePropertyUnit})`;
+    if (caseRegMeta) caseRegMeta.innerText = `Target ULPIN: ${loadedCase.property_ulpin}`;
+    if (caseStatusBadge) caseStatusBadge.innerText = loadedCase.status.toUpperCase().replaceAll('_', ' ');
   } else if (paramUnitId) {
     activePropertyUnit = paramUnitId.toUpperCase();
   } else if (paramUlpin) {
     const matchProp = Object.values(cadastralData).find(p => p.ulpin === paramUlpin);
     if (matchProp) activePropertyUnit = matchProp.id;
-  }
-
-  // If a specific case was loaded, update HUD banner
-  if (loadedCase) {
-    const roleTitle = document.getElementById('visualizer-role-title');
-    const roleCopy = document.getElementById('visualizer-role-copy');
-    if (roleTitle) roleTitle.innerText = `Case #${loadedCase.id} 3D Inspection · ${loadedCase.title}`;
-    if (roleCopy) roleCopy.innerText = `Target ULPIN: ${loadedCase.property_ulpin} | Status: ${loadedCase.status.replaceAll('_', ' ')}`;
   }
 
   populateFloorSelector();
@@ -378,13 +407,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   initEventListeners();
   generateULPIN();
 
-  // Select unit and focus camera on target property
+  // Select unit and focus camera on target property with 0.6x default zoom
   selectUnit(activePropertyUnit);
-  setTimeout(() => focusCitizenProperty(activePropertyUnit), 500);
+  setTimeout(() => {
+    focusCitizenProperty(activePropertyUnit);
+    onZoomChange(0.6);
+  }, 300);
 });
 
 function updateRegisteredOwnerDisplay() {
-  if (activeRole !== 'citizen') return;
   const session = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
   const ownerName = activeRegisteredOwner || session.name;
   if (!ownerName) return;
@@ -536,19 +567,25 @@ function focusCitizenProperty(unitId = 'U1204') {
   selectUnit(unitId);
 
   if (camera && controls) {
-    // Determine a vertical offset based on the unit's elevation if available
-    const unitData = cadastralData[unitId];
-    let baseY = 0;
+    const unitData = cadastralData[unitId] || cadastralData[activePropertyUnit];
+    let baseY = 15;
     if (unitData && unitData.zMin) {
       const num = parseFloat(unitData.zMin.replace('+', '').replace('m', '').trim());
       if (!isNaN(num)) baseY = num;
     }
-    // Compute camera target and position with some offsets
-    const targetPos = new THREE.Vector3(12, baseY + 28, 22);
-    const lookAtPos = new THREE.Vector3(0, baseY + 18, 0);
+    const lookAtPos = new THREE.Vector3(0, baseY + 2, 0);
+    const dir = new THREE.Vector3(0.5501, 0.4632, 0.6948);
+    const defaultDist = 67 / 0.6; // 111.67m (0.6x default zoom)
+
     controls.target.copy(lookAtPos);
-    camera.position.copy(targetPos);
+    camera.position.copy(lookAtPos).addScaledVector(dir, defaultDist);
     controls.update();
+
+    const zoomSlider = document.getElementById('zoom-slider');
+    if (zoomSlider) {
+      zoomSlider.value = 0.6;
+    }
+    updateZoomDisplay(0.6);
   }
 }
 
@@ -756,9 +793,9 @@ function initThreeJS() {
   scene.background = new THREE.Color(bgColor);
   scene.fog = new THREE.Fog(bgColor, 85, 190);
 
-  // Camera Setup
+  // Camera Setup (Default distance ~111.7m for 0.6x zoom)
   camera = new THREE.PerspectiveCamera(45, width / height, 0.5, 1000);
-  camera.position.set(38, 42, 48);
+  camera.position.set(61.43, 61.72, 77.59);
 
   // Renderer Setup
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
@@ -767,21 +804,29 @@ function initThreeJS() {
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.enabled = false;
   renderer.localClippingEnabled = true;
   container.appendChild(renderer.domElement);
 
-  // Controls
+  // Controls (Restricted between 0.6x = 111.67m and 2.2x = 30.45m)
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.06;
   controls.maxPolarAngle = Math.PI / 2 + 0.15; // Allow slight underground tilt
-  controls.minDistance = 10;
-  controls.maxDistance = 180;
+  controls.minDistance = 30.45; // Max Zoom: 2.2x
+  controls.maxDistance = 111.67; // Min / Default Zoom: 0.6x
   controls.target.set(0, 10, 0);
   controls.autoRotate = isAutoRotating;
   controls.autoRotateSpeed = 2.0;
+  controls.addEventListener('change', () => {
+    const zoomSlider = document.getElementById('zoom-slider');
+    if (zoomSlider && camera && controls) {
+      const dist = camera.position.distanceTo(controls.target);
+      const ratio = Math.max(0.6, Math.min(2.2, 67 / Math.max(1, dist)));
+      zoomSlider.value = ratio.toFixed(1);
+      updateZoomDisplay(ratio);
+    }
+  });
 
   // Clipping Plane for Dynamic Strata Slicing
   clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 65);
@@ -807,17 +852,9 @@ function setupLights() {
   const ambientLight = new THREE.HemisphereLight(0xeaf6ff, 0x66705f, 1.55);
   scene.add(ambientLight);
 
-  const sunLight = new THREE.DirectionalLight(0xfff2cf, 2.8);
+  sunLight = new THREE.DirectionalLight(0xfff2cf, 2.8);
   sunLight.position.set(35, 85, 25);
-  sunLight.castShadow = true;
-  sunLight.shadow.mapSize.width = 2048;
-  sunLight.shadow.mapSize.height = 2048;
-  sunLight.shadow.camera.near = 10;
-  sunLight.shadow.camera.far = 150;
-  sunLight.shadow.camera.left = -45;
-  sunLight.shadow.camera.right = 45;
-  sunLight.shadow.camera.top = 45;
-  sunLight.shadow.camera.bottom = -45;
+  sunLight.castShadow = false;
   scene.add(sunLight);
 
   const fillLight = new THREE.DirectionalLight(0xa8d4f2, 0.95);
@@ -861,15 +898,14 @@ function buildCadastreScene() {
   // Ground Surface Parcel Base Mesh
   const groundGeo = new THREE.BoxGeometry(26, 0.6, 26);
   const groundMat = new THREE.MeshStandardMaterial({
-    color: 0x6f806f,
+    color: 0x2f7652,
     roughness: 0.8,
-    metalness: 0.2,
+    metalness: 0.15,
     clippingPlanes: [clippingPlane]
   });
   const groundMesh = new THREE.Mesh(groundGeo, groundMat);
   groundMesh.position.y = -0.3;
-  groundMesh.receiveShadow = true;
-  groundMesh.userData = { unitId: 'SURFACE' };
+  groundMesh.userData = { unitId: 'SURFACE', defaultColor: 0x2f7652, defaultOpacity: 0.95 };
   groupGround.add(groundMesh);
   clickableUnits.push(groundMesh);
 
@@ -940,20 +976,20 @@ function buildCadastreScene() {
   const matColumn = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.5, metalness: 0.3, clippingPlanes: [clippingPlane] });
   const matFrame = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.7, clippingPlanes: [clippingPlane] });
   const matGlass = new THREE.MeshPhysicalMaterial({
-    color: 0x93c5fd,
+    color: 0xcfd8dc,
     metalness: 0.1,
     roughness: 0.15,
     transmission: 0.5,
     transparent: true,
-    opacity: 0.55,
+    opacity: 0.4,
     depthWrite: false,
     clippingPlanes: [clippingPlane]
   });
   const matBalconySlab = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, clippingPlanes: [clippingPlane] });
   const matBalconyGlass = new THREE.MeshStandardMaterial({
-    color: 0x38bdf8,
+    color: 0x94a3b8,
     transparent: true,
-    opacity: 0.5,
+    opacity: 0.35,
     depthWrite: false,
     clippingPlanes: [clippingPlane]
   });
@@ -967,8 +1003,6 @@ function buildCadastreScene() {
     // 1. Structural Floor Plate / Slab
     const slabMesh = new THREE.Mesh(new THREE.BoxGeometry(floorSize, 0.35, floorSize), matSlab);
     slabMesh.position.y = 0.175;
-    slabMesh.castShadow = true;
-    slabMesh.receiveShadow = true;
     floorObj.add(slabMesh);
 
     // Slab Edge Trim
@@ -979,8 +1013,6 @@ function buildCadastreScene() {
     // 2. Central Structural Core (Elevator & Stairwell Shaft)
     const coreMesh = new THREE.Mesh(new THREE.BoxGeometry(4.2, unitHeight, 4.2), matCore);
     coreMesh.position.set(0, unitHeight / 2 + 0.35, 0);
-    coreMesh.castShadow = true;
-    coreMesh.receiveShadow = true;
     floorObj.add(coreMesh);
 
     // Core elevator doors
@@ -996,40 +1028,30 @@ function buildCadastreScene() {
     colPositions.forEach(([cx, cz]) => {
       const colMesh = new THREE.Mesh(new THREE.BoxGeometry(0.55, unitHeight, 0.55), matColumn);
       colMesh.position.set(cx, unitHeight / 2 + 0.35, cz);
-      colMesh.castShadow = true;
-      colMesh.receiveShadow = true;
       floorObj.add(colMesh);
     });
 
     // 4. Subdivide Floor into 4 Cadastral Volumetric Units
     const unitOffsets = [
       { x: unitSize / 2 + 2.0, z: unitSize / 2 + 2.0, id: `U${String(f + 1).padStart(2, '0')}04` },
-      { x: -unitSize / 2 - 2.0, z: unitSize / 2 + 2.0, id: f === 2 ? 'U0602' : `U${String(f + 1).padStart(2, '0')}01` },
+      { x: -unitSize / 2 - 2.0, z: unitSize / 2 + 2.0, id: `U${String(f + 1).padStart(2, '0')}01` },
       { x: -unitSize / 2 - 2.0, z: -unitSize / 2 - 2.0, id: `U${String(f + 1).padStart(2, '0')}02` },
       { x: unitSize / 2 + 2.0, z: -unitSize / 2 - 2.0, id: `U${String(f + 1).padStart(2, '0')}03` }
     ];
 
     unitOffsets.forEach((u) => {
       const isRegisteredUnit = (u.id === activePropertyUnit) || (!activePropertyUnit && u.id === 'U1204');
-      const isTarget1201 = u.id === 'U1201';
-      const isTarget0602 = u.id === 'U0602';
 
-      let unitColor = 0x1e40af; // Cadastral Blue Default
-      let opacity = 0.45;
+      let unitColor = 0x334155; // Neutral Slate Cadastre Volume Default
+      let opacity = 0.25;
       let emissiveColor = 0x000000;
       let emissiveIntensity = 0;
 
       if (isRegisteredUnit) {
-        unitColor = 0x059669; // Vibrant Emerald (Registered Unit)
+        unitColor = 0x059669; // Vibrant Emerald (Logged-in Citizen's Registered Unit)
         opacity = 0.90;
         emissiveColor = 0x059669;
-        emissiveIntensity = 0.35;
-      } else if (isTarget1201) {
-        unitColor = 0x0284c7; // Sky Cadastral Blue
-        opacity = 0.6;
-      } else if (isTarget0602) {
-        unitColor = 0x2563eb; // Royal Blue
-        opacity = 0.6;
+        emissiveIntensity = 0.4;
       }
 
       const unitMat = new THREE.MeshStandardMaterial({
@@ -1038,8 +1060,8 @@ function buildCadastreScene() {
         emissiveIntensity: emissiveIntensity,
         transparent: true,
         opacity: opacity,
-        roughness: 0.25,
-        metalness: 0.2,
+        roughness: 0.35,
+        metalness: 0.15,
         depthWrite: false,
         clippingPlanes: [clippingPlane]
       });
@@ -1047,15 +1069,13 @@ function buildCadastreScene() {
       const unitGeo = new THREE.BoxGeometry(unitSize, unitHeight, unitSize);
       const unitMesh = new THREE.Mesh(unitGeo, unitMat);
       unitMesh.position.set(u.x, unitHeight / 2 + 0.35, u.z);
-      unitMesh.castShadow = true;
-      unitMesh.receiveShadow = true;
       unitMesh.userData = { unitId: u.id, defaultColor: unitColor, defaultOpacity: opacity, isRegistered: isRegisteredUnit };
 
       // High-precision Cadastral Boundary Wireframe
       const edgeLines = new THREE.LineSegments(
         new THREE.EdgesGeometry(unitGeo),
         new THREE.LineBasicMaterial({
-          color: isRegisteredUnit ? 0x34d399 : 0x38bdf8,
+          color: isRegisteredUnit ? 0x34d399 : 0x64748b,
           linewidth: isRegisteredUnit ? 2.5 : 1
         })
       );
@@ -1254,11 +1274,9 @@ function createSiteTree(x, z, parent) {
   const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x2f7652, roughness: 0.9 });
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 2.2, 8), trunkMaterial);
   trunk.position.set(x, 1.1, z);
-  trunk.castShadow = true;
   parent.add(trunk);
   const crown = new THREE.Mesh(new THREE.SphereGeometry(1.25, 10, 8), leafMaterial);
   crown.position.set(x, 2.8, z);
-  crown.castShadow = true;
   parent.add(crown);
 }
 
@@ -1347,6 +1365,11 @@ function initEventListeners() {
 }
 
 function onMouseMove(event) {
+  if (currentViewMode !== '3d') {
+    const tooltip = document.getElementById('unitTooltip');
+    if (tooltip) tooltip.classList.add('hidden');
+    return;
+  }
   const rect = container.getBoundingClientRect();
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1379,6 +1402,7 @@ function onMouseMove(event) {
 }
 
 function onMouseClick(event) {
+  if (currentViewMode !== '3d') return;
   const rect = container.getBoundingClientRect();
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1413,11 +1437,14 @@ function selectUnit(unitId, meshObj) {
     lod: 'LoD 3 Cadastre'
   };
   const session = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
-  if (data.id === activePropertyUnit && session.name) {
-    data.owner = session.name;
-  }
-  if (data.id === activePropertyUnit && activeRegisteredOwner) {
-    data.owner = activeRegisteredOwner;
+  if (activeRole === 'citizen' && session.name) {
+    if (data.id === activePropertyUnit || data.owner === 'Registered Title Holder') {
+      data.owner = session.name;
+    }
+  } else if (activeRegisteredOwner) {
+    if (data.id === activePropertyUnit || data.owner === 'Registered Title Holder') {
+      data.owner = activeRegisteredOwner;
+    }
   }
 
   // Update Right Panel UI
@@ -1508,13 +1535,13 @@ function selectUnit(unitId, meshObj) {
       }
       u.material.opacity = 0.90;
     } else {
-      // Reset other units to their standard default colors
-      u.material.color.setHex(u.userData.defaultColor || 0x1e40af);
+      // Reset other units to their standard neutral default colors
+      u.material.color.setHex(u.userData.defaultColor || 0x334155);
       if (u.material.emissive) {
         u.material.emissive.setHex(0x000000);
         u.material.emissiveIntensity = 0;
       }
-      u.material.opacity = u.userData.defaultOpacity || 0.45;
+      u.material.opacity = u.userData.defaultOpacity || 0.25;
     }
   });
 
@@ -1542,7 +1569,7 @@ function selectUnit(unitId, meshObj) {
         match.material.emissive.setHex(0x059669);
         match.material.emissiveIntensity = 0.45;
       }
-      match.material.opacity = 0.9;
+      match.material.opacity = 0.95;
     } else if (data.id === 'BASEMENT1') {
       match.material.color.setHex(0xa855f7);
       if (match.material.emissive) {
@@ -1558,9 +1585,9 @@ function selectUnit(unitId, meshObj) {
       }
       match.material.opacity = 0.85;
     } else {
-      match.material.color.setHex(0x0284c7);
+      match.material.color.setHex(0xf59e0b);
       if (match.material.emissive) {
-        match.material.emissive.setHex(0x0369a1);
+        match.material.emissive.setHex(0xb45309);
         match.material.emissiveIntensity = 0.45;
       }
       match.material.opacity = 0.85;
@@ -1613,14 +1640,49 @@ function selectStrataUnit(strataKey) {
       camPos.set(28, -4, 30);
     }
     controls.target.set(0, targetY, 0);
-    camera.position.copy(camPos);
+    const dir = new THREE.Vector3().subVectors(camPos, new THREE.Vector3(0, targetY, 0));
+    if (dir.lengthSq() === 0) dir.set(38, 32, 48);
+    dir.normalize();
+    const defaultDist = 67 / 0.6; // 111.67m (0.6x zoom)
+    camera.position.copy(controls.target).addScaledVector(dir, defaultDist);
     controls.update();
+    updateZoomDisplay(0.6);
   }
 }
 
 // ==================================================================
 // SLIDERS & VIEW CONTROLS
 // ==================================================================
+function onZoomChange(val) {
+  if (!camera || !controls) return;
+  const ratio = Math.max(0.6, Math.min(2.2, parseFloat(val)));
+  const targetDist = 67 / ratio;
+  const target = controls.target || new THREE.Vector3(0, 10, 0);
+  const dir = new THREE.Vector3().subVectors(camera.position, target);
+  if (dir.lengthSq() === 0) dir.set(38, 32, 48);
+  dir.normalize();
+  camera.position.copy(target).addScaledVector(dir, targetDist);
+  controls.update();
+  updateZoomDisplay(ratio);
+}
+
+function adjustZoom(delta) {
+  const zoomSlider = document.getElementById('zoom-slider');
+  if (!zoomSlider) return;
+  let newRatio = parseFloat(zoomSlider.value) + delta;
+  newRatio = Math.max(0.6, Math.min(2.2, newRatio));
+  zoomSlider.value = newRatio.toFixed(1);
+  onZoomChange(newRatio);
+}
+
+function updateZoomDisplay(val) {
+  const zoomVal = document.getElementById('zoom-val');
+  if (!zoomVal) return;
+  let ratio = typeof val === 'number' && val > 3 ? 67 / val : parseFloat(val);
+  ratio = Math.max(0.6, Math.min(2.2, ratio));
+  zoomVal.innerText = `${ratio.toFixed(1)}x`;
+}
+
 function onExplodeChange(val) {
   const mult = parseFloat(val);
   document.getElementById('explode-val').innerText = `${mult.toFixed(1)}x`;
@@ -1645,10 +1707,15 @@ function onSliceChange(val) {
 
 function resetCamera() {
   controls.reset();
-  camera.position.set(38, 42, 48);
+  camera.position.set(61.43, 61.72, 77.59);
   controls.target.set(0, 10, 0);
   controls.autoRotate = isAutoRotating;
   controls.autoRotateSpeed = 2.0;
+  const zoomSlider = document.getElementById('zoom-slider');
+  if (zoomSlider) {
+    zoomSlider.value = 0.6;
+    updateZoomDisplay(0.6);
+  }
 }
 
 function toggleWireframe() {
@@ -1731,6 +1798,8 @@ function setViewMode(mode) {
   const btn3d = document.getElementById('btn-3d');
   const btnCross = document.getElementById('btn-cross');
   const roleBanner = document.getElementById('visualizer-role-banner');
+  const camPosElem = document.getElementById('camera-pos');
+  const tooltip = document.getElementById('unitTooltip');
 
   const activeClass = 'px-2.5 py-1 text-xs bg-gov-blue text-white font-bold transition flex items-center gap-1 shadow-sm';
   const inactiveClass = 'px-2.5 py-1 text-xs hover:bg-gov-gray-light text-gov-ink font-semibold transition flex items-center gap-1';
@@ -1739,6 +1808,10 @@ function setViewMode(mode) {
     if (btnCross) btnCross.className = activeClass;
     if (btn3d) btn3d.className = inactiveClass;
     if (roleBanner) roleBanner.classList.add('hidden');
+    if (tooltip) tooltip.classList.add('hidden');
+    if (camPosElem) {
+      camPosElem.innerText = '2D Section Plane (Z: -25m to +60m)';
+    }
     if (crossCanvas) {
       crossCanvas.classList.remove('hidden');
       draw2DCrossSection(crossCanvas);
@@ -1747,6 +1820,9 @@ function setViewMode(mode) {
     if (btn3d) btn3d.className = activeClass;
     if (btnCross) btnCross.className = inactiveClass;
     if (roleBanner) roleBanner.classList.remove('hidden');
+    if (camPosElem && camera) {
+      camPosElem.innerText = `X: ${Math.round(camera.position.x)}, Y: ${Math.round(camera.position.y)}, Z: ${Math.round(camera.position.z)}`;
+    }
     if (crossCanvas) {
       crossCanvas.classList.add('hidden');
     }
@@ -1928,65 +2004,16 @@ function draw2DCrossSection(canvasElem) {
   ctx.fillText('2D VOLUMETRIC STRATA CROSS-SECTION • EPSG:7755 / WGS84 ORTHOMETRIC DATUM', 12, h - 14);
 }
 
-// ==================================================================
-// AI/ML 3D PIPELINE & TOPOLOGY VALIDATION
-// ==================================================================
-function addLog(text) {
-  const logDiv = document.getElementById('ai-logs');
-  const p = document.createElement('p');
-  p.innerText = text;
-  logDiv.appendChild(p);
-  logDiv.scrollTop = logDiv.scrollHeight;
-}
-
-function runAIPipeline() {
-  if (activeRole !== 'officer' && activeRole !== 'surveyor') {
-    alert('AI 3D extraction is restricted to DoLR officers and licensed surveyors.');
-    return;
-  }
-  const btn = document.getElementById('btn-run-ai');
-  const badge = document.getElementById('ai-status-badge');
-  btn.disabled = true;
-  badge.innerText = 'PROCESSING...';
-  badge.className = 'text-[9px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 ';
-
-  document.getElementById('ai-logs').innerHTML = '';
-  addLog('[Phase 1/4] Ingesting Drone Photogrammetry & LiDAR Point Cloud (LAS 1.4)...');
-
-  setTimeout(() => {
-    addLog('[Phase 2/4] Mask R-CNN & YOLOv8: Segmenting building footprints & facade planes...');
-  }, 800);
-
-  setTimeout(() => {
-    addLog('[Phase 3/4] PointNet++ RANSAC: Extracting vertical floor heights & LoD-3 polyhedrons...');
-  }, 1600);
-
-  setTimeout(() => {
-    addLog('[Phase 4/4] PostGIS 3D: Generating volumetric 3D ULPINs & ISO 19152 topology...');
-    updateLayerVisibility();
-  }, 2400);
-
-  setTimeout(() => {
-    addLog('✓ SUCCESS: 14 Volumetric 3D Parcels Successfully Extracted & Validated.');
-    btn.disabled = false;
-    badge.innerText = 'COMPLETED';
-    badge.className = 'text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 ';
-  }, 3000);
-}
-
 function runTopologyValidation() {
   if (activeRole === 'citizen') {
     alert('Topology validation results are restricted to registry and survey teams.');
     return;
   }
-  addLog('[Topology Audit] Validating 3D spatial intersections and manifold closures...');
-
-  setTimeout(() => {
-    addLog('[Topology Audit] RESULT: 0 Overlaps, 0 Slivers. 100% Water-tight Volumetric Polyhedrons.');
-    const topCard = document.getElementById('topology-card');
+  const topCard = document.getElementById('topology-card');
+  if (topCard) {
     topCard.className = 'mt-auto p-3 bg-emerald-950/60 border border-emerald-500 text-xs glow-emerald';
-    alert('✓ 3D Topology Audit Passed!\n- Standard: ISO 19152 LADM v2 3D Cadastre\n- Volumetric Overlaps: 0\n- Boundary Enclosure: 100% Valid Closed 2-Manifolds');
-  }, 700);
+  }
+  alert('✓ 3D Topology Audit Passed!\n- Standard: ISO 19152 LADM v2 3D Cadastre\n- Volumetric Overlaps: 0\n- Boundary Enclosure: 100% Valid Closed 2-Manifolds');
 }
 
 // ==================================================================
@@ -2004,7 +2031,7 @@ function openCertificateModal() {
   const certZ = document.getElementById('cert-z');
 
   if (certUlpin) certUlpin.textContent = data.ulpin || 'IN-2187-4930-1049-A-F12-U1204-K8';
-  if (certOwner) certOwner.textContent = data.owner || activeRegisteredOwner || 'Dr. Ananya Sharma';
+  if (certOwner) certOwner.textContent = data.owner || activeRegisteredOwner || 'Registered Title Holder';
   if (certStrata) certStrata.textContent = `${data.floor} • Unit #${data.id}`;
   if (certVol) certVol.textContent = data.volume;
   if (certZ) certZ.textContent = `${data.zMin} to ${data.zMax}`;
@@ -2030,7 +2057,7 @@ async function syncPropertiesWithAPI() {
           zMax: `+${p.z_max}m`,
           volume: `${p.volume} m³`,
           area: `${p.area} m²`,
-          owner: p.owner_name || activeRegisteredOwner || 'Registered Title Holder',
+          owner: p.owner_name || (activeRole === 'citizen' ? (JSON.parse(sessionStorage.getItem('ulpin-session') || '{}').name || 'Registered Title Holder') : activeRegisteredOwner || 'Registered Title Holder'),
           status: p.status === 'claimed' || p.status === 'available' ? 'Verified Freehold Title' : p.status,
           tax: '₹ 14,820 / yr (Paid)',
           strataShare: `${((p.area / 7680) * 100).toFixed(2)}% of Base Parcel`,
@@ -2073,6 +2100,11 @@ function downloadFile(content, fileName, mimeType) {
 }
 
 function downloadCityGML() {
+  const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
+  const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
+  const data = cadastralData[unitId] || cadastralData[activePropertyUnit] || cadastralData['U1204'];
+  const ownerName = data.owner || activeRegisteredOwner || 'Registered Title Holder';
+
   const cityGMLContent = `<?xml version="1.0" encoding="UTF-8"?>
 <CityModel xmlns="http://www.opengis.net/citygml/3.0"
            xmlns:bldg="http://www.opengis.net/citygml/building/3.0"
@@ -2086,40 +2118,47 @@ function downloadCityGML() {
       <bldg:storeysAboveGround>14</bldg:storeysAboveGround>
       <bldg:storeysBelowGround>2</bldg:storeysBelowGround>
       <bldg:buildingUnit>
-        <bldg:BuildingUnit gml:id="IN-2187-4930-1049-A-F12-U1204-K8">
-          <bldg:usage>Apartment Unit #1204</bldg:usage>
-          <bldg:owner>Dr. Ananya Sharma</bldg:owner>
-          <bldg:netVolume uom="m3">384.2</bldg:netVolume>
-          <bldg:zElevationMin uom="m">36.5</bldg:zElevationMin>
-          <bldg:zElevationMax uom="m">39.8</bldg:zElevationMax>
+        <bldg:BuildingUnit gml:id="${data.ulpin}">
+          <bldg:usage>${data.title}</bldg:usage>
+          <bldg:owner>${ownerName}</bldg:owner>
+          <bldg:netVolume uom="m3">${data.volume}</bldg:netVolume>
+          <bldg:zElevationMin uom="m">${data.zMin}</bldg:zElevationMin>
+          <bldg:zElevationMax uom="m">${data.zMax}</bldg:zElevationMax>
         </bldg:BuildingUnit>
       </bldg:buildingUnit>
     </bldg:Building>
   </cityObjectMember>
 </CityModel>`;
-  downloadFile(cityGMLContent, '3D_ULPIN_Parcel_2187-4930-1049.gml', 'application/xml');
+  downloadFile(cityGMLContent, `3D_ULPIN_Parcel_${data.id}_2187-4930-1049.gml`, 'application/xml');
 }
 
 function downloadLADM() {
+  const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
+  const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
+  const data = cadastralData[unitId] || cadastralData[activePropertyUnit] || cadastralData['U1204'];
+  const ownerName = data.owner || activeRegisteredOwner || 'Registered Title Holder';
+
   const ladmContent = JSON.stringify({
     schema: "ISO 19152 LADM Edition 2 - Part 2: 3D Land Administration",
     baseParcelULPIN: "2187-4930-1049-S00",
     spatialReferenceSystem: "EPSG:7755 + Indian Geoid Datum",
     spatialUnits3D: [
       {
-        ulpin3D: "IN-2187-4930-1049-A-F12-U1204-K8",
+        ulpin3D: data.ulpin,
+        unitId: data.id,
         stratumType: "Air/AboveGround",
-        elevationBounds: { zMin: 36.5, zMax: 39.8, uom: "meter" },
-        calculatedVolumeM3: 384.2,
-        titleHolder: "Dr. Ananya Sharma",
-        titleType: "Freehold Strata",
+        elevationBounds: { zMin: data.zMin, zMax: data.zMax, uom: "meter" },
+        calculatedVolumeM3: data.volume,
+        titleHolder: ownerName,
+        titleType: data.status,
         topologyVerified: true
       },
       {
         ulpin3D: "IN-2187-4930-1049-U-TUN-DMRC-T7",
+        unitId: "METRO",
         stratumType: "Underground Infrastructure",
-        elevationBounds: { zMin: -21.0, zMax: -14.0, uom: "meter" },
-        calculatedVolumeM3: 6300.0,
+        elevationBounds: { zMin: "-21.0m", zMax: "-14.0m", uom: "meter" },
+        calculatedVolumeM3: "6300.0 m³",
         titleHolder: "Delhi Metro Rail Corp",
         titleType: "Public Statutory Easement",
         topologyVerified: true
@@ -2130,6 +2169,11 @@ function downloadLADM() {
 }
 
 function downloadGeoJSON3D() {
+  const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
+  const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
+  const data = cadastralData[unitId] || cadastralData[activePropertyUnit] || cadastralData['U1204'];
+  const ownerName = data.owner || activeRegisteredOwner || 'Registered Title Holder';
+
   const geojson3D = JSON.stringify({
     type: "FeatureCollection",
     crs: { type: "name", properties: { name: "urn:ogc:def:crs:EPSG::7755" } },
@@ -2137,12 +2181,13 @@ function downloadGeoJSON3D() {
       {
         type: "Feature",
         properties: {
-          ulpin: "IN-2187-4930-1049-A-F12-U1204-K8",
-          unit: "Apartment 1204",
-          volumeM3: 384.2,
-          floor: 12,
-          zMin: 36.5,
-          zMax: 39.8
+          ulpin: data.ulpin,
+          unit: data.title,
+          volumeM3: data.volume,
+          owner: ownerName,
+          status: data.status,
+          zMin: data.zMin,
+          zMax: data.zMax
         },
         geometry: {
           type: "Polygon",
@@ -2161,14 +2206,19 @@ function downloadGeoJSON3D() {
 // ==================================================================
 function animate() {
   requestAnimationFrame(animate);
-  controls.update();
 
-  const camPosElem = document.getElementById('camera-pos');
-  if (camPosElem) {
-    camPosElem.innerText = `X: ${Math.round(camera.position.x)}, Y: ${Math.round(camera.position.y)}, Z: ${Math.round(camera.position.z)}`;
+  if (currentViewMode === '3d') {
+    if (controls) controls.update();
+
+    const camPosElem = document.getElementById('camera-pos');
+    if (camPosElem && camera) {
+      camPosElem.innerText = `X: ${Math.round(camera.position.x)}, Y: ${Math.round(camera.position.y)}, Z: ${Math.round(camera.position.z)}`;
+    }
+
+    if (renderer && scene && camera) {
+      renderer.render(scene, camera);
+    }
   }
-
-  renderer.render(scene, camera);
 }
 
 function onWindowResize() {
