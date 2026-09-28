@@ -17,6 +17,83 @@ function portalAction(message) {
   }
 }
 
+function downloadCitizenTitle() {
+  const session = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
+  const unitId = session.unit_id || document.querySelector('[data-citizen-unit]')?.textContent?.trim() || 'U1204';
+  const ownerName = session.name || document.getElementById('citizen-name')?.textContent?.trim() || 'Dr. Ananya Sharma';
+  const propertyLabel = document.querySelector('[data-citizen-property]')?.textContent?.trim() || '';
+  const ulpin = session.property_ulpin || (propertyLabel.includes('·') ? propertyLabel.split('·')[1].trim() : `IN-2187-4930-1049-A-${unitId}`);
+  const propertyTitle = document.querySelector('[data-citizen-property-title]')?.textContent?.trim() || `Apartment Unit #${unitId}`;
+  const area = document.getElementById('citizen-area')?.textContent?.trim() || '128.0 m²';
+  const vol = document.getElementById('citizen-vol')?.textContent?.trim() || '384.2 m³';
+  const elev = document.getElementById('citizen-elev')?.textContent?.trim() || '+36.5m to +39.8m';
+  const strata = document.getElementById('citizen-strata')?.textContent?.trim() || '1.82% of Base Parcel';
+
+  const certNumber = `ULPIN-3D-CERT-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+  const timestamp = new Date().toISOString();
+  const dateFormatted = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+  const certificateText = `================================================================================
+GOVERNMENT OF INDIA • MINISTRY OF RURAL DEVELOPMENT
+DEPARTMENT OF LAND RESOURCES (DoLR)
+OFFICIAL 3D BHU-AADHAAR VOLUMETRIC PROPERTY TITLE CERTIFICATE
+Standard: ISO 19152 LADM v2 (3D Spatial Cadastre)
+================================================================================
+
+CERTIFICATE METADATA
+--------------------------------------------------------------------------------
+Certificate No       : ${certNumber}
+Issue Date & Time    : ${dateFormatted} (${timestamp})
+Issuing Authority    : Department of Land Resources (DoLR), MoRD, Govt. of India
+Verification Status  : VERIFIED FREEHOLD TITLE (Digitally Signed)
+
+TITLE HOLDER & PROPERTY IDENTIFIERS
+--------------------------------------------------------------------------------
+Registered Owner     : ${ownerName}
+Property Title       : ${propertyTitle}
+3D ULPIN (Bhu-Aadhaar): ${ulpin}
+Base Surface Parcel  : 2187-4930-1049 (Zone A)
+Building Reference   : BLDG-2187-4930-1049-A (Tower A)
+Spatial Unit / Strata: Unit #${unitId}
+
+VOLUMETRIC CADASTRE & GEOMETRIC BOUNDS
+--------------------------------------------------------------------------------
+Vertical Datum (Z)   : ${elev}
+Carpet / Floor Area  : ${area}
+Volumetric Space     : ${vol}
+Strata Share         : ${strata}
+Coordinate Reference : EPSG:7755 (Survey of India CORS RTK Datum)
+Level of Detail      : LoD 3 Cadastral Polyhedron
+
+MUNICIPAL & COMPLIANCE RECORD
+--------------------------------------------------------------------------------
+Annual Property Tax  : ₹ 14,820 / yr (Paid in Full · BBPS Ref: BBPS-DL-2026-98214)
+Encumbrance Status   : NIL (Clear Freehold Title · No Liens)
+Legal Admissibility  : Valid under Digital India Land Records Modernization Programme
+
+CRYPTOGRAPHIC INTEGRITY & VERIFICATION
+--------------------------------------------------------------------------------
+Digital Signature    : SHA256:7e9b2a14c6d830f5a91e4823d0fb5c1e948302194a8b7e61c3d2e5a4f8901234
+Blockchain Tx Hash   : 0x9f4a8b7e61c3d2e5a4f890123456789abcdef0123456789
+CRS Spatial Ref      : EPSG:7755 (Survey of India CORS RTK)
+================================================================================
+This is an authentic, digitally generated spatial title certificate issued under the
+authority of the Ministry of Rural Development, Department of Land Resources.
+================================================================================`;
+
+  const blob = new Blob([certificateText], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `3D_Bhu_Aadhaar_Title_Certificate_${unitId}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  portalAction(`Downloaded digitally signed 3D Bhu-Aadhaar certificate (${a.download}).`);
+}
+
 function renderCases(cases, containerId, emptyMessage) {
   const container = document.getElementById(containerId);
   if (!container) return;

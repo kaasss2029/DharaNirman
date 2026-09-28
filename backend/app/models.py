@@ -4,11 +4,18 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from geoalchemy2 import Geometry
 from sqlalchemy import DateTime, Enum as SqlEnum, ForeignKey, Integer, JSON, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
+from .config import get_settings
 from .db import Base
+
+is_sqlite = get_settings().database_url.startswith("sqlite")
+if not is_sqlite:
+    from geoalchemy2 import Geometry
+    SpatialGeometry = Geometry("POLYHEDRALSURFACEZ", srid=7755, spatial_index=False)
+else:
+    SpatialGeometry = Text
 
 
 class UserRole(str, Enum):
@@ -59,7 +66,7 @@ class Building(Base):
     built_up_area: Mapped[float] = mapped_column(default=0)
     volume: Mapped[float] = mapped_column(default=0)
     status: Mapped[str] = mapped_column(String(60), default="verified")
-    geometry: Mapped[Optional[Any]] = mapped_column(Geometry("POLYHEDRALSURFACEZ", srid=7755))
+    geometry: Mapped[Optional[Any]] = mapped_column(SpatialGeometry)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -92,7 +99,7 @@ class VolumetricProperty(Base):
     volume: Mapped[float] = mapped_column()
     status: Mapped[str] = mapped_column(String(60), default="available")
     owner_name: Mapped[Optional[str]] = mapped_column(String(160))
-    geometry: Mapped[Optional[Any]] = mapped_column(Geometry("POLYHEDRALSURFACEZ", srid=7755))
+    geometry: Mapped[Optional[Any]] = mapped_column(SpatialGeometry)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -132,7 +139,7 @@ class WorkflowCase(Base):
     officer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
     surveyor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
     property_ulpin: Mapped[str] = mapped_column(String(120), index=True)
-    geometry: Mapped[Optional[Any]] = mapped_column(Geometry("POLYHEDRALSURFACEZ", srid=7755))
+    geometry: Mapped[Optional[Any]] = mapped_column(SpatialGeometry)
     validation: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
     issued_ulpin: Mapped[Optional[str]] = mapped_column(String(120), unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

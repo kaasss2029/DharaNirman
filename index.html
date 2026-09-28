@@ -287,12 +287,15 @@
       <!-- Main Three.js Container -->
       <div id="cadastreCanvasContainer" class="flex-1 w-full min-h-[380px] relative bg-slate-950 border border-gov-gray-border overflow-hidden shadow-md">
 
+        <!-- 2D Canvas Fallback / Cross-Section Overlay -->
+        <canvas id="crossSectionCanvas" class="hidden absolute inset-0 w-full h-full z-0 bg-slate-950"></canvas>
+
         <!-- Top Overlay Mode Controls (Left Dock) -->
-        <div class="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5 bg-white/95 border border-gov-gray-cool p-1 shadow-md">
-          <button onclick="setViewMode('3d')" class="px-2.5 py-1 text-xs bg-gov-blue text-white font-bold transition" id="btn-3d">
+        <div class="absolute top-3 left-3 z-30 flex flex-wrap gap-1.5 bg-white/95 border border-gov-gray-cool p-1 shadow-md">
+          <button onclick="setViewMode('3d')" class="px-2.5 py-1 text-xs bg-gov-blue text-white font-bold transition flex items-center gap-1 shadow-sm" id="btn-3d">
             <i data-lucide="box" class="w-3.5 h-3.5 inline mr-1"></i> 3D Volumetric
           </button>
-          <button onclick="setViewMode('cross')" class="px-2.5 py-1 text-xs hover:bg-gov-gray-light text-gov-ink font-semibold transition" id="btn-cross">
+          <button onclick="setViewMode('cross')" class="px-2.5 py-1 text-xs hover:bg-gov-gray-light text-gov-ink font-semibold transition flex items-center gap-1" id="btn-cross">
             <i data-lucide="scan-line" class="w-3.5 h-3.5 inline mr-1"></i> Cross-Section
           </button>
           <button onclick="runTopologyValidation()" id="btn-topology" class="px-2.5 py-1 text-xs hover:bg-amber-50 text-gov-amber font-bold flex items-center gap-1 transition">
@@ -301,23 +304,20 @@
         </div>
 
         <!-- Top Right Telemetry HUD (Right Dock) -->
-        <div class="absolute top-3 right-3 z-10 bg-white/95 border border-gov-gray-cool px-3 py-1.5 text-[11px] font-mono text-gov-ink shadow-md pointer-events-none hidden sm:block">
+        <div class="absolute top-3 right-3 z-30 bg-white/95 border border-gov-gray-cool px-3 py-1.5 text-[11px] font-mono text-gov-ink shadow-md pointer-events-none hidden sm:block">
           <p class="text-gov-blue font-bold">CRS: EPSG:7755 (Indian Nat. Grid)</p>
           <p class="text-gov-ink-muted">Vertical: WGS84 Orthometric (m)</p>
           <p class="text-gov-ink-muted">Camera: <span id="camera-pos" class="text-gov-ink font-bold">X: 38, Y: 42, Z: 48</span></p>
         </div>
 
         <!-- Role Workspace Banner (Docked Top Sub-bar, Not blocking model or sliders) -->
-        <div id="visualizer-role-banner" class="absolute top-14 left-3 z-10 max-w-xs bg-gov-navy/95 text-white border border-cyan-400/40 px-3 py-1.5 shadow-lg text-[11px]">
+        <div id="visualizer-role-banner" class="absolute top-14 left-3 z-30 max-w-xs bg-gov-navy/95 text-white border border-cyan-400/40 px-3 py-1.5 shadow-lg text-[11px]">
           <p id="visualizer-role-title" class="font-extrabold text-cyan-200">3D registry workspace</p>
           <p id="visualizer-role-copy" class="text-slate-300 mt-0.5">Role-specific controls are active.</p>
         </div>
 
-        <!-- 2D Canvas Fallback / Cross-Section Overlay -->
-        <canvas id="crossSectionCanvas" class="hidden absolute inset-0 w-full h-full z-10 bg-slate-950"></canvas>
-
         <!-- Hover Tooltip -->
-        <div id="unitTooltip" class="hidden absolute z-20 pointer-events-none bg-gov-navy/95 border-2 border-gov-cyan text-white p-2.5 shadow-2xl text-xs font-mono">
+        <div id="unitTooltip" class="hidden absolute z-40 pointer-events-none bg-gov-navy/95 border-2 border-gov-cyan text-white p-2.5 shadow-2xl text-xs font-mono">
           <p class="font-bold text-cyan-300" id="tt-title">Unit 1204</p>
           <p class="text-[10px] text-slate-300" id="tt-ulpin">ULPIN: IN-2187-4930-1049-A-F12-U1204</p>
           <p class="text-[10px] text-slate-200" id="tt-vol">Volume: 384.2 m³ (Z: +36.5m to +39.8m)</p>
@@ -455,7 +455,7 @@
 
         <div class="space-y-1.5 text-xs">
           <!-- Air Rights (Amber Safety Gold) -->
-          <div onclick="selectStrataUnit('air')" class="p-2.5 bg-amber-50/70 border border-amber-300 hover:border-gov-amber flex justify-between items-center cursor-pointer transition shadow-sm">
+          <div onclick="selectStrataUnit('air')" id="strata-air" class="p-2.5 bg-amber-50/70 border border-amber-300 hover:border-gov-amber flex justify-between items-center cursor-pointer transition shadow-sm">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 bg-gov-amber shadow-sm"></span>
               <span class="text-gov-ink font-semibold">Air Rights Corridor (+45m to +60m)</span>
@@ -473,7 +473,7 @@
           </div>
 
           <!-- Surface Land Parcel (Forest Green) -->
-          <div onclick="selectStrataUnit('surface')" class="p-2.5 bg-emerald-50/70 border border-emerald-300 hover:border-gov-green flex justify-between items-center cursor-pointer transition shadow-sm">
+          <div onclick="selectStrataUnit('surface')" id="strata-surface" class="p-2.5 bg-emerald-50/70 border border-emerald-300 hover:border-gov-green flex justify-between items-center cursor-pointer transition shadow-sm">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 bg-gov-green shadow-sm"></span>
               <span class="text-gov-ink font-semibold">Surface Land Parcel (0.0m Datum)</span>
@@ -482,7 +482,7 @@
           </div>
 
           <!-- Underground Parking Basement -->
-          <div onclick="selectStrataUnit('b1')" class="p-2.5 bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue flex justify-between items-center cursor-pointer transition shadow-sm">
+          <div onclick="selectStrataUnit('b1')" id="strata-b1" class="p-2.5 bg-gov-gray-light border border-gov-gray-cool hover:border-gov-blue flex justify-between items-center cursor-pointer transition shadow-sm">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 bg-slate-600 shadow-sm"></span>
               <span class="text-gov-ink font-semibold">Basement 1 Parking (-6.0m)</span>
@@ -491,7 +491,7 @@
           </div>
 
           <!-- Subsurface Metro Corridor (Crimson Red) -->
-          <div onclick="selectStrataUnit('metro')" class="p-2.5 bg-rose-50/70 border border-rose-200 hover:border-gov-red flex justify-between items-center cursor-pointer transition shadow-sm">
+          <div onclick="selectStrataUnit('metro')" id="strata-metro" class="p-2.5 bg-rose-50/70 border border-rose-200 hover:border-gov-red flex justify-between items-center cursor-pointer transition shadow-sm">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 bg-gov-red shadow-sm"></span>
               <span class="text-gov-ink font-semibold">Metro Transit Tunnel (-18.0m)</span>
@@ -829,6 +829,6 @@
 
   <!-- Custom JavaScript -->
   <script src="api.js?v=6"></script>
-  <script src="script.js?v=6"></script>
+  <script src="script.js?v=10"></script>
 </body>
 </html>

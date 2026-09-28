@@ -1,0 +1,158 @@
+================================================================================
+DharaNirman - 3D ULPIN & Volumetric Land Administration System
+System Architecture & Interconnected Codebase Overview
+================================================================================
+
+1. SYSTEM OVERVIEW & OBJECTIVE
+--------------------------------------------------------------------------------
+DharaNirman is a 3D cadastral and volumetric land administration framework designed 
+to transition conventional 2D land records into standardized 3D Unique Land Parcel 
+Identification Numbers (3D ULPIN). It provides full lifecycle governance for vertical 
+properties (multi-storey apartments, underground infrastructure, sub-surface utilities, 
+and air rights) through an interconnected full-stack architecture comprising interactive 
+3D spatial visualization, role-based workflows, automated volumetric validation, and 
+PostGIS/database-backed state management.
+
+--------------------------------------------------------------------------------
+2. SYSTEM COMPONENT ARCHITECTURE & INTERCONNECTION FLOW
+--------------------------------------------------------------------------------
+
+   +--------------------------------------------------------------------------+
+   |                             USER INTERFACE                               |
+   |  [index.html]       [login.html]    [citizen.html]   [surveyor.html]     |
+   |  3D Cadastral Viewer   Auth Gateway   Citizen Portal   Surveyor Portal   |
+   |                                                      [officer.html]      |
+   |                                                      Officer Portal      |
+   +--------------------------------------------------------------------------+
+                                       |
+                                       v
+   +--------------------------------------------------------------------------+
+   |                        FRONTEND LOGIC & INTEGRATION                      |
+   |  [script.js]       -> 3D Scene Rendering, Volumetric Parcel Slicing,     |
+   |                       3D ULPIN Display, Spatial Coordinate Transforms.   |
+   |  [auth.js]         -> Session Management, Role Access Guards, User State. |
+   |  [api.js]          -> Fetch abstraction, JWT injection, Backend Bridge.  |
+   |  [portal.js]       -> Shared portal workflows (Actions, Timeline, Docs). |
+   |  [style.css / portal.css] -> Layout, responsive themes & UI components.  |
+   +--------------------------------------------------------------------------+
+                                       |
+                               REST / JSON (JWT)
+                                       v
+   +--------------------------------------------------------------------------+
+   |                          FASTAPI BACKEND ENGINE                          |
+   |  [backend/app/main.py]                                                   |
+   |  - API Routing: Auth, Cases, Properties, Files, Regulations, Validation  |
+   |                                                                          |
+   |  [backend/app/auth.py]          [backend/app/validation.py]               |
+   |  - JWT token generation & auth   - 3D Volumetric conflict engine         |
+   |  - PBKDF2-SHA256 password hashes - Height, basement, overlap verification|
+   |  - Role-based authorization      - Automated spatial compliance checks   |
+   |                                                                          |
+   |  [backend/app/schemas.py]       [backend/app/models.py]                  |
+   |  - Pydantic models for validation- SQLAlchemy ORM & PostGIS Data Models  |
+   +--------------------------------------------------------------------------+
+                                       |
+                                       v
+   +--------------------------------------------------------------------------+
+   |                           PERSISTENCE LAYER                              |
+   |  [backend/app/db.py] -> PostgreSQL / SQLite Engine, Seeders, Sessions    |
+   |  [backend/uploads/]  -> Stored survey files, point clouds, spatial docs  |
+   +--------------------------------------------------------------------------+
+
+--------------------------------------------------------------------------------
+3. DETAILED FILE ROLES & INTERCONNECTIONS
+--------------------------------------------------------------------------------
+
+A. FRONTEND INTERFACES & PRESENTATION LAYER:
+   - index.html:
+     The primary interactive 3D geospatial dashboard. Loads Three.js and spatial 
+     layers to display volumetric land parcels, buildings, floors, and 3D ULPINs.
+   - login.html:
+     Unified authentication gateway supporting Citizen, Officer, and Surveyor roles 
+     with secure credential submission and role-based redirecting.
+   - citizen.html:
+     Portal enabling property owners to apply for 3D title registration, view 3D unit 
+     boundaries, track application lifecycles, and download digital certificates.
+   - surveyor.html:
+     Field operative portal to accept survey assignments, upload spatial files (LiDAR, 
+     point clouds, geojson, floor plans), and trigger volumetric validation.
+   - officer.html:
+     Administrative portal for Revenue/Cadastral Officers to review automated 3D 
+     spatial validation results, inspect 3D property geometries, approve/reject cases, 
+     and issue finalized 3D ULPIN identifiers.
+   - roadmap.html:
+     Architectural and technical roadmap detailing institutional integration with 
+     DoLR / MoRD standards.
+
+B. CLIENT-SIDE CONTROLLERS & ENGINE:
+   - api.js:
+     Centralized HTTP API wrapper that attaches JWT bearer tokens from sessionStorage, 
+     normalizes request payloads, handles errors, and exposes clean asynchronous methods 
+     to frontend interfaces.
+   - auth.js:
+     Client-side authentication controller that manages session persistence, verifies 
+     user roles before page loading, renders profile headers, and handles logout flows.
+   - portal.js:
+     Shared dynamic workflow controller for citizen/officer/surveyor pages. Fetches cases, 
+     renders interactive timeline histories, handles file upload pipelines, and dispatches 
+     state transitions (assignments, submissions, approvals).
+   - script.js:
+     Core 3D WebGL/Three.js rendering engine. Translates geographic coordinates (Lat, Lon, 
+     Elevation) into 3D bounding boxes and meshes, performs vertical slicing per floor, 
+     visualizes underground utilities, and renders real-time parcel inspection overlays.
+   - style.css & portal.css:
+     Modular styles ensuring responsive, accessible, and theme-consistent user interfaces 
+     across the viewer and portal screens.
+
+C. BACKEND CORE & SERVICES:
+   - backend/app/main.py:
+     FastAPI application entry point. Implements REST endpoints for:
+       * `/api/auth/*` (Login, Register, Profile)
+       * `/api/cases/*` (Creation, Assignment, Timeline, Status Transitions)
+       * `/api/properties/*` (Volumetric parcel metadata and 3D ULPIN queries)
+       * `/api/regulations/*` (Jurisdiction-specific building bye-laws and FAR rules)
+       * `/api/validation/*` (Spatial and volumetric rule evaluation)
+   - backend/app/validation.py:
+     Core analytical engine for 3D cadastre validation. Checks for vertical parcel 
+     overlaps, elevation boundaries, basement depth thresholds, zoning limits, and 
+     validates submitted survey documents against baseline cadastral rules.
+   - backend/app/auth.py:
+     Security subsystem providing salted PBKDF2 password hashing, JWT creation/verification, 
+     and dependency injection guards (`require_roles`) to secure privileged endpoints.
+   - backend/app/models.py:
+     SQLAlchemy ORM models defining the database schema:
+       * `User`: Platform actors (Citizen, Surveyor, Officer, Admin).
+       * `WorkflowCase` & `CaseEvent`: State machine for title generation and audit trail.
+       * `VolumetricProperty` & `Building`/`BuildingFloor`: 3D spatial properties and floor boundaries.
+       * `CaseFile`: Metadata for uploaded survey documents and point clouds.
+       * `PropertyOwnership` & `TitleApplication`: Ownership linkages and registration records.
+   - backend/app/schemas.py:
+     Pydantic schemas ensuring rigorous type safety, input validation, and structured 
+     JSON responses for all API requests.
+   - backend/app/db.py:
+     Database connection management, session generator (`get_db`), database bootstrap, 
+     and pre-populating initial cadastral datasets and mock users.
+   - backend/app/config.py:
+     Environment configuration loader handling JWT secrets, database URLs, CORS origins, 
+     and file upload paths.
+
+--------------------------------------------------------------------------------
+4. END-TO-END WORKFLOW INTEGRATION
+--------------------------------------------------------------------------------
+1. Registration & Application:
+   Citizen registers via [login.html] -> creates case in [citizen.html] via [api.js] -> 
+   persisted in [backend/app/models.py] via [backend/app/main.py].
+
+2. Assignment & Surveying:
+   Officer assigns case to Surveyor -> Surveyor accesses [surveyor.html], uploads spatial 
+   datasets (point clouds/plans) -> files stored and evaluated by [backend/app/validation.py].
+
+3. Volumetric Validation:
+   The backend validation engine parses 3D spatial coordinates, checks for bounding collisions, 
+   height restrictions, and structural tolerances.
+
+4. Officer Review & 3D ULPIN Issuance:
+   Officer inspects 3D volumetric model rendered by [script.js] in [officer.html], verifies 
+   validation report, and approves case -> Backend mints unique standardized 3D ULPIN 
+   and generates ownership certificate.
+================================================================================
