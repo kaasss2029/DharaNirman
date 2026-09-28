@@ -61,7 +61,7 @@ function selectLoginRole(role) {
   if (role === 'citizen') {
     if (idInput) {
       idInput.value = '';
-      idInput.placeholder = 'e.g. your_registered_email@example.com';
+      idInput.placeholder = 'Enter your registered email or phone number';
     }
     if (pwdInput) pwdInput.value = '';
   } else {
@@ -82,8 +82,8 @@ async function submitLogin() {
 
   if (!identifier || !password) {
     error.textContent = selectedLoginRole === 'citizen'
-      ? 'Please enter your registered identifier and password, or Register New Citizen first.'
-      : 'Enter an identifier and password.';
+      ? 'Please enter your registered email or phone number and password, or Register New Citizen first.'
+      : 'Enter your email or phone number and password.';
     error.hidden = false;
     return;
   }
@@ -193,7 +193,7 @@ async function beginLogin(identifier, password) {
   sessionStorage.setItem('ulpin-session', JSON.stringify({
     role: selectedLoginRole,
     name: activeName,
-    identifier: identifier,
+    identifier: userObj?.identifier || identifier,
     unit_id: activeUnit,
     state: userObj?.state || null,
     city: userObj?.city || null,

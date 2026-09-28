@@ -654,10 +654,13 @@ function initThreeJS() {
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.06;
+  controls.enableZoom = false;
+  controls.enablePan = false;
   controls.maxPolarAngle = Math.PI / 2 + 0.15; // Allow slight underground tilt
-  controls.minDistance = 10;
-  controls.maxDistance = 180;
+  controls.minDistance = 2;
+  controls.maxDistance = 220;
   controls.target.set(0, 10, 0);
+  renderer.domElement.addEventListener('wheel', onExplorerWheel, { passive: false });
 
   // Clipping Plane for Dynamic Strata Slicing
   clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 65);
@@ -677,6 +680,68 @@ function initThreeJS() {
 
   // Window Resize
   window.addEventListener('resize', onWindowResize);
+}
+
+function onExplorerWheel(event) {
+  event.preventDefault();
+
+  const rect = renderer.domElement.getBoundingClientRect();
+  const pointer = new THREE.Vector2(
+    ((event.clientX - rect.left) / rect.width) * 2 - 1,
+    -((event.clientY - rect.top) / rect.height) * 2 + 1
+  );
+  const cameraOffset = camera.position.clone().sub(controls.target);
+  const currentDistance = cameraOffset.length();
+  const deltaScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE
+    ? 16
+    : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+      ? rect.height
+      : 1;
+  const delta = THREE.MathUtils.clamp(event.deltaY * deltaScale, -1000, 1000);
+  const scale = Math.pow(0.95, (delta / 100) * controls.zoomSpeed);
+  const nextDistance = THREE.MathUtils.clamp(
+    currentDistance / scale,
+    controls.minDistance,
+    controls.maxDistance
+  );
+  const zoomRatio = nextDistance / currentDistance;
+
+  if (Math.abs(zoomRatio - 1) < 0.0001) return;
+
+  const zoomRaycaster = new THREE.Raycaster();
+  zoomRaycaster.setFromCamera(pointer, camera);
+  const hit = zoomRaycaster.intersectObjects(scene.children, true)[0];
+  const forward = camera.getWorldDirection(new THREE.Vector3());
+  const focusPoint = hit
+    ? hit.point
+    : zoomRaycaster.ray.intersectPlane(
+      new THREE.Plane().setFromNormalAndCoplanarPoint(forward, controls.target),
+      new THREE.Vector3()
+    );
+  if (!focusPoint) return;
+
+  const focusOffset = focusPoint.clone().sub(camera.position);
+  const focusDepth = focusOffset.dot(forward);
+  if (focusDepth <= 0) return;
+
+  const lateralShift = new THREE.Vector3()
+    .addScaledVector(
+      new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0),
+      focusOffset.dot(new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0)) / focusDepth
+    )
+    .addScaledVector(
+      new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1),
+      focusOffset.dot(new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1)) / focusDepth
+    )
+    .multiplyScalar(currentDistance * (1 - zoomRatio));
+  controls.target.add(lateralShift);
+  controls.target.clamp(
+    new THREE.Vector3(-13, -2, -13),
+    new THREE.Vector3(13, 50, 13)
+  );
+
+  camera.position.copy(controls.target).add(cameraOffset.multiplyScalar(zoomRatio));
+  controls.update();
 }
 
 function setupLights() {
