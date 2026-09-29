@@ -77,6 +77,8 @@ class PropertyResponse(BaseModel):
     volume: float
     status: str
     owner_name: Optional[str]
+    state: Optional[str] = None
+    city: Optional[str] = None
 
 
 class BuildingFloorResponse(BaseModel):
@@ -144,6 +146,8 @@ class CaseResponse(BaseModel):
     status: CaseStatus
     citizen_id: int
     citizen_name: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
     officer_id: Optional[int]
     surveyor_id: Optional[int]
     property_ulpin: str

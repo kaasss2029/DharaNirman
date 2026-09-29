@@ -36,15 +36,15 @@
 </head>
 <body data-role="surveyor">
   <div class="gov-strip">
-    <span>Survey of India • Department of Land Resources</span>
-    <span class="font-mono" id="surveyor-id-strip">DoLR PS ID: 26011 • Technical Field Services</span>
+    <span>DharaNirman 3D Cadastre • Smart India Hackathon</span>
+    <span class="font-mono" id="surveyor-id-strip">PS ID: 26011 • Technical Field Services</span>
   </div>
 
   <header>
     <div class="brand">
       <div class="brand-mark">⌖</div>
       <div>
-        <div class="eyebrow">Survey of India (SoI) Technical Portal</div>
+        <div class="eyebrow">LiDAR & CORS Geodetic Workspace</div>
         <h1>Surveyor Field Workspace</h1>
       </div>
     </div>
@@ -130,14 +130,17 @@
         <select id="survey-case" class="btn" style="width:100%; margin-bottom:10px; text-align: left;"></select>
 
         <label for="survey-file" class="metric-label" style="display:block; margin-bottom: 4px;">Survey File Attachment</label>
-        <input id="survey-file" type="file" accept=".ifc,.geojson,.json,.obj,.dxf,.las,.laz" style="width:100%; margin-bottom:12px; padding: 6px;">
+        <input id="survey-file" type="file" accept=".ifc,.geojson,.json,.obj,.dxf,.las,.laz" style="width:100%; margin-bottom:6px; padding: 6px;">
+        <div id="survey-file-info" style="font-size: 11px; margin-bottom: 10px; min-height: 16px;"></div>
 
         <div class="status" style="margin-bottom: 12px;">
           <span>Accepted Standards:</span>
           <strong class="font-mono">IFC 4.3 · GeoJSON · OBJ · DXF · LAS 1.4</strong>
         </div>
         <div class="actions">
-          <button class="btn btn-primary" onclick="uploadSurveyFile()">Upload and Submit Technical Evidence</button>
+          <button class="btn btn-primary" id="btn-upload-survey" onclick="uploadSurveyFile()">Upload and Submit Technical Evidence</button>
+          <button class="btn btn-light" type="button" onclick="autoAttachDemoLasFile()" title="Auto-attach synthetic field LiDAR for testing">⚡ Auto-Attach Demo .LAS</button>
+          <button class="btn btn-light" type="button" onclick="downloadSampleLasFile()" title="Download sample LiDAR file to your computer">📥 Download Sample .LAS</button>
         </div>
       </article>
     </section>

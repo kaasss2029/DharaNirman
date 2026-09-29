@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "name": "DharaNirman_3D_Cadastre_Demarcation",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:EPSG::7755"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "standard": "ISO 19152 LADM v2",
+        "authority": "Survey of India (SoI) / DoLR",
+        "cors_rtk_accuracy_m": 0.012,
+        "crs": "EPSG:7755",
+        "topology_status": "VALIDATED"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [77.209021, 28.613939, 10.8],
+            [77.209145, 28.613939, 10.8],
+            [77.209145, 28.614041, 10.8],
+            [77.209021, 28.614041, 10.8],
+            [77.209021, 28.613939, 10.8]
+          ]
+        ]
+      }
+    }
+  ]
+}

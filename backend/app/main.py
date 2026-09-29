@@ -271,7 +271,7 @@ def list_properties(db: Session = Depends(get_db), user: User = Depends(current_
     query = select(VolumetricProperty)
     if user.role == UserRole.citizen:
         query = query.join(PropertyOwnership, PropertyOwnership.property_id == VolumetricProperty.id).where(PropertyOwnership.citizen_id == user.id)
-    return list(db.scalars(query.order_by(VolumetricProperty.unit_id)))
+    return list(db.scalars(query.order_by(VolumetricProperty.unit_id)).unique())
 
 
 @app.get("/api/buildings/{building_id}", response_model=BuildingResponse)

@@ -104,6 +104,7 @@ textarea {
   padding: 6px 10px;
   font-size: 12px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  resize: none;
 }
 
 input[type="text"]:focus,
@@ -241,33 +242,33 @@ html.dark,
 /* Background & Main text */
 html.dark,
 html.dark body {
-  background-color: #0b111e !important;
-  color: #f1f5f9 !important;
+  background-color: #16161e !important;
+  color: #c0caf5 !important;
 }
 
 /* Header Authority Bar in Dark Mode */
 html.dark header.bg-gov-navy {
-  background-color: #0c1829 !important;
-  border-bottom: 3px solid #0284c7 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  background-color: #1f2335 !important;
+  border-bottom: 3px solid #7aa2f7 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Cards and Panels */
 html.dark .gov-card {
-  background: #131d2e !important;
-  border-color: #24344d !important;
-  color: #f1f5f9 !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+  background: #24283b !important;
+  border-color: #414868 !important;
+  color: #c0caf5 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
 html.dark .gov-card-inset {
-  background: #101a2b !important;
-  border-color: #24344d !important;
+  background: #1f2335 !important;
+  border-color: #414868 !important;
 }
 
 html.dark .gov-panel-sidebar {
-  background: #0f172a !important;
-  border-color: #24344d !important;
+  background: #1a1b26 !important;
+  border-color: #414868 !important;
 }
 
 /* Inputs, Selects, and Textareas */
@@ -276,15 +277,15 @@ html.dark input[type="number"],
 html.dark input[type="password"],
 html.dark select,
 html.dark textarea {
-  background-color: #101a2b !important;
-  border-color: #2e415e !important;
-  color: #f8fafc !important;
+  background-color: #1f2335 !important;
+  border-color: #414868 !important;
+  color: #c0caf5 !important;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
 
 html.dark textarea::placeholder,
 html.dark input::placeholder {
-  color: #94a3b8 !important;
+  color: #7a88cf !important;
   opacity: 0.85;
 }
 
@@ -293,262 +294,264 @@ html.dark input[type="number"]:focus,
 html.dark input[type="password"]:focus,
 html.dark select:focus,
 html.dark textarea:focus {
-  border-color: #38bdf8 !important;
+  border-color: #7aa2f7 !important;
+  box-shadow: 0 0 0 2px rgba(122, 162, 247, 0.25) !important;
 }
 
 /* 3D Visualizer Role Workspace Banners (DoLR Officer, Surveyor, Citizen) */
 html.dark #visualizer-role-banner {
-  background-color: rgba(12, 24, 41, 0.95) !important;
-  border-color: rgba(56, 189, 248, 0.5) !important;
-  color: #f1f5f9 !important;
+  background-color: rgba(31, 35, 53, 0.95) !important;
+  border-color: rgba(122, 162, 247, 0.6) !important;
+  color: #c0caf5 !important;
 }
 html.dark #visualizer-role-title {
-  color: #38bdf8 !important;
+  color: #7aa2f7 !important;
 }
 html.dark #visualizer-role-copy {
-  color: #cbd5e1 !important;
+  color: #9aa5ce !important;
 }
 
 /* Dark mode scrollbars */
 html.dark ::-webkit-scrollbar-track {
-  background: #0b111e;
+  background: #16161e;
 }
 html.dark ::-webkit-scrollbar-thumb {
-  background: #24344d;
+  background: #414868;
 }
 html.dark ::-webkit-scrollbar-thumb:hover {
-  background: #38bdf8;
+  background: #7aa2f7;
 }
 
 /* Tailored Overrides for Tailwind Utility Classes in Dark Mode */
 html.dark .bg-gov-bg {
-  background-color: #0b111e !important;
+  background-color: #16161e !important;
 }
 html.dark .bg-gov-gray-light {
-  background-color: #162236 !important;
+  background-color: #1f2335 !important;
 }
 html.dark .bg-white {
-  background-color: #131d2e !important;
-  color: #f1f5f9 !important;
+  background-color: #24283b !important;
+  color: #c0caf5 !important;
 }
 html.dark .text-gov-ink {
-  color: #f1f5f9 !important;
+  color: #c0caf5 !important;
 }
 html.dark .text-gov-ink-muted {
-  color: #94a3b8 !important;
+  color: #9aa5ce !important;
 }
 html.dark .text-gov-navy {
-  color: #e2e8f0 !important;
+  color: #c0caf5 !important;
 }
 html.dark .border-gov-gray-cool {
-  border-color: #24344d !important;
+  border-color: #414868 !important;
 }
 html.dark .border-gov-gray-border {
-  border-color: #384c68 !important;
+  border-color: #414868 !important;
 }
 html.dark .border-slate-200 {
-  border-color: #24344d !important;
+  border-color: #414868 !important;
 }
 
 /* Layer & Category items */
 html.dark label.bg-gov-gray-light:hover {
-  border-color: #38bdf8 !important;
-  background-color: #1a2942 !important;
+  border-color: #7aa2f7 !important;
+  background-color: #292e42 !important;
 }
 
 /* Badges in Dark Mode */
 html.dark .badge-green {
-  background-color: #063728 !important;
-  color: #34d399 !important;
-  border-color: #065f46 !important;
+  background-color: #1c2e28 !important;
+  color: #9ece6a !important;
+  border-color: #2e5b42 !important;
 }
 html.dark .badge-amber {
-  background-color: #3a2208 !important;
-  color: #fbbf24 !important;
-  border-color: #92400e !important;
+  background-color: #372813 !important;
+  color: #e0af68 !important;
+  border-color: #7e5720 !important;
 }
 html.dark .badge-red {
-  background-color: #3a0e0e !important;
-  color: #f87171 !important;
-  border-color: #991b1b !important;
+  background-color: #3c1e28 !important;
+  color: #f7768e !important;
+  border-color: #8c2d43 !important;
 }
 html.dark .badge-blue {
-  background-color: #0d2238 !important;
-  color: #38bdf8 !important;
-  border-color: #0369a1 !important;
+  background-color: #1e2640 !important;
+  color: #7aa2f7 !important;
+  border-color: #3d59a1 !important;
 }
 
 /* 3D CAD Dock & Overlays */
 html.dark #cadastreCanvasContainer {
-  background-color: #070d18 !important;
-  border-color: #24344d !important;
+  background-color: #1a1b26 !important;
+  border-color: #414868 !important;
 }
 html.dark .bg-white\/95 {
-  background-color: rgba(19, 29, 46, 0.95) !important;
-  border-color: #24344d !important;
-  color: #f1f5f9 !important;
+  background-color: rgba(36, 40, 59, 0.95) !important;
+  border-color: #414868 !important;
+  color: #c0caf5 !important;
 }
 
 /* 3D View Mode Control Buttons in Dark Mode */
 html.dark #btn-3d,
 html.dark #btn-cross {
-  color: #94a3b8 !important;
+  color: #9aa5ce !important;
   background-color: transparent !important;
   border: 1px solid transparent !important;
 }
 
 html.dark #btn-3d.bg-gov-blue,
 html.dark #btn-cross.bg-gov-blue {
-  background-color: #0284c7 !important;
-  color: #ffffff !important;
-  border-color: #0369a1 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+  background-color: #7aa2f7 !important;
+  color: #15161e !important;
+  font-weight: 700 !important;
+  border-color: #3d59a1 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
 }
 
 html.dark #btn-3d:not(.bg-gov-blue):hover,
 html.dark #btn-cross:not(.bg-gov-blue):hover {
-  background-color: #1e2c40 !important;
-  color: #38bdf8 !important;
-  border-color: #2e415e !important;
+  background-color: #292e42 !important;
+  color: #7aa2f7 !important;
+  border-color: #414868 !important;
 }
 
 html.dark #btn-3d:not(.bg-gov-blue):hover i,
 html.dark #btn-cross:not(.bg-gov-blue):hover i {
-  color: #38bdf8 !important;
+  color: #7aa2f7 !important;
 }
 
 html.dark #btn-topology {
-  color: #fbbf24 !important;
-  background-color: rgba(245, 158, 11, 0.12) !important;
-  border: 1px solid rgba(245, 158, 11, 0.25) !important;
+  color: #e0af68 !important;
+  background-color: rgba(224, 175, 104, 0.15) !important;
+  border: 1px solid rgba(224, 175, 104, 0.35) !important;
 }
 
 html.dark #btn-topology:hover {
-  background-color: rgba(245, 158, 11, 0.28) !important;
-  color: #fde68a !important;
-  border-color: #f59e0b !important;
+  background-color: rgba(224, 175, 104, 0.28) !important;
+  color: #fce788 !important;
+  border-color: #e0af68 !important;
 }
 
 html.dark #btn-topology:hover i {
-  color: #fde68a !important;
+  color: #fce788 !important;
 }
 
 /* CAD Toolbar Bottom Dock & Quick-Toggles in Dark Mode */
 html.dark .hover\:bg-gov-gray-light:hover {
-  background-color: #1e2c40 !important;
-  color: #38bdf8 !important;
-  border-color: #2e415e !important;
+  background-color: #292e42 !important;
+  color: #7aa2f7 !important;
+  border-color: #414868 !important;
 }
 
 html.dark .hover\:bg-gov-gray-cool:hover {
-  background-color: #1e2c40 !important;
-  color: #38bdf8 !important;
-  border-color: #38bdf8 !important;
+  background-color: #292e42 !important;
+  color: #7aa2f7 !important;
+  border-color: #7aa2f7 !important;
 }
 
 html.dark .hover\:bg-amber-50:hover {
-  background-color: rgba(245, 158, 11, 0.22) !important;
-  color: #fde68a !important;
+  background-color: rgba(224, 175, 104, 0.22) !important;
+  color: #fce788 !important;
 }
 
 html.dark button.bg-gov-gray-light,
 html.dark a.bg-gov-gray-light {
-  background-color: #162236 !important;
-  border-color: #2e415e !important;
-  color: #cbd5e1 !important;
+  background-color: #1f2335 !important;
+  border-color: #414868 !important;
+  color: #c0caf5 !important;
 }
 
 html.dark button.bg-gov-gray-light:hover,
 html.dark a.bg-gov-gray-light:hover,
 html.dark button.hover\:bg-gov-gray-cool:hover,
 html.dark button.hover\:bg-gov-gray-light:hover {
-  background-color: #1e2c40 !important;
-  border-color: #38bdf8 !important;
-  color: #38bdf8 !important;
+  background-color: #292e42 !important;
+  border-color: #7aa2f7 !important;
+  color: #7aa2f7 !important;
 }
 
 html.dark button.hover\:bg-gov-gray-cool:hover i,
 html.dark button.hover\:bg-gov-gray-light:hover i,
 html.dark button.bg-gov-gray-light:hover i {
-  color: #38bdf8 !important;
+  color: #7aa2f7 !important;
 }
 
 /* Copy ULPIN button */
 html.dark button[onclick="copyULPIN()"] {
-  background-color: #162236 !important;
-  border-color: #2e415e !important;
-  color: #38bdf8 !important;
+  background-color: #1f2335 !important;
+  border-color: #414868 !important;
+  color: #7aa2f7 !important;
 }
 
 html.dark button[onclick="copyULPIN()"]:hover {
-  background-color: #1e2c40 !important;
-  border-color: #38bdf8 !important;
-  color: #7dd3fc !important;
+  background-color: #292e42 !important;
+  border-color: #7aa2f7 !important;
+  color: #7dcfff !important;
 }
 
 html.dark #result-ulpin {
-  background-color: #0d2238 !important;
-  border-color: #0284c7 !important;
-  color: #7dd3fc !important;
+  background-color: #1e2640 !important;
+  border-color: #3d59a1 !important;
+  color: #7dcfff !important;
 }
 
 /* Range Sliders */
 html.dark input[type="range"] {
-  background: #1e2c40 !important;
-  border-color: #2e415e !important;
+  background: #292e42 !important;
+  border-color: #414868 !important;
 }
 html.dark input[type="range"]::-webkit-slider-thumb {
-  background: #0284c7 !important;
-  border-color: #38bdf8 !important;
+  background: #7aa2f7 !important;
+  border-color: #bb9af7 !important;
 }
 html.dark input[type="range"]::-moz-range-thumb {
-  background: #0284c7 !important;
-  border-color: #38bdf8 !important;
+  background: #7aa2f7 !important;
+  border-color: #bb9af7 !important;
 }
 
 /* Planning Context Card */
 html.dark #regulation-context-card {
-  background-color: rgba(69, 26, 3, 0.22) !important;
-  border-color: rgba(180, 83, 9, 0.45) !important;
+  background-color: rgba(55, 40, 19, 0.4) !important;
+  border-color: rgba(224, 175, 104, 0.45) !important;
 }
 html.dark #regulation-context-card h2,
 html.dark #regulation-context-card #regulation-jurisdiction {
-  color: #fcd34d !important;
+  color: #e0af68 !important;
 }
 html.dark #regulation-context-card #regulation-summary,
 html.dark #regulation-context-card p {
   color: #fde68a !important;
 }
 html.dark #regulation-context-card span {
-  background-color: rgba(19, 29, 46, 0.85) !important;
-  border-color: rgba(180, 83, 9, 0.4) !important;
+  background-color: rgba(31, 35, 53, 0.85) !important;
+  border-color: rgba(224, 175, 104, 0.4) !important;
   color: #fde68a !important;
 }
 
 /* Strata Stack Navigator Items */
 html.dark #strata-air {
-  background-color: rgba(69, 26, 3, 0.28) !important;
-  border-color: rgba(245, 158, 11, 0.4) !important;
+  background-color: rgba(55, 40, 19, 0.35) !important;
+  border-color: rgba(224, 175, 104, 0.45) !important;
 }
 html.dark #strata-res {
-  background-color: rgba(13, 34, 56, 0.6) !important;
-  border-color: #0284c7 !important;
+  background-color: rgba(30, 38, 64, 0.7) !important;
+  border-color: #7aa2f7 !important;
 }
 html.dark #strata-surface {
-  background-color: rgba(6, 55, 40, 0.28) !important;
-  border-color: rgba(16, 185, 129, 0.4) !important;
+  background-color: rgba(28, 46, 40, 0.5) !important;
+  border-color: rgba(158, 206, 106, 0.5) !important;
 }
 html.dark #strata-b1 {
-  background-color: #162236 !important;
-  border-color: #24344d !important;
+  background-color: #1f2335 !important;
+  border-color: #414868 !important;
 }
 html.dark #strata-metro {
-  background-color: rgba(58, 14, 14, 0.28) !important;
-  border-color: rgba(239, 68, 68, 0.35) !important;
+  background-color: rgba(60, 30, 40, 0.5) !important;
+  border-color: rgba(247, 118, 142, 0.45) !important;
 }
 html.dark #topology-card {
-  background-color: rgba(6, 55, 40, 0.28) !important;
-  border-color: rgba(16, 185, 129, 0.4) !important;
+  background-color: rgba(28, 46, 40, 0.5) !important;
+  border-color: rgba(158, 206, 106, 0.5) !important;
 }
 
 /* Modals */
@@ -556,20 +559,20 @@ html.dark #certificateModal > div,
 html.dark #exportModal > div,
 html.dark #demarcationModal > div,
 html.dark #taxModal > div {
-  background-color: #131d2e !important;
-  border-color: #24344d !important;
-  color: #f1f5f9 !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+  background-color: #24283b !important;
+  border-color: #414868 !important;
+  color: #c0caf5 !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7) !important;
 }
 html.dark #certificateModal .border-b-2 {
-  border-color: #24344d !important;
+  border-color: #414868 !important;
 }
 html.dark #certificateModal h2,
 html.dark #certificateModal h3,
 html.dark #exportModal h2,
 html.dark #demarcationModal h2,
 html.dark #taxModal h2 {
-  color: #f1f5f9 !important;
+  color: #c0caf5 !important;
 }
 
 /* Interactive elements transition */

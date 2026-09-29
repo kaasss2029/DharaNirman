@@ -102,6 +102,20 @@ class VolumetricProperty(Base):
     geometry: Mapped[Optional[Any]] = mapped_column(SpatialGeometry)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
+    ownerships: Mapped[list["PropertyOwnership"]] = relationship("PropertyOwnership", foreign_keys="PropertyOwnership.property_id", lazy="selectin")
+
+    @property
+    def state(self) -> Optional[str]:
+        if self.ownerships and len(self.ownerships) > 0 and self.ownerships[0].citizen:
+            return self.ownerships[0].citizen.state
+        return None
+
+    @property
+    def city(self) -> Optional[str]:
+        if self.ownerships and len(self.ownerships) > 0 and self.ownerships[0].citizen:
+            return self.ownerships[0].citizen.city
+        return None
+
 
 class PropertyOwnership(Base):
     __tablename__ = "property_ownerships"
@@ -112,6 +126,8 @@ class PropertyOwnership(Base):
     ownership_percent: Mapped[float] = mapped_column(default=100.0)
     status: Mapped[str] = mapped_column(String(40), default="verified")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    citizen: Mapped[Optional["User"]] = relationship("User", foreign_keys=[citizen_id], lazy="joined")
 
 
 class TitleApplication(Base):
@@ -150,6 +166,14 @@ class WorkflowCase(Base):
     @property
     def citizen_name(self) -> Optional[str]:
         return self.citizen.name if self.citizen else None
+
+    @property
+    def state(self) -> Optional[str]:
+        return self.citizen.state if self.citizen else None
+
+    @property
+    def city(self) -> Optional[str]:
+        return self.citizen.city if self.citizen else None
 
 
 class CaseEvent(Base):

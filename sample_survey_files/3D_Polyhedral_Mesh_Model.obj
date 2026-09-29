@@ -1,0 +1,23 @@
+# DharaNirman 3D Cadastre - Authoritative Volumetric Polyhedron
+# Standard: ISO 19152 LADM v2 / Survey of India
+# CRS: EPSG:7755 (CORS RTK)
+
+o 3D_Cadastral_Polyhedron
+v 0.000 0.000 0.000
+v 10.000 0.000 0.000
+v 10.000 10.000 0.000
+v 0.000 10.000 0.000
+v 0.000 0.000 3.600
+v 10.000 0.000 3.600
+v 10.000 10.000 3.600
+v 0.000 10.000 3.600
+
+# Base and Ceiling Faces
+f 1 2 3 4
+f 8 7 6 5
+
+# Vertical Boundary Enclosures
+f 1 5 6 2
+f 2 6 7 3
+f 3 7 8 4
+f 4 8 5 1

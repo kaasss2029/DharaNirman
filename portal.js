@@ -61,9 +61,10 @@ function portalLogout() {
   window.location.href = 'login.html';
 }
 
-function portalAction(message) {
+function portalAction(message, type = 'info') {
   const notice = document.getElementById('portal-notice');
   if (notice) {
+    notice.className = `card notice-${type}`;
     notice.textContent = message;
     notice.hidden = false;
   }
@@ -86,8 +87,8 @@ function downloadCitizenTitle() {
   const dateFormatted = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
   const certificateText = `================================================================================
-GOVERNMENT OF INDIA • MINISTRY OF RURAL DEVELOPMENT
-DEPARTMENT OF LAND RESOURCES (DoLR)
+DHARANIRMAN 3D CADASTRE AUTHORITY • SMART INDIA HACKATHON
+NATIONAL VOLUMETRIC LAND REGISTRATION SYSTEM
 OFFICIAL 3D BHU-AADHAAR VOLUMETRIC PROPERTY TITLE CERTIFICATE
 Standard: ISO 19152 LADM v2 (3D Spatial Cadastre)
 ================================================================================
@@ -96,7 +97,7 @@ CERTIFICATE METADATA
 --------------------------------------------------------------------------------
 Certificate No       : ${certNumber}
 Issue Date & Time    : ${dateFormatted} (${timestamp})
-Issuing Authority    : Department of Land Resources (DoLR), MoRD, Govt. of India
+Issuing Authority    : DharaNirman 3D Cadastral Authority (SIH Prototype)
 Verification Status  : VERIFIED FREEHOLD TITLE (Digitally Signed)
 
 TITLE HOLDER & PROPERTY IDENTIFIERS
@@ -121,7 +122,7 @@ MUNICIPAL & COMPLIANCE RECORD
 --------------------------------------------------------------------------------
 Annual Property Tax  : ₹ 14,820 / yr (Paid in Full · BBPS Ref: BBPS-DL-2026-98214)
 Encumbrance Status   : NIL (Clear Freehold Title · No Liens)
-Legal Admissibility  : Valid under Digital India Land Records Modernization Programme
+Legal Admissibility  : ISO 19152 LADM Volumetric Strata Standard
 
 CRYPTOGRAPHIC INTEGRITY & VERIFICATION
 --------------------------------------------------------------------------------
@@ -129,8 +130,8 @@ Digital Signature    : SHA256:7e9b2a14c6d830f5a91e4823d0fb5c1e948302194a8b7e61c3
 Blockchain Tx Hash   : 0x9f4a8b7e61c3d2e5a4f890123456789abcdef0123456789
 CRS Spatial Ref      : EPSG:7755 (Survey of India CORS RTK)
 ================================================================================
-This is an authentic, digitally generated spatial title certificate issued under the
-authority of the Ministry of Rural Development, Department of Land Resources.
+This is an authentic, digitally generated spatial title certificate issued under
+the DharaNirman 3D Cadastral Framework for Smart India Hackathon.
 ================================================================================`;
 
   const blob = new Blob([certificateText], { type: 'text/plain;charset=utf-8' });
@@ -190,12 +191,10 @@ async function loadCitizenProperties() {
   const propertyTitle = property?.title || `Apartment Unit #${unitId}`;
   const propertyFloor = property?.floor || (unitId === 'U0401' ? 'Floor 4' : unitId === 'U0602' ? 'Floor 6' : unitId === 'U1204' ? 'Floor 12' : 'Floor 1');
 
-  if (property) {
-    session.unit_id = property.unit_id;
-    session.property_ulpin = property.property_ulpin;
-    session.registered_owner = property.owner_name || session.name;
-    sessionStorage.setItem('ulpin-session', JSON.stringify(session));
-  }
+  session.unit_id = unitId;
+  session.property_ulpin = propertyUlpin;
+  session.registered_owner = property?.owner_name || session.name;
+  sessionStorage.setItem('ulpin-session', JSON.stringify(session));
 
   const propertyLabel = document.querySelector('[data-citizen-property]');
   if (propertyLabel) {
@@ -245,11 +244,12 @@ async function createCitizenCase() {
   const notes = document.getElementById('request-notes')?.value || '';
   try {
     const session = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
-    const unitId = session.unit_id || 'unknown unit';
-    const propertyUlpin = session.property_ulpin;
+    const unitId = session.unit_id || 'U1204';
+    let propertyUlpin = session.property_ulpin;
     if (!propertyUlpin) {
-      portalAction('No registered 3D ULPIN is linked to this account. Register or claim a unit before submitting a request.');
-      return;
+      propertyUlpin = `IN-2187-4930-1049-A-${unitId}`;
+      session.property_ulpin = propertyUlpin;
+      sessionStorage.setItem('ulpin-session', JSON.stringify(session));
     }
     const caseItem = await apiRequest('/api/cases', {
       method: 'POST',
@@ -260,10 +260,11 @@ async function createCitizenCase() {
         notes
       })
     });
-    portalAction(`Request #${caseItem.id} submitted successfully. Status: submitted.`);
+    portalAction(`✓ Request #${caseItem.id} submitted successfully to DoLR. Status: submitted.`, 'success');
+    document.getElementById('request-notes').value = '';
     await loadPortalCases('citizen');
   } catch (error) {
-    portalAction(`Could not submit request: ${error.message}`);
+    portalAction(`Could not submit request: ${error.message}`, 'danger');
   }
 }
 
@@ -459,22 +460,110 @@ async function prepareSurveyCaseSelector() {
 async function uploadSurveyFile() {
   const input = document.getElementById('survey-file');
   const caseId = document.getElementById('survey-case')?.value;
-  if (!input?.files?.[0] || !caseId) {
-    portalAction('Select an assigned case and a survey file first.');
+  const submitBtn = document.getElementById('btn-upload-survey') || document.querySelector('button[onclick="uploadSurveyFile()"]');
+
+  if (!caseId) {
+    portalAction('Please select an assigned case from the dropdown first.', 'warning');
     return;
   }
+
+  if (!input?.files?.[0]) {
+    if (input) {
+      input.focus();
+      input.classList.add('input-error');
+      setTimeout(() => input.classList.remove('input-error'), 2500);
+    }
+    portalAction('Please click "Choose file" to attach a survey file (.las, .laz, .ifc, .geojson, .obj, .dxf) before submitting.', 'warning');
+    return;
+  }
+
+  const file = input.files[0];
+  const originalBtnText = submitBtn ? submitBtn.innerHTML : 'Upload and Submit Technical Evidence';
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '⏳ Uploading and submitting evidence...';
+  }
+
   const formData = new FormData();
-  formData.append('file', input.files[0]);
+  formData.append('file', file);
+
   try {
     await apiRequest(`/api/cases/${caseId}/files`, { method: 'POST', body: formData });
     await apiRequest(`/api/cases/${caseId}/submit-survey`, { method: 'POST' });
-    portalAction(`Survey evidence uploaded and Case #${caseId} submitted for DoLR validation.`);
+    portalAction(`✓ Survey evidence "${file.name}" uploaded and Case #${caseId} submitted for DoLR verification.`, 'success');
     input.value = '';
+    const fileInfo = document.getElementById('survey-file-info');
+    if (fileInfo) fileInfo.textContent = '';
     await loadSurveyorCases();
     await prepareSurveyCaseSelector();
   } catch (error) {
-    portalAction(`Survey submission failed: ${error.message}`);
+    portalAction(`Survey submission failed: ${error.message}`, 'danger');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+    }
   }
+}
+
+function autoAttachDemoLasFile() {
+  const selector = document.getElementById('survey-case');
+  const selectedOption = selector?.options[selector?.selectedIndex]?.text || 'Case';
+  const caseId = selector?.value || '';
+  const filename = '3D_LiDAR_Demarcation_Survey.las';
+  
+  const content = `LASF_SURVEY_OF_INDIA_3D_CADASTRAL_POINT_CLOUD_DATA_V1.4
+CRS: EPSG:7755 (Survey of India CORS RTK Datum)
+Spatial Scope: 3D Volumetric Demarcation Boundary
+Target Reference: ${selectedOption || 'Authoritative Cadastral Boundary'}
+Case Identifier: ${caseId ? `Case #${caseId}` : 'DoLR Field Task'}
+Surveyor: Neha Kulkarni (ID: 26011)
+Scan Density: 45 pts/m2 (LAS 1.4)
+Positional Precision: +/- 1.2 cm (CORS RTK)
+Vertical Datum: EPSG:7755 + Geoid
+[HEADER RECORD END - BINARY POINT STREAM]`;
+
+  const blob = new Blob([content], { type: 'application/octet-stream' });
+  const file = new File([blob], filename, { type: 'application/octet-stream' });
+  
+  const input = document.getElementById('survey-file');
+  if (input) {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    input.files = dataTransfer.files;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    portalAction(`⚡ Auto-attached universal LiDAR survey file "${filename}". Click "Upload and Submit Technical Evidence" to submit.`, 'info');
+  }
+}
+
+function downloadSampleLasFile() {
+  const selector = document.getElementById('survey-case');
+  const selectedOption = selector?.options[selector?.selectedIndex]?.text || 'Case';
+  const caseId = selector?.value || '';
+  const filename = '3D_LiDAR_Demarcation_Survey.las';
+
+  const content = `LASF_SURVEY_OF_INDIA_3D_CADASTRAL_POINT_CLOUD_DATA_V1.4
+CRS: EPSG:7755 (Survey of India CORS RTK Datum)
+Spatial Scope: 3D Volumetric Demarcation Boundary
+Target Reference: ${selectedOption || 'Authoritative Cadastral Boundary'}
+Case Identifier: ${caseId ? `Case #${caseId}` : 'DoLR Field Task'}
+Surveyor: Neha Kulkarni (ID: 26011)
+Scan Density: 45 pts/m2 (LAS 1.4)
+Positional Precision: +/- 1.2 cm (CORS RTK)
+Vertical Datum: EPSG:7755 + Geoid
+[HEADER RECORD END - BINARY POINT STREAM]`;
+
+  const blob = new Blob([content], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  portalAction(`📥 Downloaded universal survey evidence "${filename}".`, 'info');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -519,6 +608,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (expectedRole === 'surveyor') {
       await loadSurveyorCases();
       await prepareSurveyCaseSelector();
+      const surveyFileInput = document.getElementById('survey-file');
+      if (surveyFileInput) {
+        surveyFileInput.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          const info = document.getElementById('survey-file-info');
+          if (info) {
+            if (file) {
+              const sizeKB = (file.size / 1024).toFixed(1);
+              const sizeStr = file.size > 1048576 ? `${(file.size / 1048576).toFixed(2)} MB` : `${sizeKB} KB`;
+              info.innerHTML = `<span style="color:#10b981; font-weight:600;">✓ Ready to upload:</span> <strong>${file.name}</strong> (${sizeStr})`;
+            } else {
+              info.textContent = '';
+            }
+          }
+        });
+      }
     }
   } catch (error) {
     portalAction(`Backend connection failed: ${error.message}`);

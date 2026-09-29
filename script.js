@@ -13,6 +13,7 @@ let selectedUnitMesh = null;
 let currentViewMode = '3d'; // '3d' or 'cross'
 let isAutoRotating = true;
 let isWireframeMode = false;
+let isPanMode = false;
 let clippingPlane;
 let activeRole = null;
 let activePropertyUnit = 'U1204';
@@ -27,65 +28,394 @@ let activeBuilding = {
 function populateFloorSelector() {
   const selector = document.getElementById('floor-idx');
   if (!selector || !activeBuilding.floors) return;
+  const currentVal = selector.value;
   selector.replaceChildren();
+  const lang = currentLanguage || 'en';
+  const floorWord = lang === 'hi' ? 'तल' : 'Floor';
+  const basementWord = lang === 'hi' ? 'तहखाना' : 'Basement';
+  const surfaceWord = lang === 'hi' ? 'धरातल (ग्राउंड)' : 'Surface Ground';
+
   activeBuilding.floors.forEach(floor => {
     const option = document.createElement('option');
     option.value = floor.floor_code;
-    option.textContent = `Floor ${String(floor.floor_number).padStart(2, '0')} (${floor.floor_code})`;
+    option.textContent = `${floorWord} ${String(floor.floor_number).padStart(2, '0')} (${floor.floor_code})`;
     selector.appendChild(option);
   });
   for (let level = 1; level <= (activeBuilding.basement_levels || 0); level += 1) {
     const option = document.createElement('option');
     option.value = `B${String(level).padStart(2, '0')}`;
-    option.textContent = `Basement ${level} (B${String(level).padStart(2, '0')})`;
+    option.textContent = `${basementWord} ${level} (B${String(level).padStart(2, '0')})`;
     selector.appendChild(option);
   }
   const surface = document.createElement('option');
   surface.value = 'S00';
-  surface.textContent = 'Surface Ground (S00)';
+  surface.textContent = `${surfaceWord} (S00)`;
   selector.appendChild(surface);
+
+  if (currentVal) selector.value = currentVal;
 }
 
 let currentLanguage = 'en';
 const i18n = {
   en: {
-    langLabel: 'हिंदी',
-    corsStatus: 'SoI CORS Network: <strong>ACTIVE</strong> (RTK Fix ±1.2cm)',
-    btnAi: 'Run AI 3D Extraction',
-    btnDemarcation: 'Request Demarcation',
-    btnCert: '3D Bhu-Aadhaar Card',
-    btnExport: 'Export Cadastre',
-    titleDesignation: 'Title Designation',
-    lblZ: 'Vertical Elevation (Z)',
-    lblVol: 'Calculated Volume',
-    lblArea: 'Carpet Area',
-    lblOwner: 'Owner / Title Holder',
-    lblStatus: 'Title Status:',
-    lblTax: 'Tax Assessment:',
-    lblStrata: 'Strata Share:'
+    // Masthead & Header
+    masthead_text: 'DharaNirman 3D Cadastre • Smart India Hackathon',
+    masthead_psid: 'PS ID: 26011 • ISO 19152 LADM v2',
+    header_badge: '3D ULPIN v3.2 • ISO 19152 LADM',
+    brand_sub: 'Volumetric Land Administration & Cadastre System',
+    cors_status: 'SoI CORS Network: <strong>ACTIVE</strong> (RTK Fix ±1.2cm)',
+    btn_demarcation: 'Request Demarcation',
+    btn_cert: '3D Bhu-Aadhaar Card',
+    btn_export: 'Export Cadastre',
+    theme_dark: 'Dark',
+    theme_light: 'Light',
+    lang_toggle: 'हिंदी',
+
+    // Left Panel - Multi-Source Spatial Layers
+    layers_title: 'Multi-Source Spatial Layers',
+    layers_active: '5 ACTIVE',
+    layer_drone_title: 'Drone Photogrammetry',
+    layer_drone_desc: '0.02m GSD Mesh / GeoTIFF',
+    layer_lidar_title: 'LiDAR Point Cloud',
+    layer_lidar_desc: '24.6M pts • Classified LAZ',
+    layer_gis_title: 'GIS Cadastral Base',
+    layer_gis_desc: 'Khasra 2187/4930 • PostGIS 3D',
+    layer_bim_title: 'Architectural BIM (IFC)',
+    layer_bim_desc: 'LoD 3.0 Strata Subdivision',
+    layer_subsurface_title: 'Sub-Surface & Utilities',
+    layer_subsurface_desc: 'Basements, Metro, Pipelines',
+
+    // Left Panel - 3D ULPIN Encoder
+    encoder_title: '3D ULPIN Spatial Encoder',
+    encoder_badge: 'Live Encoding',
+    lbl_base_ulpin: '2D Surface ULPIN (Base Parcel)',
+    lbl_zone_type: 'Volumetric Stratum Zone',
+    opt_zone_air: 'Air Rights (Above Ground)',
+    opt_zone_surface: 'Surface Parcel (Ground Level)',
+    opt_zone_underground: 'Sub-Surface (Basement / Underground)',
+    lbl_floor_stratum: 'Floor Level (Z-Stratum)',
+    lbl_unit_id: 'Unit / Apartment Identifier',
+    lbl_checksum: 'CRC-8 Checksum',
+    lbl_generated_ulpin: 'Generated 3D ULPIN Identifier',
+
+    // Center - Registry Card & Controls
+    registry_card_title: 'Volumetric Cadastre Engine',
+    status_online: 'Online',
+    registry_authority_tag: 'DoLR & SoI National Standard',
+    postgis_active: 'PostGIS 3D Spatial RDBMS: Connected & Synchronized',
+    btn_mode_3d: '3D Isometric View',
+    btn_mode_cross: 'Elevation Slice',
+    btn_mode_topology: 'Topology Audit',
+    hud_crs: 'CRS: EPSG:7767 (WGS84 / UTM 43N)',
+    hud_vertical: 'Vertical Datum: MSL (EGM2008) • RTK ±1.2cm',
+    hud_camera: 'Camera: OrbitControls 3D • Double-click Unit to Inspect',
+    vis_role_title: 'Citizen 3D Property Workspace',
+    vis_role_copy: 'Full 3D CAD inspection of U1204, strata stack, title certificate, property tax, and demarcation tools.',
+
+    // Precision Sliders & Dock
+    slider_zoom: 'Camera Distance (Zoom)',
+    slider_explode: 'Strata Explode',
+    slider_slice: 'Vertical Section (Z)',
+    btn_reset: 'Reset View',
+    btn_pan: 'Pan / Move',
+    btn_pan_on: 'Pan: ON',
+    btn_wireframe: 'Wireframe',
+    btn_wireframe_on: 'Wireframe: ON',
+    btn_rotate: 'Rotate',
+    btn_rotate_on: 'Rotate: ON',
+    btn_rotate_off: 'Rotate: OFF',
+
+    // Right Panel - Selected Unit
+    selected_unit_heading: 'Selected 3D Spatial Unit',
+    your_registered_unit: 'Your Registered Unit',
+    title_designation: 'Title Designation',
+    lod_badge: 'LoD 3 Cadastre',
+    lbl_z: 'Vertical Elevation (Z)',
+    lbl_vol: 'Calculated Volume',
+    lbl_area: 'Carpet Area',
+    lbl_owner: 'Owner / Title Holder',
+    lbl_status: 'Title Status:',
+    status_verified: 'Verified Freehold Title',
+    lbl_tax: 'Tax Assessment:',
+    btn_pay_tax: 'Pay Online',
+    lbl_strata: 'Strata Share:',
+
+    // Planning & Regulations
+    planning_context: 'Building Regulations & Planning',
+    planning_envelope_lbl: 'Envelope Envelope Height:',
+    planning_underground_lbl: 'Permitted Basements:',
+    planning_disclaimer: 'Derived dynamically from Model Building By-Laws & URDPFI Guidelines.',
+
+    // Strata Stack Navigation
+    strata_stack_heading: 'Vertical Strata Navigation',
+    click_to_focus: 'Click to focus & slice',
+    strata_air: 'Air Rights / Penthouse (FL 13-14)',
+    strata_res: 'Residential Units (FL 01-12)',
+    strata_res_units: '48 Volumetric Parcels',
+    strata_surface: 'Commercial / Retail (S00)',
+    strata_b1: 'Basement Parking B1 (-3.6m)',
+    strata_metro: 'Metro Rail Corridor B2 (-8.2m)',
+
+    // Topology Audit
+    topology_audit_title: 'Automated 3D Topology Validation',
+    topology_audit_desc: 'OGC CityGML 3.0 & ISO 19152 compliant manifold watertightness & zero-overlap volumetric verification.',
+
+    // 3D Bhu-Aadhaar Certificate Modal
+    cert_authority: 'Department of Land Resources • Survey of India',
+    cert_registry: 'National 3D Land Cadastre & Strata Title Registry',
+    cert_subtitle: '3D Bhu-Aadhaar Volumetric Title Certificate',
+    cert_badge: 'OFFICIAL CADASTRE CERTIFICATE • ISO 19152 LADM v2',
+    cert_lbl_ulpin: '3D ULPIN / Bhu-Aadhaar ID',
+    cert_lbl_base: 'Base Land Parcel (2D ULPIN)',
+    cert_lbl_owner: 'Primary Registered Owner',
+    cert_lbl_vault: 'DigiLocker / Aadhaar Vault',
+    cert_lbl_strata: 'Strata Property Type',
+    cert_val_condo: 'High-Rise Residential Condominium (Freehold)',
+    cert_lbl_extent: 'Carpet Area Extent',
+    cert_lbl_vol: 'Enclosed Legal 3D Volume',
+    cert_lbl_bounds: 'Vertical Elevation Bounds (Z)',
+    cert_lbl_crs: 'Coordinate Reference System (CRS)',
+    cert_lbl_blockchain: 'National Registry Blockchain Hash',
+    cert_verified_tag: 'Digitally Signed & Cryptographically Verified by DoLR Cadastral Authority',
+    cert_btn_print: 'Print Official Certificate',
+    btn_close_window: 'Close Window',
+
+    // Export Modal
+    export_modal_title: 'Export Cadastral Spatial Data',
+    export_modal_sub: 'Choose standardized ISO/OGC open formats for GIS, CAD, or legal land record administration.',
+    export_citygml_title: 'OGC CityGML 3.0 (XML)',
+    export_citygml_desc: 'Full 3D volumetric building geometry with thematic semantic attributes and LoD 3.0 solids.',
+    export_ladm_title: 'ISO 19152 LADM v2 (LandXML / INTERLIS)',
+    export_ladm_desc: 'Standardized Land Administration Domain Model packages with RRR (Rights, Restrictions, Responsibilities).',
+    export_geojson_title: '3D GeoJSON-LD',
+    export_geojson_desc: 'Web-ready 3D polygon prisms with EPSG:7767 coordinates and ULPIN property metadata.',
+    btn_close: 'Close',
+
+    // Demarcation Modal
+    dem_eyebrow: 'Survey of India • CORS Network Demarcation',
+    dem_title: 'Request 3D Property Demarcation',
+    dem_target_lbl: 'Target 3D Parcel (ULPIN)',
+    dem_reason_lbl: 'Reason for Demarcation',
+    dem_opt_encroachment: 'Vertical Strata Encroachment / Wall Shift',
+    dem_opt_subdivision: 'Unit Subdivision / Partition Registration',
+    dem_opt_easement: 'Air Rights / Balcony Projection Easement',
+    dem_opt_resurvey: 'LiDAR / CORS Re-Survey Verification',
+    dem_remarks_lbl: 'Citizen Remarks / Field Observation',
+    dem_notes_placeholder: 'Describe discrepancy or purpose of field inspection...',
+    dem_evidence_lbl: 'Attach 3D LiDAR / Photogrammetry Point Cloud',
+    dem_scan_attached: 'Pre-loaded sensor scan attached from active 3D view session',
+    dem_btn_submit: 'Submit Demarcation Request',
+    dem_success_title: 'Demarcation Request Dispatched',
+    dem_success_desc: 'Your request has been routed to the Survey of India field division. An authorized cadastral surveyor will conduct high-precision RTK GNSS inspection.',
+    dem_lbl_ticket: 'Demarcation Ticket ID',
+    dem_lbl_surveyor: 'Assigned Surveyor',
+    dem_lbl_inspection: 'Inspection Date',
+    dem_val_inspection: 'Estimated within 3 business days',
+    dem_lbl_standard: 'Precision Standard',
+    dem_val_standard: 'SoI CORS RTK Fix (Horizontal ±10mm / Vertical ±15mm)',
+    dem_btn_return: 'Return to 3D Cadastre',
+
+    // Tax Modal
+    tax_eyebrow: 'Municipal Revenue Authority • 3D Volumetric Assessment',
+    tax_title: '3D Property Tax Assessment & Payment',
+    tax_badge_paid: 'Current Status: FY 2026-27 PAID',
+    tax_formula_title: 'Volumetric Tax Assessment Breakdown',
+    tax_base_lbl: 'Base Carpet Area (124 m² × ₹80/m²)',
+    tax_height_lbl: 'Vertical Height Premium (Floor 12, Z=+39.6m, +25%)',
+    tax_amenity_lbl: 'Common Strata Amenity & Air Rights Access',
+    tax_total_lbl: 'Total Annual Volumetric Tax Due',
+    tax_gateway_title: 'Pay with National Unified Tax Gateway (BBPS / UPI)',
+    tax_gateway_sub: 'Instant cryptographic receipt will be recorded to your 3D ULPIN registry ledger.',
+    tax_btn_pay_amount: 'Pay ₹14,000 via BBPS / UPI',
+    tax_btn_receipt: 'Download Tax Receipt'
   },
   hi: {
-    langLabel: 'English',
-    corsStatus: 'सर्वे ऑफ इंडिया CORS नेटवर्क: <strong>सक्रिय</strong> (RTK ±1.2cm)',
-    btnAi: 'AI 3D निष्कर्षण चलाएं',
-    btnDemarcation: 'सीमांकन अनुरोध',
-    btnCert: '3D भू-आधार कार्ड',
-    btnExport: 'भू-कर डेटा निर्यात',
-    titleDesignation: 'स्वामित्व विवरण (Title)',
-    lblZ: 'ऊर्ध्वाधर ऊंचाई (Z)',
-    lblVol: 'कुल आयतन (Volume)',
-    lblArea: 'कारपेट क्षेत्रफल',
-    lblOwner: 'स्वामित्व / धारक',
-    lblStatus: 'स्वामित्व स्थिति:',
-    lblTax: '3D संपत्ति कर:',
-    lblStrata: 'अपार्टमेंट अनुपात:'
+    // Masthead & Header
+    masthead_text: 'धरानिर्माण 3D कैडस्ट्रे • स्मार्ट इंडिया हैकथॉन',
+    masthead_psid: 'समस्या आईडी: 26011 • ISO 19152 LADM v2',
+    header_badge: '3D भू-आधार (ULPIN) v3.2 • ISO 19152 LADM',
+    brand_sub: 'त्रि-आयामी (3D) भू-अभिलेख एवं कैडस्ट्रे प्रणाली',
+    cors_status: 'सर्वे ऑफ इंडिया CORS नेटवर्क: <strong>सक्रिय</strong> (RTK ±1.2cm)',
+    btn_demarcation: 'सीमांकन अनुरोध',
+    btn_cert: '3D भू-आधार कार्ड',
+    btn_export: 'कैडस्ट्रे डेटा निर्यात',
+    theme_dark: 'डार्क',
+    theme_light: 'लाइट',
+    lang_toggle: 'English',
+
+    // Left Panel - Multi-Source Spatial Layers
+    layers_title: 'बहु-स्रोत स्थानिक परतें (Spatial Layers)',
+    layers_active: '5 सक्रिय',
+    layer_drone_title: 'ड्रोन फोटोग्रामेट्री',
+    layer_drone_desc: '0.02m GSD मेश / GeoTIFF',
+    layer_lidar_title: 'LiDAR पॉइंट क्लाउड',
+    layer_lidar_desc: '24.6M बिंदु • वर्गीकृत LAZ',
+    layer_gis_title: 'GIS कैडस्ट्रल बेस',
+    layer_gis_desc: 'खसरा 2187/4930 • PostGIS 3D',
+    layer_bim_title: 'आर्किटेक्चरल BIM (IFC)',
+    layer_bim_desc: 'LoD 3.0 स्ट्रैट उप-विभाजन',
+    layer_subsurface_title: 'भूमिगत उपयोगिताएं (Utilities)',
+    layer_subsurface_desc: 'तहखाना, मेट्रो, पाइपलाइन',
+
+    // Left Panel - 3D ULPIN Encoder
+    encoder_title: '3D ULPIN स्थानिक एन्कोडर',
+    encoder_badge: 'लाइव एन्कोडिंग',
+    lbl_base_ulpin: '2D धरातलीय ULPIN (मूल भूखंड)',
+    lbl_zone_type: 'त्रि-आयामी (3D) ज़ोन प्रकार',
+    opt_zone_air: 'वायु अधिकार (धरातल से ऊपर)',
+    opt_zone_surface: 'धरातल भूखंड (ज़मीनी स्तर)',
+    opt_zone_underground: 'भूमिगत स्तर (तहखाना / अधोभूमि)',
+    lbl_floor_stratum: 'मंजिल स्तर (Z-स्ट्रैटम)',
+    lbl_unit_id: 'इकाई / फ्लैट पहचान संख्या',
+    lbl_checksum: 'CRC-8 चेकसम',
+    lbl_generated_ulpin: 'जनरेटेड 3D ULPIN पहचान संख्या',
+
+    // Center - Registry Card & Controls
+    registry_card_title: 'वॉल्यूमेट्रिक कैडस्ट्रे इंजन',
+    status_online: 'ऑनलाइन',
+    registry_authority_tag: 'DoLR एवं SoI राष्ट्रीय मानक',
+    postgis_active: 'PostGIS 3D स्थानिक RDBMS: कनेक्टेड व सिंक्रोनाइज़्ड',
+    btn_mode_3d: '3D आइसोमेट्रिक व्यू',
+    btn_mode_cross: 'ऊर्ध्वाधर स्लाइस व्यू',
+    btn_mode_topology: 'टोपोलॉजी ऑडिट',
+    hud_crs: 'CRS: EPSG:7767 (WGS84 / UTM 43N)',
+    hud_vertical: 'वर्टिकल डेटम: MSL (EGM2008) • RTK ±1.2cm',
+    hud_camera: 'कैमरा: OrbitControls 3D • विवरण हेतु फ्लैट पर दो बार क्लिक करें',
+    vis_role_title: 'नागरिक 3D संपत्ति कार्यक्षेत्र',
+    vis_role_copy: 'U1204 का पूर्ण 3D CAD निरीक्षण, स्ट्रैट स्टैक, भू-स्वामित्व प्रमाण पत्र, संपत्ति कर एवं सीमांकन उपकरण।',
+
+    // Precision Sliders & Dock
+    slider_zoom: 'कैमरा दूरी (ज़ूम)',
+    slider_explode: 'मंजिल विस्तार (Explode)',
+    slider_slice: 'ऊर्ध्वाधर सेक्शन (Z)',
+    btn_reset: 'दृश्य रीसेट',
+    btn_pan: 'पैन / मूव',
+    btn_pan_on: 'पैन: चालू',
+    btn_wireframe: 'वायरफ्रेम',
+    btn_wireframe_on: 'वायरफ्रेम: चालू',
+    btn_rotate: 'घूर्णन',
+    btn_rotate_on: 'घूर्णन: चालू',
+    btn_rotate_off: 'घूर्णन: बंद',
+
+    // Right Panel - Selected Unit
+    selected_unit_heading: 'चयनित 3D स्थानिक इकाई',
+    your_registered_unit: 'आपकी पंजीकृत इकाई',
+    title_designation: 'स्वामित्व विवरण (Title)',
+    lod_badge: 'LoD 3 कैडस्ट्रे',
+    lbl_z: 'ऊर्ध्वाधर ऊंचाई (Z)',
+    lbl_vol: 'कुल आयतन (Volume)',
+    lbl_area: 'कारपेट क्षेत्रफल',
+    lbl_owner: 'स्वामित्व / धारक',
+    lbl_status: 'स्वामित्व स्थिति:',
+    status_verified: 'सत्यापित फ्रीहोल्ड स्वामित्व',
+    lbl_tax: 'संपत्ति कर आकलन:',
+    btn_pay_tax: 'ऑनलाइन भुगतान',
+    lbl_strata: 'अपार्टमेंट अनुपात:',
+
+    // Planning & Regulations
+    planning_context: 'भवन विनियम एवं योजना नियम',
+    planning_envelope_lbl: 'अधिकतम स्वीकृत ऊंचाई:',
+    planning_underground_lbl: 'स्वीकृत बेसमेंट स्तर:',
+    planning_disclaimer: 'मॉडल बिल्डिंग बाय-लॉज़ और URDPFI दिशानिर्देशों के आधार पर।',
+
+    // Strata Stack Navigation
+    strata_stack_heading: 'ऊर्ध्वाधर स्ट्रैट नेविगेशन',
+    click_to_focus: 'फोकस एवं स्लाइस हेतु क्लिक करें',
+    strata_air: 'वायु अधिकार / पेंटहाउस (तल 13-14)',
+    strata_res: 'आवासीय इकाइयाँ (तल 01-12)',
+    strata_res_units: '48 त्रि-आयामी भूखंड',
+    strata_surface: 'वाणिज्यिक / खुदरा ग्राउंड (S00)',
+    strata_b1: 'बेसमेंट पार्किंग B1 (-3.6m)',
+    strata_metro: 'मेट्रो रेल कॉरिडोर B2 (-8.2m)',
+
+    // Topology Audit
+    topology_audit_title: 'स्वचालित 3D टोपोलॉजी सत्यापन',
+    topology_audit_desc: 'OGC CityGML 3.0 और ISO 19152 अनुपालन: शून्य-अतिव्यापन (Zero-overlap) एवं वाटरटाइट 3D सत्यापन।',
+
+    // 3D Bhu-Aadhaar Certificate Modal
+    cert_authority: 'भूमि संसाधन विभाग • सर्वे ऑफ इंडिया',
+    cert_registry: 'राष्ट्रीय 3D भूमि कैडस्ट्रे एवं स्ट्रैट स्वामित्व रजिस्ट्री',
+    cert_subtitle: '3D भू-आधार त्रि-आयामी स्वामित्व प्रमाण पत्र',
+    cert_badge: 'आधिकारिक कैडस्ट्रे प्रमाण पत्र • ISO 19152 LADM v2',
+    cert_lbl_ulpin: '3D ULPIN / भू-आधार आईडी',
+    cert_lbl_base: 'मूल भूखंड (2D ULPIN)',
+    cert_lbl_owner: 'मुख्य पंजीकृत स्वामी',
+    cert_lbl_vault: 'डिजिलॉकर / आधार वॉल्ट',
+    cert_lbl_strata: 'स्ट्रैट संपत्ति प्रकार',
+    cert_val_condo: 'बहुमंजिला आवासीय अपार्टमेंट (फ्रीहोल्ड)',
+    cert_lbl_extent: 'कारपेट क्षेत्रफल विस्तार',
+    cert_lbl_vol: 'कानूनी त्रि-आयामी आयतन (3D Volume)',
+    cert_lbl_bounds: 'ऊर्ध्वाधर ऊंचाई सीमाएं (Z)',
+    cert_lbl_crs: 'निर्देशांक संदर्भ प्रणाली (CRS)',
+    cert_lbl_blockchain: 'राष्ट्रीय रजिस्ट्री ब्लॉकचेन हैश',
+    cert_verified_tag: 'DoLR कैडस्ट्रल प्राधिकरण द्वारा डिजिटल रूप से हस्ताक्षरित एवं सत्यापित',
+    cert_btn_print: 'आधिकारिक प्रमाण पत्र प्रिंट करें',
+    btn_close_window: 'विंडो बंद करें',
+
+    // Export Modal
+    export_modal_title: 'कैडस्ट्रल स्थानिक डेटा निर्यात',
+    export_modal_sub: 'GIS, CAD अथवा कानूनी भू-अभिलेख प्रशासन हेतु मानकीकृत ISO/OGC प्रारूप चुनें।',
+    export_citygml_title: 'OGC CityGML 3.0 (XML)',
+    export_citygml_desc: 'LoD 3.0 सॉलिड्स और सिमेंटिक विशेषताओं के साथ पूर्ण 3D त्रि-आयामी भवन ज्यामिति।',
+    export_ladm_title: 'ISO 19152 LADM v2 (LandXML / INTERLIS)',
+    export_ladm_desc: 'अधिकार, प्रतिबंध एवं जिम्मेदारियों (RRR) सहित मानकीकृत भूमि प्रशासन मॉडल।',
+    export_geojson_title: '3D GeoJSON-LD',
+    export_geojson_desc: 'EPSG:7767 निर्देशांक और ULPIN मेटाडेटा सहित वेब-अनुकूल 3D पॉलीगॉन प्रिज्म।',
+    btn_close: 'बंद करें',
+
+    // Demarcation Modal
+    dem_eyebrow: 'सर्वे ऑफ इंडिया • CORS नेटवर्क सीमांकन',
+    dem_title: '3D संपत्ति सीमांकन हेतु अनुरोध',
+    dem_target_lbl: 'लक्षित 3D भूखंड (ULPIN)',
+    dem_reason_lbl: 'सीमांकन का कारण',
+    dem_opt_encroachment: 'ऊर्ध्वाधर स्ट्रैट अतिक्रमण / दीवार खिसकना',
+    dem_opt_subdivision: 'यूनिट उप-विभाजन / विभाजन पंजीकरण',
+    dem_opt_easement: 'वायु अधिकार / बालकनी प्रोजेक्शन ईजमेंट',
+    dem_opt_resurvey: 'LiDAR / CORS पुन: सर्वेक्षण सत्यापन',
+    dem_remarks_lbl: 'नागरिक टिप्पणी / फील्ड अवलोकन',
+    dem_notes_placeholder: 'विसंगति अथवा फील्ड निरीक्षण के उद्देश्य का विवरण दें...',
+    dem_evidence_lbl: '3D LiDAR / फोटोग्रामेट्री पॉइंट क्लाउड संलग्न करें',
+    dem_scan_attached: 'सक्रिय 3D दृश्य सत्र से प्री-लोडेड सेंसर स्कैन संलग्न है',
+    dem_btn_submit: 'सीमांकन अनुरोध जमा करें',
+    dem_success_title: 'सीमांकन अनुरोध सफलतापूर्वक दर्ज',
+    dem_success_desc: 'आपका अनुरोध सर्वे ऑफ इंडिया फील्ड डिवीजन को भेज दिया गया है। अधिकृत सर्वेक्षक उच्च-सटीक RTK GNSS निरीक्षण करेंगे।',
+    dem_lbl_ticket: 'सीमांकन टिकट आईडी',
+    dem_lbl_surveyor: 'नियुक्त सर्वेक्षक',
+    dem_lbl_inspection: 'निरीक्षण तिथि',
+    dem_val_inspection: '3 कार्य दिवसों के भीतर अनुमानित',
+    dem_lbl_standard: 'परिशुद्धता मानक',
+    dem_val_standard: 'SoI CORS RTK फिक्स (क्षैतिज ±10mm / ऊर्ध्वाधर ±15mm)',
+    dem_btn_return: '3D कैडस्ट्रे पर लौटें',
+
+    // Tax Modal
+    tax_eyebrow: 'नगर निगम राजस्व प्राधिकरण • 3D त्रि-आयामी कर आकलन',
+    tax_title: '3D संपत्ति कर आकलन एवं भुगतान',
+    tax_badge_paid: 'वर्तमान स्थिति: वित्त वर्ष 2026-27 प्रदत्त (PAID)',
+    tax_formula_title: 'त्रि-आयामी (3D) कर गणना का विवरण',
+    tax_base_lbl: 'मूल कारपेट क्षेत्रफल (124 m² × ₹80/m²)',
+    tax_height_lbl: 'ऊंचाई प्रीमियम (तल 12, Z=+39.6m, +25%)',
+    tax_amenity_lbl: 'साझा सुविधाएं एवं वायु अधिकार एक्सेस',
+    tax_total_lbl: 'कुल वार्षिक देय 3D संपत्ति कर',
+    tax_gateway_title: 'राष्ट्रीय एकीकृत कर गेटवे द्वारा भुगतान करें (BBPS / UPI)',
+    tax_gateway_sub: 'तत्काल डिजिटल रसीद आपके 3D ULPIN रजिस्ट्री लेजर में दर्ज की जाएगी।',
+    tax_btn_pay_amount: '₹14,000 का भुगतान करें (BBPS / UPI)',
+    tax_btn_receipt: 'कर रसीद डाउनलोड करें'
   }
 };
 
 const authProfiles = {
-  citizen: { name: 'Dr. Ananya Sharma', label: 'Citizen / Unit #1204 Owner', copy: 'View verified 3D titles, download Bhu-Aadhaar cards, pay 3D property tax, and request boundary demarcation.' },
-  officer: { name: 'R. K. Iyer (DoLR)', label: 'DoLR Registry Officer', copy: 'Review submissions, run AI 3D building extraction, validate topology, and issue official 3D ULPIN titles.' },
-  surveyor: { name: 'Neha Kulkarni', label: 'Licensed Surveyor (SoI)', copy: 'Upload LiDAR survey data, inspect strata boundaries, and submit field demarcation results.' }
+  citizen: {
+    en: { name: 'Dr. Ananya Sharma', label: 'Citizen / Unit #1204 Owner', copy: 'View verified 3D titles, download Bhu-Aadhaar cards, pay 3D property tax, and request boundary demarcation.' },
+    hi: { name: 'डॉ. अनन्या शर्मा', label: 'नागरिक / यूनिट #1204 स्वामी', copy: 'सत्यापित 3D स्वामित्व देखें, भू-आधार कार्ड डाउनलोड करें, 3D संपत्ति कर का भुगतान करें, एवं सीमांकन का अनुरोध करें।' }
+  },
+  officer: {
+    en: { name: 'R. K. Iyer (DoLR)', label: 'DoLR Registry Officer', copy: 'Review submissions, run AI 3D building extraction, validate topology, and issue official 3D ULPIN titles.' },
+    hi: { name: 'आर. के. अय्यर (DoLR)', label: 'भूमि संसाधन पंजीयक अधिकारी', copy: 'प्रस्तुतियों की समीक्षा करें, AI 3D भवन निष्कर्षण चलाएं, टोपोलॉजी सत्यापित करें, और 3D ULPIN जारी करें।' }
+  },
+  surveyor: {
+    en: { name: 'Neha Kulkarni', label: 'Licensed Surveyor (SoI)', copy: 'Upload LiDAR survey data, inspect strata boundaries, and submit field demarcation results.' },
+    hi: { name: 'नेहा कुलकर्णी', label: 'लाइसेंस प्राप्त सर्वेक्षक (SoI)', copy: 'LiDAR सर्वेक्षण डेटा अपलोड करें, स्ट्रैट सीमाओं का निरीक्षण करें, और फील्ड सीमांकन रिपोर्ट दर्ज करें।' }
+  }
 };
 
 function getTheme() {
@@ -127,8 +457,13 @@ function updateThemeButton(isDark) {
   const btn = document.getElementById('btn-theme-toggle');
   const label = document.getElementById('theme-label');
   const icon = document.getElementById('icon-theme');
+  const lang = currentLanguage || 'en';
   if (label) {
-    label.textContent = isDark ? 'Light' : 'Dark';
+    if (isDark) {
+      label.textContent = lang === 'hi' ? 'लाइट' : 'Light';
+    } else {
+      label.textContent = lang === 'hi' ? 'डार्क' : 'Dark';
+    }
   }
   if (icon) {
     icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
@@ -138,13 +473,15 @@ function updateThemeButton(isDark) {
     }
   }
   if (btn) {
-    btn.setAttribute('title', isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme');
+    btn.setAttribute('title', isDark
+      ? (lang === 'hi' ? 'लाइट थीम पर बदलें' : 'Switch to Light Theme')
+      : (lang === 'hi' ? 'डार्क थीम पर बदलें' : 'Switch to Dark Theme'));
   }
 }
 
 function updateThreeTheme(isDark) {
   if (!scene) return;
-  const bgColor = isDark ? 0x0c1524 : 0xb9d5e6;
+  const bgColor = isDark ? 0x1a1b26 : 0xb9d5e6;
   scene.background = new THREE.Color(bgColor);
   if (scene.fog) {
     scene.fog.color = new THREE.Color(bgColor);
@@ -390,19 +727,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (caseRegApplicant) caseRegApplicant.innerText = `Citizen: ${loadedCase.citizen_name || 'Applicant'} (Unit #${activePropertyUnit})`;
     if (caseRegMeta) caseRegMeta.innerText = `Target ULPIN: ${loadedCase.property_ulpin}`;
     if (caseStatusBadge) caseStatusBadge.innerText = loadedCase.status.toUpperCase().replaceAll('_', ' ');
-    await loadRegulationContext();
+
+    const targetState = loadedCase.state || cadastralData[activePropertyUnit]?.state;
+    const targetCity = loadedCase.city || cadastralData[activePropertyUnit]?.city;
+    await loadRegulationContext(targetState, targetCity);
   } else if (paramUnitId) {
     activePropertyUnit = paramUnitId.toUpperCase();
-    await loadRegulationContext();
+    const targetState = cadastralData[activePropertyUnit]?.state;
+    const targetCity = cadastralData[activePropertyUnit]?.city;
+    await loadRegulationContext(targetState, targetCity);
   } else if (paramUlpin) {
     const matchProp = Object.values(cadastralData).find(p => p.ulpin === paramUlpin);
     if (matchProp) activePropertyUnit = matchProp.id;
-    await loadRegulationContext();
+    const targetState = cadastralData[activePropertyUnit]?.state;
+    const targetCity = cadastralData[activePropertyUnit]?.city;
+    await loadRegulationContext(targetState, targetCity);
   } else {
-    await loadRegulationContext();
+    const targetState = cadastralData[activePropertyUnit]?.state;
+    const targetCity = cadastralData[activePropertyUnit]?.city;
+    await loadRegulationContext(targetState, targetCity);
   }
 
   populateFloorSelector();
+  const savedLang = localStorage.getItem('dharanirman_lang') || 'en';
+  applyLanguage(savedLang, false);
   updateThemeButton(document.documentElement.classList.contains('dark'));
   if (window.lucide) {
     lucide.createIcons();
@@ -436,8 +784,24 @@ async function loadRegulationContext(targetState, targetCity) {
   const summary = document.getElementById('regulation-summary');
   if (!window.apiGetRegulationProfile) return;
 
-  const state = targetState || session?.state || 'Delhi';
-  const city = targetCity || session?.city || 'Delhi';
+  let state = targetState;
+  let city = targetCity;
+
+  if (!state || !city) {
+    if (cadastralData[activePropertyUnit]?.state && cadastralData[activePropertyUnit]?.city) {
+      state = cadastralData[activePropertyUnit].state;
+      city = cadastralData[activePropertyUnit].city;
+    } else if (session?.role === 'citizen' && session?.state && session?.city) {
+      state = session.state;
+      city = session.city;
+    } else if (session?.state && session?.city && session?.role !== 'officer' && session?.role !== 'surveyor') {
+      state = session.state;
+      city = session.city;
+    } else {
+      state = 'Jharkhand';
+      city = 'Ranchi';
+    }
+  }
 
   try {
     const profile = await apiGetRegulationProfile(state, city);
@@ -474,17 +838,23 @@ function restoreSession() {
 }
 
 function applyRoleUI() {
-  const profile = authProfiles[activeRole];
+  const lang = currentLanguage || 'en';
+  const roleData = authProfiles[activeRole];
+  const profile = roleData ? (roleData[lang] || roleData.en || roleData) : null;
   const userSession = JSON.parse(sessionStorage.getItem('ulpin-session') || '{}');
   const activeSession = document.getElementById('active-session');
   
   if (document.getElementById('session-name')) {
-    document.getElementById('session-name').innerText = userSession.name || profile.name;
+    document.getElementById('session-name').innerText = userSession.name || (profile ? profile.name : '');
   }
   if (document.getElementById('session-role')) {
-    document.getElementById('session-role').innerText = activeRole === 'citizen' && userSession.unit_id
-      ? `Citizen / ${userSession.unit_id} Owner`
-      : profile.label;
+    if (activeRole === 'citizen' && userSession.unit_id) {
+      document.getElementById('session-role').innerText = lang === 'hi'
+        ? `नागरिक / ${userSession.unit_id} स्वामी`
+        : `Citizen / ${userSession.unit_id} Owner`;
+    } else if (profile) {
+      document.getElementById('session-role').innerText = profile.label;
+    }
   }
 
   if (activeRole === 'citizen' && userSession.name) {
@@ -534,27 +904,48 @@ function applyVisualizerRoleAccess() {
   const unitInput = document.getElementById('unit-tag');
 
   if (!activeRole) return;
+  const lang = currentLanguage || 'en';
 
   const copy = {
-    citizen: {
-      title: 'Citizen 3D Property Workspace',
-      text: `Full 3D CAD inspection of ${activePropertyUnit}, strata stack, title certificate, property tax, and demarcation tools.`
+    en: {
+      citizen: {
+        title: 'Citizen 3D Property Workspace',
+        text: `Full 3D CAD inspection of ${activePropertyUnit}, strata stack, title certificate, property tax, and demarcation tools.`
+      },
+      officer: {
+        title: 'DoLR Officer Registry Workspace',
+        text: 'Full 3D CAD inspection, 3D ULPIN encoder, automated topology audit, and official title administration.'
+      },
+      surveyor: {
+        title: 'Surveyor Field Technical Workspace',
+        text: 'Full 3D CAD inspection, multi-sensor spatial layers, volume extraction, and technical demarcation evidence.'
+      }
     },
-    officer: {
-      title: 'DoLR Officer Registry Workspace',
-      text: 'Full 3D CAD inspection, 3D ULPIN encoder, automated topology audit, and official title administration.'
-    },
-    surveyor: {
-      title: 'Surveyor Field Technical Workspace',
-      text: 'Full 3D CAD inspection, multi-sensor spatial layers, volume extraction, and technical demarcation evidence.'
+    hi: {
+      citizen: {
+        title: 'नागरिक 3D संपत्ति कार्यक्षेत्र',
+        text: `${activePropertyUnit} का पूर्ण 3D CAD निरीक्षण, स्ट्रैट स्टैक, भू-स्वामित्व प्रमाण पत्र, संपत्ति कर एवं सीमांकन उपकरण।`
+      },
+      officer: {
+        title: 'भूमि संसाधन पंजीयक कार्यक्षेत्र',
+        text: 'पूर्ण 3D CAD निरीक्षण, 3D ULPIN एन्कोडर, स्वचालित टोपोलॉजी ऑडिट, एवं आधिकारिक भू-अभिलेख प्रशासन।'
+      },
+      surveyor: {
+        title: 'सर्वेक्षक फील्ड तकनीकी कार्यक्षेत्र',
+        text: 'पूर्ण 3D CAD निरीक्षण, बहु-सेंसर स्थानिक परतें, आयतन निष्कर्षण, एवं फील्ड सीमांकन साक्ष्य।'
+      }
     }
-  }[activeRole] || {
-    title: '3D Land Registry Workspace',
-    text: 'Interactive 3D volumetric land administration platform.'
   };
 
-  if (roleTitle) roleTitle.innerText = copy.title;
-  if (roleCopy) roleCopy.innerText = copy.text;
+  const defaultCopy = {
+    en: { title: '3D Land Registry Workspace', text: 'Interactive 3D volumetric land administration platform.' },
+    hi: { title: '3D भूमि रजिस्ट्री कार्यक्षेत्र', text: 'इंटरैक्टिव त्रि-आयामी (3D) भू-अभिलेख प्रशासन प्रणाली।' }
+  };
+
+  const selectedCopy = (copy[lang] && copy[lang][activeRole]) || defaultCopy[lang] || defaultCopy.en;
+
+  if (roleTitle) roleTitle.innerText = selectedCopy.title;
+  if (roleCopy) roleCopy.innerText = selectedCopy.text;
 
   // Enable all inputs across all roles for full interactive feature parity
   [ulpinInput, zoneSelect, floorSelect, unitInput].forEach(input => {
@@ -738,51 +1129,89 @@ CRS Spatial Ref  : EPSG:7755 (Survey of India CORS RTK)
 // ==================================================================
 // BHASHINI / BILINGUAL LOCALIZATION (EN / HI)
 // ==================================================================
-function toggleLanguage() {
-  currentLanguage = currentLanguage === 'en' ? 'hi' : 'en';
-  const t = i18n[currentLanguage];
+function applyLanguage(lang, persist = true) {
+  if (!i18n[lang]) lang = 'en';
+  currentLanguage = lang;
+  document.documentElement.lang = lang;
+  if (persist) {
+    try {
+      localStorage.setItem('dharanirman_lang', lang);
+    } catch (e) {}
+  }
 
+  const dict = i18n[lang];
+
+  // 1. Update text of all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key] !== undefined) {
+      if (dict[key].includes('<')) {
+        el.innerHTML = dict[key];
+      } else {
+        el.innerText = dict[key];
+      }
+    }
+  });
+
+  // 2. Update placeholder of all data-i18n-placeholder elements
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (dict[key] !== undefined) {
+      el.placeholder = dict[key];
+    }
+  });
+
+  // 3. Update Language Switcher label (shows prompt for other language)
   const langLabel = document.getElementById('lang-label');
-  if (langLabel) langLabel.innerText = t.langLabel;
+  if (langLabel) {
+    langLabel.innerText = dict.lang_toggle || (lang === 'hi' ? 'English' : 'हिंदी');
+  }
 
-  const corsElem = document.getElementById('txt-cors-status');
-  if (corsElem) corsElem.innerHTML = t.corsStatus;
+  // 4. Update Theme Switcher label & tooltip
+  updateThemeButton(document.documentElement.classList.contains('dark'));
 
-  const btnAi = document.getElementById('txt-btn-ai');
-  if (btnAi) btnAi.innerText = t.btnAi;
+  // 5. Update Pan button label
+  const panLabel = document.getElementById('pan-btn-label');
+  if (panLabel) {
+    panLabel.innerText = isPanMode ? dict.btn_pan_on : dict.btn_pan;
+  }
 
-  const btnDem = document.getElementById('txt-btn-demarcation');
-  if (btnDem) btnDem.innerText = t.btnDemarcation;
+  // 6. Update Wireframe button label
+  const wireLabel = document.getElementById('wireframe-btn-label');
+  if (wireLabel) {
+    wireLabel.innerText = isWireframeMode ? dict.btn_wireframe_on : dict.btn_wireframe;
+  }
 
-  const btnCert = document.getElementById('txt-btn-cert');
-  if (btnCert) btnCert.innerText = t.btnCert;
+  // 7. Update Rotate button label
+  const rotLabel = document.getElementById('rotate-btn-label');
+  if (rotLabel) {
+    rotLabel.innerText = isAutoRotating ? dict.btn_rotate_on : dict.btn_rotate_off;
+  }
 
-  const btnExport = document.getElementById('txt-btn-export');
-  if (btnExport) btnExport.innerText = t.btnExport;
+  // 8. Update Floor dropdown options
+  populateFloorSelector();
 
-  const titleDesig = document.getElementById('txt-title-designation');
-  if (titleDesig) titleDesig.innerText = t.titleDesignation;
+  // 9. Update Role profile & Visualizer role copy
+  if (activeRole) {
+    applyRoleUI();
+  }
 
-  const lblZ = document.getElementById('lbl-prop-z');
-  if (lblZ) lblZ.innerText = t.lblZ;
+  // 10. Update Selected Property Details
+  const currentTag = document.getElementById('unit-tag') ? document.getElementById('unit-tag').value : '1204';
+  const unitId = currentTag.startsWith('U') ? currentTag : `U${currentTag}`;
+  if (cadastralData[unitId] || activePropertyUnit) {
+    selectUnit(cadastralData[unitId] ? unitId : activePropertyUnit);
+  }
 
-  const lblVol = document.getElementById('lbl-prop-vol');
-  if (lblVol) lblVol.innerText = t.lblVol;
+  // 11. Refresh Lucide icons
+  if (window.lucide && window.lucide.createIcons) {
+    window.lucide.createIcons();
+  }
+}
 
-  const lblArea = document.getElementById('lbl-prop-area');
-  if (lblArea) lblArea.innerText = t.lblArea;
-
-  const lblOwner = document.getElementById('lbl-prop-owner');
-  if (lblOwner) lblOwner.innerText = t.lblOwner;
-
-  const lblStatus = document.getElementById('lbl-prop-status');
-  if (lblStatus) lblStatus.innerText = t.lblStatus;
-
-  const lblTax = document.getElementById('lbl-prop-tax');
-  if (lblTax) lblTax.innerText = t.lblTax;
-
-  const lblStrata = document.getElementById('lbl-prop-strata');
-  if (lblStrata) lblStrata.innerText = t.lblStrata;
+function toggleLanguage() {
+  const nextLang = currentLanguage === 'en' ? 'hi' : 'en';
+  applyLanguage(nextLang, true);
 }
 
 // ==================================================================
@@ -797,10 +1226,10 @@ function initThreeJS() {
 
   // Scene Setup
   const isDark = document.documentElement.classList.contains('dark');
-  const bgColor = isDark ? 0x0c1524 : 0xb9d5e6;
+  const bgColor = isDark ? 0x1a1b26 : 0xb9d5e6;
   scene = new THREE.Scene();
   scene.background = new THREE.Color(bgColor);
-  scene.fog = new THREE.Fog(bgColor, 85, 190);
+  scene.fog = new THREE.Fog(bgColor, 85, 200);
 
   // Camera Setup (Default distance ~111.7m for 0.6x zoom)
   camera = new THREE.PerspectiveCamera(45, width / height, 0.5, 1000);
@@ -825,6 +1254,8 @@ function initThreeJS() {
   controls.minDistance = 30.45; // Max Zoom: 2.2x
   controls.maxDistance = 111.67; // Min / Default Zoom: 0.6x
   controls.target.set(0, 10, 0);
+  controls.screenSpacePanning = true;
+  controls.enablePan = true;
   controls.autoRotate = isAutoRotating;
   controls.autoRotateSpeed = 2.0;
   controls.addEventListener('change', () => {
@@ -1368,12 +1799,23 @@ function createDroneFlightOverlay() {
 // ==================================================================
 // EVENT LISTENERS & RAYCASTING (HOVER / CLICK)
 // ==================================================================
+let isDraggingMouse = false;
+let mouseDownPos = { x: 0, y: 0 };
+
 function initEventListeners() {
+  container.addEventListener('mousedown', (e) => {
+    mouseDownPos = { x: e.clientX, y: e.clientY };
+    isDraggingMouse = false;
+  });
   container.addEventListener('mousemove', onMouseMove);
   container.addEventListener('click', onMouseClick);
 }
 
 function onMouseMove(event) {
+  if (Math.hypot(event.clientX - mouseDownPos.x, event.clientY - mouseDownPos.y) > 5) {
+    isDraggingMouse = true;
+  }
+
   if (currentViewMode !== '3d') {
     const tooltip = document.getElementById('unitTooltip');
     if (tooltip) tooltip.classList.add('hidden');
@@ -1388,7 +1830,7 @@ function onMouseMove(event) {
 
   const tooltip = document.getElementById('unitTooltip');
 
-  if (intersects.length > 0) {
+  if (intersects.length > 0 && !isPanMode) {
     const hit = intersects[0].object;
     const unitId = hit.userData.unitId;
 
@@ -1407,10 +1849,11 @@ function onMouseMove(event) {
   }
 
   tooltip.classList.add('hidden');
-  container.style.cursor = 'grab';
+  container.style.cursor = isPanMode ? 'move' : 'grab';
 }
 
 function onMouseClick(event) {
+  if (isDraggingMouse || isPanMode) return;
   if (currentViewMode !== '3d') return;
   const rect = container.getBoundingClientRect();
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -1457,27 +1900,49 @@ function selectUnit(unitId, meshObj) {
   }
 
   // Update Right Panel UI
+  const lang = currentLanguage || 'en';
+  let displayOwner = data.owner;
+  if (displayOwner === 'Registered Title Holder') {
+    displayOwner = lang === 'hi' ? 'पंजीकृत स्वामित्व धारक' : 'Registered Title Holder';
+  }
+  let displayStatus = data.status;
+  if (displayStatus === 'Verified Freehold Title') {
+    displayStatus = lang === 'hi' ? 'सत्यापित फ्रीहोल्ड स्वामित्व' : 'Verified Freehold Title';
+  }
+  let displayStrata = data.strataShare;
+  if (lang === 'hi' && displayStrata && displayStrata.includes('of Base Parcel')) {
+    displayStrata = displayStrata.replace('of Base Parcel', 'मूल भूखंड का');
+  }
+  let displayTax = data.tax;
+  if (lang === 'hi' && displayTax && displayTax.includes('/ yr (Paid)')) {
+    displayTax = displayTax.replace('/ yr (Paid)', '/ वर्ष (प्रदत्त)');
+  }
+  let displayLod = data.lod;
+  if (lang === 'hi' && displayLod && displayLod.includes('LoD 3 Cadastre')) {
+    displayLod = 'LoD 3 कैडस्ट्रे';
+  }
+
   document.getElementById('prop-title').innerText = data.title;
   document.getElementById('prop-ulpin-display').innerText = data.ulpin;
   document.getElementById('prop-z').innerText = `${data.zMin} to ${data.zMax}`;
   document.getElementById('prop-vol').innerText = data.volume;
   document.getElementById('prop-area').innerText = data.area;
-  document.getElementById('prop-owner').innerText = data.owner;
-  document.getElementById('prop-lod').innerText = data.lod;
+  document.getElementById('prop-owner').innerText = displayOwner;
+  document.getElementById('prop-lod').innerText = displayLod;
 
   const propStatus = document.getElementById('prop-status');
   if (propStatus) {
-    propStatus.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3"></i> ${data.status}`;
+    propStatus.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3"></i> ${displayStatus}`;
   }
 
   const propTax = document.getElementById('prop-tax');
   if (propTax) {
-    propTax.innerText = data.tax;
+    propTax.innerText = displayTax;
   }
 
   const propStrata = document.getElementById('prop-strata');
   if (propStrata) {
-    propStrata.innerText = data.strataShare;
+    propStrata.innerText = displayStrata;
   }
 
   const ownedBadge = document.getElementById('owned-badge');
@@ -1485,6 +1950,12 @@ function selectUnit(unitId, meshObj) {
     const isOwned = data.id === activePropertyUnit;
     ownedBadge.classList.toggle('hidden', !isOwned);
     ownedBadge.classList.toggle('flex', isOwned);
+  }
+
+  const unitState = data.state || (activeRole === 'citizen' ? session.state : null);
+  const unitCity = data.city || (activeRole === 'citizen' ? session.city : null);
+  if (unitState && unitCity) {
+    loadRegulationContext(unitState, unitCity);
   }
 
   // Sync with 3D ULPIN Form in Left Panel
@@ -1720,6 +2191,10 @@ function resetCamera() {
   controls.target.set(0, 10, 0);
   controls.autoRotate = isAutoRotating;
   controls.autoRotateSpeed = 2.0;
+  if (isPanMode) {
+    controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
+    if (controls.touches) controls.touches.ONE = THREE.TOUCH.PAN;
+  }
   const zoomSlider = document.getElementById('zoom-slider');
   if (zoomSlider) {
     zoomSlider.value = 0.6;
@@ -1727,8 +2202,48 @@ function resetCamera() {
   }
 }
 
+function togglePanMode() {
+  if (!controls) return;
+  isPanMode = !isPanMode;
+
+  const panBtn = document.getElementById('btn-pan-toggle');
+  const panLabel = document.getElementById('pan-btn-label');
+  const container = document.getElementById('cadastreCanvasContainer');
+  const lang = currentLanguage || 'en';
+  const dict = i18n[lang] || i18n.en;
+
+  if (isPanMode) {
+    controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
+    if (controls.touches) controls.touches.ONE = THREE.TOUCH.PAN;
+
+    if (panBtn) {
+      panBtn.classList.remove('bg-gov-gray-light', 'hover:bg-gov-gray-cool', 'text-gov-navy');
+      panBtn.classList.add('bg-cyan-600', 'hover:bg-cyan-700', 'text-white', 'border-cyan-500', 'shadow-inner');
+    }
+    if (panLabel) panLabel.innerText = dict.btn_pan_on;
+    if (container) container.style.cursor = 'move';
+  } else {
+    controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
+    if (controls.touches) controls.touches.ONE = THREE.TOUCH.ROTATE;
+
+    if (panBtn) {
+      panBtn.classList.remove('bg-cyan-600', 'hover:bg-cyan-700', 'text-white', 'border-cyan-500', 'shadow-inner');
+      panBtn.classList.add('bg-gov-gray-light', 'hover:bg-gov-gray-cool', 'text-gov-navy');
+    }
+    if (panLabel) panLabel.innerText = dict.btn_pan;
+    if (container) container.style.cursor = 'grab';
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
 function toggleWireframe() {
   isWireframeMode = !isWireframeMode;
+  const lang = currentLanguage || 'en';
+  const dict = i18n[lang] || i18n.en;
+  const wireLabel = document.getElementById('wireframe-btn-label');
+  if (wireLabel) {
+    wireLabel.innerText = isWireframeMode ? dict.btn_wireframe_on : dict.btn_wireframe;
+  }
   clickableUnits.forEach(mesh => {
     if (mesh.material) {
       mesh.material.wireframe = isWireframeMode;
@@ -1740,6 +2255,12 @@ function toggleAutoRotate() {
   isAutoRotating = !isAutoRotating;
   controls.autoRotate = isAutoRotating;
   controls.autoRotateSpeed = 2.0;
+  const lang = currentLanguage || 'en';
+  const dict = i18n[lang] || i18n.en;
+  const rotLabel = document.getElementById('rotate-btn-label');
+  if (rotLabel) {
+    rotLabel.innerText = isAutoRotating ? dict.btn_rotate_on : dict.btn_rotate_off;
+  }
 }
 
 function updateLayerVisibility() {
@@ -2106,7 +2627,9 @@ async function syncPropertiesWithAPI() {
           status: p.status === 'claimed' || p.status === 'available' ? 'Verified Freehold Title' : p.status,
           tax: '₹ 14,820 / yr (Paid)',
           strataShare: `${((p.area / 7680) * 100).toFixed(2)}% of Base Parcel`,
-          lod: 'LoD 3 Cadastre'
+          lod: 'LoD 3 Cadastre',
+          state: p.state || null,
+          city: p.city || null
         };
       });
       if (properties[0] && properties[0].unit_id) {
