@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Any, Dict, Optional
 
 from sqlalchemy import DateTime, Enum as SqlEnum, ForeignKey, Integer, JSON, String, Text, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .config import get_settings
 from .db import Base

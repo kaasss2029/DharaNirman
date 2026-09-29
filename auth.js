@@ -251,8 +251,8 @@ async function beginLogin(identifier, password) {
     name: activeName,
     identifier: identifier,
     unit_id: activeUnit,
-    state: userObj?.state || null,
-    city: userObj?.city || null,
+    state: userObj?.state || (selectedLoginRole === 'citizen' ? null : 'Delhi'),
+    city: userObj?.city || (selectedLoginRole === 'citizen' ? null : 'Delhi'),
     signedInAt: new Date().toISOString()
   }));
 

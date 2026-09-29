@@ -388,6 +388,104 @@ html.dark .bg-white\/95 {
   border-color: #24344d !important;
   color: #f1f5f9 !important;
 }
+
+/* 3D View Mode Control Buttons in Dark Mode */
+html.dark #btn-3d,
+html.dark #btn-cross {
+  color: #94a3b8 !important;
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+}
+
+html.dark #btn-3d.bg-gov-blue,
+html.dark #btn-cross.bg-gov-blue {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0369a1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark #btn-3d:not(.bg-gov-blue):hover,
+html.dark #btn-cross:not(.bg-gov-blue):hover {
+  background-color: #1e2c40 !important;
+  color: #38bdf8 !important;
+  border-color: #2e415e !important;
+}
+
+html.dark #btn-3d:not(.bg-gov-blue):hover i,
+html.dark #btn-cross:not(.bg-gov-blue):hover i {
+  color: #38bdf8 !important;
+}
+
+html.dark #btn-topology {
+  color: #fbbf24 !important;
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+
+html.dark #btn-topology:hover {
+  background-color: rgba(245, 158, 11, 0.28) !important;
+  color: #fde68a !important;
+  border-color: #f59e0b !important;
+}
+
+html.dark #btn-topology:hover i {
+  color: #fde68a !important;
+}
+
+/* CAD Toolbar Bottom Dock & Quick-Toggles in Dark Mode */
+html.dark .hover\:bg-gov-gray-light:hover {
+  background-color: #1e2c40 !important;
+  color: #38bdf8 !important;
+  border-color: #2e415e !important;
+}
+
+html.dark .hover\:bg-gov-gray-cool:hover {
+  background-color: #1e2c40 !important;
+  color: #38bdf8 !important;
+  border-color: #38bdf8 !important;
+}
+
+html.dark .hover\:bg-amber-50:hover {
+  background-color: rgba(245, 158, 11, 0.22) !important;
+  color: #fde68a !important;
+}
+
+html.dark button.bg-gov-gray-light,
+html.dark a.bg-gov-gray-light {
+  background-color: #162236 !important;
+  border-color: #2e415e !important;
+  color: #cbd5e1 !important;
+}
+
+html.dark button.bg-gov-gray-light:hover,
+html.dark a.bg-gov-gray-light:hover,
+html.dark button.hover\:bg-gov-gray-cool:hover,
+html.dark button.hover\:bg-gov-gray-light:hover {
+  background-color: #1e2c40 !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+}
+
+html.dark button.hover\:bg-gov-gray-cool:hover i,
+html.dark button.hover\:bg-gov-gray-light:hover i,
+html.dark button.bg-gov-gray-light:hover i {
+  color: #38bdf8 !important;
+}
+
+/* Copy ULPIN button */
+html.dark button[onclick="copyULPIN()"] {
+  background-color: #162236 !important;
+  border-color: #2e415e !important;
+  color: #38bdf8 !important;
+}
+
+html.dark button[onclick="copyULPIN()"]:hover {
+  background-color: #1e2c40 !important;
+  border-color: #38bdf8 !important;
+  color: #7dd3fc !important;
+}
+
 html.dark #result-ulpin {
   background-color: #0d2238 !important;
   border-color: #0284c7 !important;

@@ -72,10 +72,17 @@ def seed_default_users() -> None:
                 name="R. K. Iyer (DoLR)",
                 identifier="officer@nic.gov.in",
                 role=UserRole.officer,
+                state="Delhi",
+                city="Delhi",
                 password_hash=hash_password("demo-access")
             ))
-        elif not officer.password_hash:
-            officer.password_hash = hash_password("demo-access")
+        else:
+            if not officer.password_hash:
+                officer.password_hash = hash_password("demo-access")
+            if not officer.state:
+                officer.state = "Delhi"
+            if not officer.city:
+                officer.city = "Delhi"
 
         surveyor = db.scalar(select(User).where(User.identifier == "surveyor@survey.gov.in"))
         if not surveyor:
@@ -83,10 +90,17 @@ def seed_default_users() -> None:
                 name="Neha Kulkarni",
                 identifier="surveyor@survey.gov.in",
                 role=UserRole.surveyor,
+                state="Delhi",
+                city="Delhi",
                 password_hash=hash_password("demo-access")
             ))
-        elif not surveyor.password_hash:
-            surveyor.password_hash = hash_password("demo-access")
+        else:
+            if not surveyor.password_hash:
+                surveyor.password_hash = hash_password("demo-access")
+            if not surveyor.state:
+                surveyor.state = "Delhi"
+            if not surveyor.city:
+                surveyor.city = "Delhi"
 
         db.commit()
     finally:

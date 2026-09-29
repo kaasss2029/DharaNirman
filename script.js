@@ -390,11 +390,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (caseRegApplicant) caseRegApplicant.innerText = `Citizen: ${loadedCase.citizen_name || 'Applicant'} (Unit #${activePropertyUnit})`;
     if (caseRegMeta) caseRegMeta.innerText = `Target ULPIN: ${loadedCase.property_ulpin}`;
     if (caseStatusBadge) caseStatusBadge.innerText = loadedCase.status.toUpperCase().replaceAll('_', ' ');
+    await loadRegulationContext();
   } else if (paramUnitId) {
     activePropertyUnit = paramUnitId.toUpperCase();
+    await loadRegulationContext();
   } else if (paramUlpin) {
     const matchProp = Object.values(cadastralData).find(p => p.ulpin === paramUlpin);
     if (matchProp) activePropertyUnit = matchProp.id;
+    await loadRegulationContext();
+  } else {
+    await loadRegulationContext();
   }
 
   populateFloorSelector();
@@ -425,13 +430,17 @@ function updateRegisteredOwnerDisplay() {
   if (ownerElement) ownerElement.textContent = ownerName;
 }
 
-async function loadRegulationContext() {
+async function loadRegulationContext(targetState, targetCity) {
   const session = JSON.parse(sessionStorage.getItem('ulpin-session') || 'null');
   const jurisdiction = document.getElementById('regulation-jurisdiction');
   const summary = document.getElementById('regulation-summary');
-  if (!session?.state || !session?.city || !window.apiGetRegulationProfile) return;
+  if (!window.apiGetRegulationProfile) return;
+
+  const state = targetState || session?.state || 'Delhi';
+  const city = targetCity || session?.city || 'Delhi';
+
   try {
-    const profile = await apiGetRegulationProfile(session.state, session.city);
+    const profile = await apiGetRegulationProfile(state, city);
     if (jurisdiction) jurisdiction.textContent = `${profile.city}, ${profile.state} · ${profile.jurisdiction}`;
     if (summary) summary.textContent = profile.height_rule_summary;
     const scenario = profile.illustrative_scenario || {};
@@ -1833,15 +1842,45 @@ function setViewMode(mode) {
 
 function draw2DCrossSection(canvasElem) {
   if (!container || !canvasElem) return;
-  canvasElem.width = container.clientWidth || 800;
-  canvasElem.height = container.clientHeight || 600;
-  const ctx = canvasElem.getContext('2d');
-  const w = canvasElem.width;
-  const h = canvasElem.height;
+  const dpr = Math.max(window.devicePixelRatio || 1, 2);
+  const displayW = container.clientWidth || 800;
+  const displayH = container.clientHeight || 600;
 
-  // Background
-  ctx.fillStyle = '#070b14';
+  // Exact physical pixel buffer sizing
+  canvasElem.width = Math.round(displayW * dpr);
+  canvasElem.height = Math.round(displayH * dpr);
+  canvasElem.style.width = `${displayW}px`;
+  canvasElem.style.height = `${displayH}px`;
+
+  const ctx = canvasElem.getContext('2d');
+  ctx.save();
+  ctx.scale(dpr, dpr);
+  ctx.imageSmoothingEnabled = true;
+  ctx.textBaseline = 'middle';
+
+  const w = displayW;
+  const h = displayH;
+
+  // Premium Deep CAD Navy Background
+  ctx.fillStyle = '#060c18';
   ctx.fillRect(0, 0, w, h);
+
+  // Subtle CAD Background Grid
+  ctx.strokeStyle = 'rgba(30, 41, 59, 0.4)';
+  ctx.lineWidth = 1;
+  const gridSize = 40;
+  for (let gx = 0; gx < w; gx += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(Math.round(gx) + 0.5, 0);
+    ctx.lineTo(Math.round(gx) + 0.5, h);
+    ctx.stroke();
+  }
+  for (let gy = 0; gy < h; gy += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(0, Math.round(gy) + 0.5);
+    ctx.lineTo(w, Math.round(gy) + 0.5);
+    ctx.stroke();
+  }
 
   // Active property & resident unit details
   const activeUnit = cadastralData[activePropertyUnit] || cadastralData['U1204'] || {};
@@ -1849,58 +1888,63 @@ function draw2DCrossSection(canvasElem) {
   const floorMatch = floorString.match(/\d+/);
   const selectedFloorNum = floorMatch ? parseInt(floorMatch[0], 10) : 12;
 
-  // Responsive Vertical Coordinate Mapping (-25m to +60m = 85m range)
-  const topPadding = 50;
-  const bottomPadding = 40;
+  // Responsive Vertical Mapping (-25m to +60m = 85m range)
+  const topPadding = 60;
+  const bottomPadding = 45;
   const availableH = h - topPadding - bottomPadding;
-  const meterScale = Math.max(3.8, Math.min(6.5, availableH / 85));
-  const zeroY = h - bottomPadding - (25 * meterScale);
+  const meterScale = Math.max(4.2, Math.min(8.0, availableH / 85));
+  const zeroY = Math.round(h - bottomPadding - (25 * meterScale));
 
-  const getYForZ = (z) => zeroY - (z * meterScale);
+  const getYForZ = (z) => Math.round(zeroY - (z * meterScale));
 
-  // 1. Grid Background & Datum Lines
-  ctx.font = '10px "JetBrains Mono", Consolas, monospace';
+  // 1. Datum Elevation Reference Lines & Clean Typography
+  const datumXStart = 90;
   for (let z = -25; z <= 60; z += 10) {
     const y = getYForZ(z);
-    ctx.strokeStyle = z === 0 ? 'rgba(245, 158, 11, 0.4)' : '#1e293b';
-    ctx.lineWidth = 1;
+    const isGround = z === 0;
+
+    ctx.strokeStyle = isGround ? 'rgba(245, 158, 11, 0.75)' : 'rgba(51, 65, 85, 0.7)';
+    ctx.lineWidth = isGround ? 2 : 1;
     ctx.beginPath();
-    ctx.moveTo(85, y);
-    ctx.lineTo(w - 20, y);
+    ctx.moveTo(datumXStart, y + 0.5);
+    ctx.lineTo(w - 20, y + 0.5);
     ctx.stroke();
 
-    ctx.fillStyle = z === 0 ? '#f59e0b' : '#64748b';
-    ctx.fillText(`${z >= 0 ? '+' : ''}${z}m Datum`, 12, y + 3);
+    // Datum Label Badge
+    ctx.fillStyle = isGround ? '#fbbf24' : '#64748b';
+    ctx.font = '600 11px ui-monospace, "Roboto Mono", "Cascadia Code", Consolas, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${z >= 0 ? '+' : ''}${z}m Datum`, datumXStart - 12, y);
   }
 
-  // Ground Surface Datum (0.00m)
-  ctx.strokeStyle = '#f59e0b';
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.moveTo(75, zeroY);
-  ctx.lineTo(w - 20, zeroY);
-  ctx.stroke();
-  ctx.fillStyle = '#f59e0b';
-  ctx.font = 'bold 11px "JetBrains Mono", Consolas, monospace';
-  ctx.fillText('Ground Surface Datum (0.00m) - Base 2D Parcel 2187-4930-1049-S00', 95, zeroY + 14);
+  // Ground Surface Datum (0.00m) Bold Indicator
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = 'bold 12px ui-monospace, "Roboto Mono", "Cascadia Code", Consolas, monospace';
+  ctx.fillText('Ground Surface Datum (0.00m) — Base 2D Parcel 2187-4930-1049-S00', datumXStart + 10, zeroY + 16);
+
+  // Layout Dimensions for Architectural Cross-Section
+  const bldgX = Math.max(110, Math.min(180, Math.round(w * 0.16)));
+  const bldgW = Math.max(380, Math.min(580, Math.round(w * 0.55)));
 
   // 2. Air Rights Corridor (+45.0m to +60.0m)
   const airTopY = getYForZ(60);
   const airBottomY = getYForZ(45);
-  const bldgX = Math.max(120, w * 0.20);
-  const bldgW = Math.min(480, w * 0.50);
+  const airH = airBottomY - airTopY;
 
-  ctx.fillStyle = 'rgba(217, 119, 6, 0.08)';
-  ctx.strokeStyle = 'rgba(217, 119, 6, 0.35)';
-  ctx.setLineDash([4, 4]);
-  ctx.fillRect(bldgX - 10, airTopY, bldgW + 20, airBottomY - airTopY);
-  ctx.strokeRect(bldgX - 10, airTopY, bldgW + 20, airBottomY - airTopY);
+  ctx.fillStyle = 'rgba(245, 158, 11, 0.08)';
+  ctx.fillRect(bldgX - 10, airTopY, bldgW + 20, airH);
+  ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 4]);
+  ctx.strokeRect(bldgX - 10 + 0.5, airTopY + 0.5, bldgW + 20, airH);
   ctx.setLineDash([]);
-  ctx.fillStyle = '#d97706';
-  ctx.font = '10px "JetBrains Mono", Consolas, monospace';
-  ctx.fillText('Air Rights Corridor (+45.0m to +60.0m) [ULPIN-A]', bldgX + 10, airTopY + 16);
 
-  // 3. Building Floors 1 to 12
+  ctx.fillStyle = '#f59e0b';
+  ctx.font = 'bold 11px ui-monospace, "Roboto Mono", "Cascadia Code", Consolas, monospace';
+  ctx.fillText('✦ Air Rights Corridor (+45.0m to +60.0m) [3D ULPIN ZONE-A]', bldgX + 12, airTopY + 18);
+
+  // 3. Multi-Storey Floors 1 to 12
   const totalFloors = (activeBuilding && activeBuilding.above_ground_floors) || 12;
   for (let floorNum = 1; floorNum <= totalFloors; floorNum++) {
     const zMin = 0.8 + (floorNum - 1) * 3.6;
@@ -1912,60 +1956,59 @@ function draw2DCrossSection(canvasElem) {
     const isTargetFloor = floorNum === selectedFloorNum;
 
     if (isTargetFloor) {
-      // Prominently Highlight the Resident's / Owner's Floor (12th Floor)
+      // Highlighted Logged-in / Selected Floor (Emerald Glow)
       const grad = ctx.createLinearGradient(bldgX, floorTopY, bldgX + bldgW, floorTopY);
-      grad.addColorStop(0, 'rgba(5, 150, 105, 0.95)');
-      grad.addColorStop(1, 'rgba(16, 185, 129, 0.88)');
+      grad.addColorStop(0, '#047857');
+      grad.addColorStop(1, '#059669');
       ctx.fillStyle = grad;
       ctx.fillRect(bldgX, floorTopY, bldgW, floorH);
 
       ctx.strokeStyle = '#34d399';
-      ctx.lineWidth = 2.5;
-      ctx.strokeRect(bldgX, floorTopY, bldgW, floorH);
+      ctx.lineWidth = 2;
+      ctx.strokeRect(bldgX + 0.5, floorTopY + 0.5, bldgW, floorH);
 
-      // Floor Label text
+      // Floor Label text with high contrast
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 11px "JetBrains Mono", Consolas, monospace';
-      ctx.fillText(`★ Floor ${floorNum} (Unit #${activePropertyUnit}) · ${activeUnit.ulpin || 'IN-2187-4930-1049-A-F12-U1204-K8'}`, bldgX + 8, floorTopY + floorH / 2 + 4);
+      ctx.font = 'bold 12px ui-monospace, "Roboto Mono", "Cascadia Code", Consolas, monospace';
+      ctx.fillText(`★ Floor ${String(floorNum).padStart(2, '0')} (Unit #${activePropertyUnit}) · ${activeUnit.ulpin || 'IN-2187-4930-1049-A-F12-U1204-K8'}`, bldgX + 10, floorTopY + floorH / 2);
 
-      // Callout Pin / Badge on the right side
-      const calloutX = bldgX + bldgW + 15;
+      // Callout Pin / Floating Card on the right
+      const calloutX = bldgX + bldgW + 20;
       const calloutY = floorTopY + floorH / 2;
 
-      ctx.strokeStyle = '#10b981';
+      ctx.strokeStyle = '#34d399';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(bldgX + bldgW, calloutY);
       ctx.lineTo(calloutX, calloutY);
       ctx.stroke();
 
-      // Badge Card
-      const badgeW = Math.min(230, w - calloutX - 10);
-      if (badgeW > 80) {
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 1;
-        ctx.fillRect(calloutX + 4, calloutY - 18, badgeW, 36);
-        ctx.strokeRect(calloutX + 4, calloutY - 18, badgeW, 36);
+      const badgeW = Math.min(240, Math.max(160, w - calloutX - 15));
+      if (badgeW > 100) {
+        ctx.fillStyle = 'rgba(6, 24, 38, 0.96)';
+        ctx.fillRect(calloutX, calloutY - 20, badgeW, 40);
+        ctx.strokeStyle = '#34d399';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(calloutX + 0.5, calloutY - 20 + 0.5, badgeW, 40);
 
         ctx.fillStyle = '#34d399';
-        ctx.font = 'bold 10px "JetBrains Mono", Consolas, monospace';
-        ctx.fillText(`RESIDENT: ${activeUnit.owner || 'You'}`, calloutX + 10, calloutY - 4);
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '9px "JetBrains Mono", Consolas, monospace';
-        ctx.fillText(`Elev: ${activeUnit.zMin || '+36.5m'} to ${activeUnit.zMax || '+39.8m'}`, calloutX + 10, calloutY + 10);
+        ctx.font = 'bold 11px ui-monospace, "Roboto Mono", "Cascadia Code", Consolas, monospace';
+        ctx.fillText(`RESIDENT: ${activeUnit.owner || 'You'}`, calloutX + 10, calloutY - 6);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '10px ui-monospace, "Roboto Mono", "Cascadia Code", Consolas, monospace';
+        ctx.fillText(`Elev: ${activeUnit.zMin || '+36.5m'} to ${activeUnit.zMax || '+39.8m'}`, calloutX + 10, calloutY + 9);
       }
     } else {
       // Standard Floor Box
-      ctx.fillStyle = floorNum % 2 === 0 ? 'rgba(30, 41, 59, 0.85)' : 'rgba(23, 32, 48, 0.85)';
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 1;
+      ctx.fillStyle = floorNum % 2 === 0 ? 'rgba(22, 34, 54, 0.9)' : 'rgba(16, 26, 42, 0.9)';
       ctx.fillRect(bldgX, floorTopY, bldgW, floorH);
-      ctx.strokeRect(bldgX, floorTopY, bldgW, floorH);
+      ctx.strokeStyle = 'rgba(51, 65, 85, 0.85)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bldgX + 0.5, floorTopY + 0.5, bldgW, floorH);
 
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10px "JetBrains Mono", Consolas, monospace';
-      ctx.fillText(`Floor ${String(floorNum).padStart(2, '0')} [LoD-3] · +${zMin.toFixed(1)}m to +${zMax.toFixed(1)}m`, bldgX + 8, floorTopY + floorH / 2 + 3);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '500 11px ui-monospace, "Roboto Mono", "Cascadia Code", Consolas, monospace';
+      ctx.fillText(`Floor ${String(floorNum).padStart(2, '0')} [LoD-3]  ·  +${zMin.toFixed(1)}m to +${zMax.toFixed(1)}m`, bldgX + 10, floorTopY + floorH / 2);
     }
   }
 
@@ -1975,14 +2018,14 @@ function draw2DCrossSection(canvasElem) {
   const baseH = baseBottomY - baseTopY;
   const isBasementSelected = activePropertyUnit === 'BASEMENT1';
 
-  ctx.fillStyle = isBasementSelected ? 'rgba(147, 51, 234, 0.85)' : 'rgba(88, 28, 135, 0.45)';
-  ctx.strokeStyle = isBasementSelected ? '#c084fc' : '#7e22ce';
-  ctx.lineWidth = isBasementSelected ? 2 : 1;
+  ctx.fillStyle = isBasementSelected ? 'rgba(126, 34, 206, 0.85)' : 'rgba(88, 28, 135, 0.45)';
   ctx.fillRect(bldgX - 15, baseTopY, bldgW + 30, baseH);
-  ctx.strokeRect(bldgX - 15, baseTopY, bldgW + 30, baseH);
-  ctx.fillStyle = '#e9d5ff';
-  ctx.font = '10px "JetBrains Mono", Consolas, monospace';
-  ctx.fillText('Basement Parking 1 (-6.0m to -3.0m) [2187-4930-1049-A-B01]', bldgX - 5, baseTopY + baseH / 2 + 3);
+  ctx.strokeStyle = isBasementSelected ? '#d8b4fe' : '#9333ea';
+  ctx.lineWidth = isBasementSelected ? 2 : 1;
+  ctx.strokeRect(bldgX - 15 + 0.5, baseTopY + 0.5, bldgW + 30, baseH);
+  ctx.fillStyle = '#f3e8ff';
+  ctx.font = 'bold 11px ui-monospace, "Roboto Mono", "Cascadia Code", Consolas, monospace';
+  ctx.fillText('Basement Parking 1 (-6.0m to -3.0m) [2187-4930-1049-A-B01]', bldgX - 5, baseTopY + baseH / 2);
 
   // 5. Subsurface Metro Transit Tunnel (-21.0m to -14.0m)
   const metroTopY = getYForZ(-14.0);
@@ -1990,18 +2033,20 @@ function draw2DCrossSection(canvasElem) {
   const metroH = metroBottomY - metroTopY;
 
   ctx.fillStyle = 'rgba(225, 29, 72, 0.35)';
-  ctx.strokeStyle = '#f43f5e';
-  ctx.lineWidth = 1;
   ctx.fillRect(bldgX - 35, metroTopY, bldgW + 70, metroH);
-  ctx.strokeRect(bldgX - 35, metroTopY, bldgW + 70, metroH);
-  ctx.fillStyle = '#fecdd3';
-  ctx.font = '10px "JetBrains Mono", Consolas, monospace';
-  ctx.fillText('Subsurface Metro Rail Transit Corridor (-21.0m to -14.0m) [DMRC-EPSG:7755]', bldgX - 25, metroTopY + metroH / 2 + 3);
+  ctx.strokeStyle = '#f43f5e';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(bldgX - 35 + 0.5, metroTopY + 0.5, bldgW + 70, metroH);
+  ctx.fillStyle = '#ffe4e6';
+  ctx.font = 'bold 11px ui-monospace, "Roboto Mono", "Cascadia Code", Consolas, monospace';
+  ctx.fillText('Subsurface Metro Rail Transit Corridor (-21.0m to -14.0m) [DMRC-EPSG:7755]', bldgX - 25, metroTopY + metroH / 2);
 
-  // 6. Footer Legend
+  // 6. Header/Footer Coordinate Badge
   ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 10px "JetBrains Mono", Consolas, monospace';
-  ctx.fillText('2D VOLUMETRIC STRATA CROSS-SECTION • EPSG:7755 / WGS84 ORTHOMETRIC DATUM', 12, h - 14);
+  ctx.font = 'bold 11px ui-monospace, "Roboto Mono", "Cascadia Code", Consolas, monospace';
+  ctx.fillText('2D VOLUMETRIC STRATA CROSS-SECTION • EPSG:7755 / WGS84 ORTHOMETRIC DATUM', 12, h - 16);
+
+  ctx.restore();
 }
 
 function runTopologyValidation() {
