@@ -1,0 +1,56 @@
+Task: Make DharaNirman runnable without Docker
+
+Goal
+Configure this repository so a developer can install and run the frontend and
+backend locally without Docker or Docker Compose. Keep the existing Docker
+configuration available unless it prevents the local workflow; Docker must not
+be a prerequisite.
+
+Repository context
+- The frontend is static HTML, CSS, and JavaScript files in the repository root.
+- The backend is a FastAPI application in the backend directory.
+- Backend dependencies are listed in backend/requirements.txt.
+- The API uses PostgreSQL/PostGIS by default and listens on port 8000.
+- api.js defaults to http://127.0.0.1:8000.
+- Backend CORS settings include localhost origins, including port 5500.
+- docker-compose.yml also defines Redis; first confirm whether the application
+  actually uses it before adding Redis as a local prerequisite.
+
+Implementation requirements
+1. Inspect the backend database models, configuration, API startup, and current
+   documentation to establish the actual local runtime requirements.
+2. Provide a Docker-free database setup. Prefer documenting native PostgreSQL
+   and PostGIS installation/configuration, including the database, user,
+   password, and required PostGIS extension. Do not silently substitute SQLite
+   if that would break spatial model behavior or API operations.
+3. Make backend configuration work reliably with local settings. Document
+   required environment variables and safe development defaults. Do not commit
+   real credentials or secrets.
+4. Provide clear Windows PowerShell instructions to create/activate a Python
+   virtual environment, install backend/requirements.txt, configure the
+   database settings, and start the API from the backend directory.
+5. Provide a simple local way to serve the static frontend (for example, a
+   documented Python HTTP server command), with a predictable origin such as
+   http://127.0.0.1:5500. Ensure the API's CORS configuration permits that
+   origin. Do not add a frontend build system unless the existing code requires
+   one.
+6. Update the root README.md and backend/README.md with consistent, end-to-end
+   Docker-free instructions. Clearly state whether PostgreSQL/PostGIS must be
+   installed separately and how to start both frontend and backend in separate
+   terminals.
+7. Keep Docker instructions/files if they remain useful as an optional path.
+   Do not introduce Docker as a requirement or make unrelated UI/API changes.
+8. Handle startup/configuration errors explicitly; avoid hiding database setup
+   failures behind broad exception handling or success-shaped fallbacks.
+
+Acceptance criteria
+- A developer can follow the documented instructions on Windows without
+  installing or running Docker or Docker Compose.
+- The frontend loads from the documented local URL and can make API requests
+  to the backend without CORS errors.
+- The backend connects to the locally configured database and its documented
+  health/API docs endpoint is reachable.
+- The instructions accurately describe all required services and do not list
+  Redis as required unless code inspection confirms it is used.
+- Relevant tests and checks pass. Report any steps that require manual
+  installation or could not be verified in the current environment.
