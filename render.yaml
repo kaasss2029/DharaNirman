@@ -20,10 +20,6 @@ services:
         value: "*"
       - key: UPLOAD_DIR
         value: /app/storage
-    disk:
-      name: dharanirman-storage
-      mountPath: /app/storage
-      sizeGB: 1
 
   # 2. Frontend Static Site
   - type: web
