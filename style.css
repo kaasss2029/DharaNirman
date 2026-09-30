@@ -598,3 +598,63 @@ body, header, aside, section, .gov-card, button, input, select {
     color: #0f172a !important;
   }
 }
+
+/* ==========================================================================
+   Mobile & Tablet Responsive Optimizations (@media max-width: 768px / 480px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  header.bg-gov-navy {
+    min-height: unset !important;
+    padding: 8px 12px !important;
+  }
+
+  header h1 {
+    font-size: 15px !important;
+  }
+
+  /* Compact single-row scroll strip for CORS & action buttons */
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* 3D Canvas on mobile phones */
+  #cadastreCanvasContainer {
+    min-height: 440px !important;
+    height: 52vh !important;
+  }
+
+  /* Mobile overlay banner - compact corner */
+  #visualizer-role-banner {
+    top: 48px !important;
+    left: 8px !important;
+    max-width: 240px !important;
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+  }
+
+  #visualizer-role-banner p#visualizer-role-copy {
+    display: none !important;
+  }
+
+  /* Side panels on mobile */
+  aside.lg\:col-span-3 {
+    max-height: unset !important;
+    overflow-y: visible !important;
+  }
+}
+
+@media (max-width: 480px) {
+  header.bg-gov-navy {
+    padding: 6px 10px !important;
+  }
+
+  #cadastreCanvasContainer {
+    min-height: 380px !important;
+    height: 48vh !important;
+  }
+}
+

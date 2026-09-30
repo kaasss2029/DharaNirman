@@ -72,76 +72,89 @@
 <body class="bg-gov-bg text-gov-ink min-h-screen flex flex-col antialiased overflow-x-hidden">
 
   <!-- Platform Masthead Stripe -->
-  <div class="bg-[#0f1f38] text-slate-300 text-[11px] px-6 py-1 border-b border-slate-700/60 flex justify-between items-center font-medium">
-    <span data-i18n="masthead_text">DharaNirman 3D Cadastre • Smart India Hackathon</span>
-    <span class="font-mono text-cyan-300 font-bold" data-i18n="masthead_psid">PS ID: 26011 • ISO 19152 LADM v2</span>
+  <div class="bg-[#0f1f38] text-slate-300 text-[10px] sm:text-[11px] px-3 sm:px-6 py-1 border-b border-slate-700/60 flex justify-between items-center font-medium select-none">
+    <span class="truncate" data-i18n="masthead_text">DharaNirman 3D Cadastre • Smart India Hackathon</span>
+    <span class="font-mono text-cyan-300 font-bold shrink-0 ml-2" data-i18n="masthead_psid">PS ID: 26011</span>
   </div>
 
   <!-- Top Header Navigation (Deep Navy Authority Bar) -->
-  <header class="bg-gov-navy text-white px-6 py-3.5 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-md border-b-2 border-gov-blue w-full min-h-[82px]">
-    <!-- Left: Brand Logo, Title, Subtitle & Bottom Row with CORS + Action Buttons -->
-    <div class="flex items-start gap-3.5 flex-1 min-w-0">
-      <div class="bg-white/10 p-2.5 border border-white/20 text-white shadow-inner mt-0.5 flex-shrink-0">
-        <i data-lucide="layers-3" class="w-6 h-6"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2 flex-wrap">
-          <h1 class="text-lg font-extrabold tracking-tight text-white leading-none">DharaNirman</h1>
-          <span class="bg-gov-blue text-white text-[10px] font-bold px-2 py-0.5 font-mono border border-blue-400/40" data-i18n="header_badge">
-            3D ULPIN v3.2 • ISO 19152 LADM
-          </span>
+  <header class="bg-gov-navy text-white px-3 sm:px-6 py-2 sm:py-3.5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 md:gap-4 sticky top-0 z-30 shadow-md border-b-2 border-gov-blue w-full">
+    <!-- Top Row on Mobile / Left Column on Desktop -->
+    <div class="flex items-center justify-between gap-3 w-full md:w-auto flex-1 min-w-0">
+      <!-- Brand Logo + Titles -->
+      <div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+        <div class="bg-white/10 p-1.5 sm:p-2.5 border border-white/20 text-white shadow-inner flex-shrink-0">
+          <i data-lucide="layers-3" class="w-5 h-5 sm:w-6 sm:h-6"></i>
         </div>
-        <p class="text-xs text-slate-300 flex items-center gap-1.5 mt-0.5 font-medium">
-          <span data-i18n="brand_sub">Volumetric Land Administration & Cadastre System</span>
-          <span class="text-slate-400">•</span>
-          <span class="font-mono text-cyan-300 font-bold">PS ID: 26011</span>
-        </p>
-
-        <!-- Bottom Row: SoI CORS GNSS Status + Action Buttons on the exact same level -->
-        <div class="flex items-center gap-3 mt-2 flex-wrap">
-          <!-- SoI CORS GNSS Status -->
-          <div class="flex items-center gap-2 px-2.5 py-1.5 text-[11px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-500/40 inline-flex w-fit">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex h-2 w-2 bg-emerald-400"></span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">DharaNirman</h1>
+            <span class="bg-gov-blue text-white text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 font-mono border border-blue-400/40 truncate" data-i18n="header_badge">
+              3D ULPIN v3.2 • ISO 19152 LADM
             </span>
-            <span id="txt-cors-status" data-i18n="cors_status">SoI CORS Network: <strong>ACTIVE</strong> (RTK Fix ±1.2cm)</span>
           </div>
+          <p class="hidden sm:flex text-xs text-slate-300 items-center gap-1.5 mt-0.5 font-medium">
+            <span data-i18n="brand_sub">Volumetric Land Administration & Cadastre System</span>
+            <span class="text-slate-400">•</span>
+            <span class="font-mono text-cyan-300 font-bold">PS ID: 26011</span>
+          </p>
+        </div>
+      </div>
 
-          <!-- Action Buttons (Exact same level as CORS network) -->
-          <button onclick="openDemarcationModal()" id="btn-demarcation" class="hidden bg-gov-cyan hover:bg-cyan-500 text-gov-navy px-3.5 py-1.5 font-extrabold text-xs items-center gap-2 shadow transition active:scale-95">
-            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <span id="txt-btn-demarcation" data-i18n="btn_demarcation">Request Demarcation</span>
-          </button>
-
-          <button onclick="openCertificateModal()" class="bg-gov-green hover:bg-green-700 text-white border border-green-400/30 px-3.5 py-1.5 font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow">
-            <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i> <span id="txt-btn-cert" data-i18n="btn_cert">3D Bhu-Aadhaar Card</span>
-          </button>
-
-          <button onclick="openExportModal()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3.5 py-1.5 font-semibold text-xs flex items-center gap-2 transition active:scale-95">
-            <i data-lucide="download" class="w-3.5 h-3.5 text-cyan-300"></i> <span id="txt-btn-export" data-i18n="btn_export">Export Cadastre</span>
+      <!-- Mobile Right Controls: Theme + Lang + Logout (Visible only on mobile screen) -->
+      <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
+        <button onclick="toggleTheme()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 p-1.5 text-[10px] flex items-center justify-center" title="Toggle Theme">
+          <i data-lucide="moon" id="icon-theme-mobile" class="w-3.5 h-3.5 text-cyan-300"></i>
+        </button>
+        <button onclick="toggleLanguage()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-2 py-1 text-[10px] font-bold" title="Switch Language">
+          <span id="lang-label-mobile">हिंदी</span>
+        </button>
+        <div id="active-session-mobile" class="hidden items-center">
+          <button onclick="logout()" title="Sign out" class="p-1.5 bg-white/10 hover:bg-gov-red text-white border border-white/20">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Far Right: Stacked Theme & Language + User Info & Logout -->
-    <div class="flex items-center gap-3 ml-auto flex-shrink-0 self-center">
-      <!-- Vertically stacked Theme & Language toggles -->
+    <!-- Actions & CORS Strip: Horizontally scrollable on mobile, inline on desktop -->
+    <div class="flex items-center gap-2 sm:gap-3 overflow-x-auto whitespace-nowrap py-0.5 md:py-0 w-full md:w-auto flex-nowrap scrollbar-none">
+      <!-- SoI CORS GNSS Status -->
+      <div class="flex items-center gap-1.5 px-2 py-1 text-[10px] sm:text-[11px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-500/40 flex-shrink-0">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex h-2 w-2 bg-emerald-400"></span>
+        </span>
+        <span id="txt-cors-status" data-i18n="cors_status">SoI CORS: <strong>ACTIVE</strong> (±1.2cm)</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <button onclick="openDemarcationModal()" id="btn-demarcation" class="hidden bg-gov-cyan hover:bg-cyan-500 text-gov-navy px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-extrabold text-[10px] sm:text-xs items-center gap-1.5 shadow transition active:scale-95 flex-shrink-0">
+        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <span id="txt-btn-demarcation" data-i18n="btn_demarcation">Request Demarcation</span>
+      </button>
+
+      <button onclick="openCertificateModal()" class="bg-gov-green hover:bg-green-700 text-white border border-green-400/30 px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-bold text-[10px] sm:text-xs flex items-center gap-1.5 transition active:scale-95 shadow flex-shrink-0">
+        <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i> <span id="txt-btn-cert" data-i18n="btn_cert">3D Bhu-Aadhaar</span>
+      </button>
+
+      <button onclick="openExportModal()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-semibold text-[10px] sm:text-xs flex items-center gap-1.5 transition active:scale-95 flex-shrink-0">
+        <i data-lucide="download" class="w-3.5 h-3.5 text-cyan-300"></i> <span id="txt-btn-export" data-i18n="btn_export">Export Cadastre</span>
+      </button>
+    </div>
+
+    <!-- Desktop Controls: Stacked Theme & Language + User Info & Logout (Hidden on mobile, visible on md+) -->
+    <div class="hidden md:flex items-center gap-3 ml-auto flex-shrink-0 self-center">
       <div class="flex flex-col gap-1">
-        <!-- Theme Switcher (Top) -->
         <button onclick="toggleTheme()" id="btn-theme-toggle" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-2.5 py-1 font-semibold text-[11px] flex items-center justify-center gap-1.5 transition active:scale-95 min-w-[70px]" title="Toggle Light/Dark Theme">
           <i data-lucide="moon" id="icon-theme" class="w-3.5 h-3.5 text-cyan-300"></i>
           <span id="theme-label" data-i18n="theme_dark">Dark</span>
         </button>
-
-        <!-- Language Switcher (Bottom) -->
         <button onclick="toggleLanguage()" id="btn-lang-toggle" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-2.5 py-1 font-semibold text-[11px] flex items-center justify-center gap-1.5 transition active:scale-95 min-w-[70px]" title="Switch Language / भाषा बदलें">
           <i data-lucide="languages" class="w-3.5 h-3.5 text-amber-300"></i>
           <span id="lang-label">हिंदी</span>
         </button>
       </div>
 
-      <!-- Person's info and Logout button -->
       <div id="active-session" class="hidden items-center gap-2.5 pl-2.5 border-l border-white/20">
         <div class="text-right">
           <p id="session-name" class="text-xs font-bold text-white leading-tight whitespace-nowrap"></p>

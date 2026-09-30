@@ -465,12 +465,15 @@ function updateThemeButton(isDark) {
       label.textContent = lang === 'hi' ? 'डार्क' : 'Dark';
     }
   }
-  if (icon) {
-    icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-    icon.className = isDark ? 'w-3.5 h-3.5 text-amber-300' : 'w-3.5 h-3.5 text-cyan-300';
-    if (window.lucide && window.lucide.createIcons) {
-      window.lucide.createIcons();
+  const icons = [document.getElementById('icon-theme'), document.getElementById('icon-theme-mobile')];
+  icons.forEach(ic => {
+    if (ic) {
+      ic.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+      ic.className = isDark ? 'w-3.5 h-3.5 text-amber-300' : 'w-3.5 h-3.5 text-cyan-300';
     }
+  });
+  if (window.lucide && window.lucide.createIcons) {
+    window.lucide.createIcons();
   }
   if (btn) {
     btn.setAttribute('title', isDark
@@ -866,6 +869,11 @@ function applyRoleUI() {
     activeSession.classList.remove('hidden');
     activeSession.classList.add('flex');
   }
+  const activeSessionMobile = document.getElementById('active-session-mobile');
+  if (activeSessionMobile) {
+    activeSessionMobile.classList.remove('hidden');
+    activeSessionMobile.classList.add('flex');
+  }
 
   // Ensure all interactive tool buttons are visible and active across all roles
   const aiButton = document.getElementById('btn-run-ai');
@@ -1163,8 +1171,12 @@ function applyLanguage(lang, persist = true) {
 
   // 3. Update Language Switcher label (shows prompt for other language)
   const langLabel = document.getElementById('lang-label');
+  const langLabelMobile = document.getElementById('lang-label-mobile');
   if (langLabel) {
     langLabel.innerText = dict.lang_toggle || (lang === 'hi' ? 'English' : 'हिंदी');
+  }
+  if (langLabelMobile) {
+    langLabelMobile.innerText = lang === 'hi' ? 'EN' : 'हिंदी';
   }
 
   // 4. Update Theme Switcher label & tooltip
