@@ -1,4 +1,10 @@
-const API_BASE_URL = window.API_BASE_URL || 'http://127.0.0.1:8000';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE_URL = (
+  window.CONFIG?.API_BASE_URL ||
+  window.API_BASE_URL ||
+  localStorage.getItem('DHARA_API_URL') ||
+  (isLocalhost ? 'http://127.0.0.1:8000' : 'https://dharanirman-backend.onrender.com')
+).replace(/\/$/, '');
 
 function apiToken() {
   return sessionStorage.getItem('ulpin-access-token');

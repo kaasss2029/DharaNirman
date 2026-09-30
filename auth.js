@@ -146,17 +146,6 @@ async function submitLogin() {
   await beginLogin(identifier, password);
 }
 
-async function demoLogin() {
-  if (selectedLoginRole === 'citizen') {
-    const error = document.getElementById('login-error');
-    error.textContent = 'For Citizen Access, please Register your account first on the "Register New Citizen" tab.';
-    error.hidden = false;
-    return;
-  }
-  const profile = loginProfiles[selectedLoginRole];
-  await beginLogin(profile.identifier, 'demo-access');
-}
-
 function checkPasswordMatch() {
   const pwd = document.getElementById('reg-password')?.value || '';
   const confirmPwd = document.getElementById('reg-confirm-password')?.value || '';

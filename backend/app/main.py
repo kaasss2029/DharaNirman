@@ -18,7 +18,23 @@ from .validation import evaluate_case_validation
 
 app = FastAPI(title="DharaNirman Workflow API", description="3D volumetric land administration workflow service.", version="0.1.0")
 settings = get_settings()
-app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origin_list, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+cors_origins = settings.cors_origin_list
+if "*" in cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r".*",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 REGULATION_PROFILES = {
     ("jharkhand", "ranchi"): {
