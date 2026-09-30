@@ -22,10 +22,13 @@
   </script>
   <link rel="stylesheet" href="portal.css?v=6">
   <style>
-    body {
+    body,
+    body.login-page,
+    html.dark body.login-page,
+    html.dark body {
       background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 31, 56, 0.82)),
-                  url('assets/login-bg.jpg') no-repeat center center fixed;
-      background-size: cover;
+                  url('assets/login-bg.jpg') no-repeat center center fixed !important;
+      background-size: cover !important;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
@@ -196,7 +199,7 @@
     }
   </style>
 </head>
-<body>
+<body class="login-page">
   <div class="gov-top-bar">
     <span>DharaNirman 3D Cadastre • Smart India Hackathon</span>
     <div style="display:flex; align-items:center; gap:12px;">
