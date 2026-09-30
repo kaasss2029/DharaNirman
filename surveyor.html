@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DharaNirman | Surveyor Field Workspace</title>
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('dharanirman_theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="portal.css?v=4">
+  <style>
+    .gov-strip {
+      background: #0f1f38;
+      color: #94a3b8;
+      font-size: 11px;
+      padding: 4px 5vw;
+      border-bottom: 1px solid #1e3a5f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body data-role="surveyor">
+  <div class="gov-strip">
+    <span>DharaNirman 3D Cadastre • Smart India Hackathon</span>
+    <span class="font-mono" id="surveyor-id-strip">PS ID: 26011 • Technical Field Services</span>
+  </div>
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark">⌖</div>
+      <div>
+        <div class="eyebrow">LiDAR & CORS Geodetic Workspace</div>
+        <h1>Surveyor Field Workspace</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-light" id="btn-portal-theme-toggle" onclick="toggleTheme()" title="Toggle Theme"><span style="color:#38bdf8;">☾</span> Dark</button>
+      <span id="portal-user" style="font-weight: 700; font-size: 12px; color: #e2e8f0;">Loading Surveyor...</span>
+      <button class="btn btn-light" onclick="portalLogout()">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <div class="eyebrow" style="color: #005ea2;">Assigned Technical Tasks</div>
+        <h2>Capture and Prepare Authoritative 3D Evidence</h2>
+        <p>Upload multi-sensor spatial data, establish CORS/RTK control, validate polyhedral volumes, and submit field evidence for DoLR verification.</p>
+      </div>
+      <span class="role-badge" id="surveyor-role-badge">Licensed Surveyor (SoI)</span>
+    </section>
+
+    <div id="portal-notice" class="card" hidden style="margin-bottom: 16px;"></div>
+
+    <section class="grid">
+      <!-- Assigned Work Card -->
+      <article class="card">
+        <h3>Assigned Work</h3>
+        <div class="metric" id="surveyor-case-count">0</div>
+        <div class="metric-label">Open survey assignments</div>
+        <div class="status">
+          <span>High Priority:</span>
+          <strong class="danger" id="surveyor-high-priority">0 Cases</strong>
+        </div>
+        <div class="status">
+          <span>Field Visit Scheduled:</span>
+          <strong class="pending" id="surveyor-scheduled">0 Cases</strong>
+        </div>
+        <div class="status">
+          <span>Ready for Submission:</span>
+          <strong class="ok" id="surveyor-ready">0 Cases</strong>
+        </div>
+        <div style="margin-top: 14px;">
+          <button class="btn btn-primary" id="btn-open-assignment" style="width: 100%;" onclick="openActiveAssignment()">Open Active Assignment</button>
+        </div>
+      </article>
+
+      <!-- Instruments Card -->
+      <article class="card">
+        <h3>Survey Instruments & Geodesy</h3>
+        <div class="status">
+          <span>CORS RTK Fix:</span>
+          <strong class="ok" id="surveyor-cors">±1.2 cm Precision</strong>
+        </div>
+        <div class="status">
+          <span>LiDAR Scan Density:</span>
+          <strong class="ok">45 pts/m² (LAS 1.4)</strong>
+        </div>
+        <div class="status">
+          <span>Coordinate Reference:</span>
+          <strong class="font-mono">EPSG:7755 + Geoid</strong>
+        </div>
+        <div class="status">
+          <span>Submitted Evidence Files:</span>
+          <strong class="pending" id="surveyor-evidence-files">0 Files Recorded</strong>
+        </div>
+      </article>
+
+      <!-- Technical Tools Card -->
+      <article class="card">
+        <h3>Technical Tools</h3>
+        <ul style="margin-bottom: 14px; font-size: 12px; line-height: 1.6;">
+          <li>Upload IFC, GeoJSON, OBJ, DXF, LAS/LAZ</li>
+          <li>Generate floor and room polyhedrons</li>
+          <li>Check 3D overlaps, gaps, and slivers</li>
+          <li>Submit digitally signed demarcation reports</li>
+        </ul>
+        <button class="btn" style="width: 100%; text-align: center; display: block;" onclick="openActiveAssignment()">Open 3D Survey Explorer</button>
+      </article>
+
+      <!-- Evidence Submission Card -->
+      <article class="card wide">
+        <h3>Submit Technical Survey Evidence</h3>
+        <label for="survey-case" class="metric-label" style="display:block; margin-bottom: 4px;">Assigned Case Target</label>
+        <select id="survey-case" class="btn" style="width:100%; margin-bottom:10px; text-align: left;"></select>
+
+        <label for="survey-file" class="metric-label" style="display:block; margin-bottom: 4px;">Survey File Attachment</label>
+        <input id="survey-file" type="file" accept=".ifc,.geojson,.json,.obj,.dxf,.las,.laz" style="width:100%; margin-bottom:6px; padding: 6px;">
+        <div id="survey-file-info" style="font-size: 11px; margin-bottom: 10px; min-height: 16px;"></div>
+
+        <div class="status" style="margin-bottom: 12px;">
+          <span>Accepted Standards:</span>
+          <strong class="font-mono">IFC 4.3 · GeoJSON · OBJ · DXF · LAS 1.4</strong>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="btn-upload-survey" onclick="uploadSurveyFile()">Upload and Submit Technical Evidence</button>
+          <button class="btn btn-light" type="button" onclick="autoAttachDemoLasFile()" title="Auto-attach synthetic field LiDAR for testing">⚡ Auto-Attach Demo .LAS</button>
+          <button class="btn btn-light" type="button" onclick="downloadSampleLasFile()" title="Download sample LiDAR file to your computer">📥 Download Sample .LAS</button>
+        </div>
+      </article>
+    </section>
+
+    <p class="footer-note">Surveyors can prepare and submit technical evidence but cannot approve titles or publish official ownership records.</p>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="api.js?v=6"></script>
+  <script src="portal.js?v=8"></script>
+</body>
+</html>

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DharaNirman | 3D ULPIN Implementation Roadmap</title>
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('dharanirman_theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=Open+Sans:wght@400;600;700&family=Public+Sans:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;600&display=swap');
+
+    @page {
+      size: A4 portrait;
+      margin: 14mm 12mm 14mm 12mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Public Sans', 'Noto Sans', 'Open Sans', Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      line-height: 1.45;
+      font-size: 11px;
+    }
+
+    .header-banner {
+      border-bottom: 2.5px solid #059669;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .header-left h1 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #064e3b;
+      letter-spacing: -0.5px;
+      margin-bottom: 2px;
+    }
+
+    .header-left p {
+      font-size: 11px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .badge-container {
+      text-align: right;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 9.5px;
+      font-weight: 700;
+      border-radius:  0;
+      font-family: 'Roboto Mono', monospace;
+      margin-bottom: 3px;
+    }
+
+    .badge-primary {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+
+    .badge-secondary {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+
+    .section-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-left: 3.5px solid #059669;
+      padding-left: 8px;
+    }
+
+    .info-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius:  0;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+
+    .formula-box {
+      background: #0f172a;
+      color: #ecfdf5;
+      font-family: 'Roboto Mono', monospace;
+      padding: 7px 10px;
+      border-radius:  0;
+      font-size: 10.5px;
+      margin-top: 5px;
+      text-align: center;
+      border: 1px solid #059669;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 10px;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #1e293b;
+      font-weight: 700;
+      text-align: left;
+      padding: 6px 8px;
+      border: 1px solid #cbd5e1;
+      text-transform: uppercase;
+      font-size: 9px;
+      letter-spacing: 0.3px;
+    }
+
+    td {
+      padding: 6px 8px;
+      border: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    .phase-badge {
+      font-weight: 700;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius:  0;
+      font-family: 'Roboto Mono', monospace;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .pb-1 { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .pb-2 { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .pb-3 { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .pb-4 { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .pb-5 { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+    .pb-6 { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tech-card {
+      border: 1px solid #e2e8f0;
+      border-radius:  0;
+      padding: 7px 9px;
+      background: #ffffff;
+    }
+
+    .tech-card h4 {
+      font-size: 10px;
+      font-weight: 700;
+      color: #064e3b;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tech-card p {
+      font-size: 9px;
+      color: #475569;
+      line-height: 1.35;
+    }
+
+    .footer-note {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 8px;
+      margin-top: 14px;
+      font-size: 8.5px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    ul.task-list {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    ul.task-list li {
+      position: relative;
+      padding-left: 12px;
+      margin-bottom: 3px;
+      line-height: 1.3;
+    }
+
+    ul.task-list li::before {
+      content: "•";
+      color: #059669;
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+
+    /* Dark Mode Overrides */
+    html.dark, [data-theme="dark"] {
+      color-scheme: dark;
+    }
+    html.dark body {
+      background: #16161e !important;
+      color: #c0caf5 !important;
+    }
+    html.dark .header-banner {
+      border-bottom-color: #9ece6a !important;
+    }
+    html.dark .header-left h1 {
+      color: #9ece6a !important;
+    }
+    html.dark .header-left p {
+      color: #9aa5ce !important;
+    }
+    html.dark .info-card {
+      background: #24283b !important;
+      border-color: #414868 !important;
+      color: #c0caf5 !important;
+    }
+    html.dark .info-card p {
+      color: #9aa5ce !important;
+    }
+    html.dark .info-card strong {
+      color: #9ece6a !important;
+    }
+    html.dark .tech-card {
+      background: #24283b !important;
+      border-color: #414868 !important;
+      color: #c0caf5 !important;
+    }
+    html.dark .tech-card h4 {
+      color: #7aa2f7 !important;
+    }
+    html.dark .tech-card p {
+      color: #9aa5ce !important;
+    }
+    html.dark .section-title {
+      color: #c0caf5 !important;
+      border-left-color: #9ece6a !important;
+    }
+    html.dark table th {
+      background: #1f2335 !important;
+      color: #7aa2f7 !important;
+      border-color: #414868 !important;
+    }
+    html.dark table td {
+      border-color: #414868 !important;
+      color: #c0caf5 !important;
+    }
+    html.dark tr:nth-child(even) td {
+      background: #1f2335 !important;
+    }
+    html.dark .badge-secondary {
+      background: #1e2640 !important;
+      color: #9aa5ce !important;
+      border-color: #3d59a1 !important;
+    }
+    html.dark .footer-note {
+      border-top-color: #414868 !important;
+      color: #9aa5ce !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 -->
+  <div class="header-banner">
+    <div class="header-left">
+      <h1>DharaNirman</h1>
+      <p>Technical Architecture & Implementation Roadmap • 16-Week Project Plan</p>
+      <p style="font-size: 9.5px; color: #059669; font-weight: 600; margin-top: 2px;">
+        Smart India Hackathon • 3D Cadastre Architecture | PS ID: 26011
+      </p>
+    </div>
+    <div class="badge-container">
+      <button id="btn-portal-theme-toggle" onclick="toggleTheme()" style="padding: 3px 8px; font-size: 10px; font-weight: 700; background: #0f172a; color: #ffffff; border: 1px solid #334155; cursor: pointer; margin-bottom: 6px; display: inline-block;" title="Toggle Theme"><span style="color:#38bdf8;">☾</span> Dark</button><br>
+      <span class="badge badge-primary">ISO 19152 LADM v2</span><br>
+      <span class="badge badge-secondary">OGC CityGML 3.0 / IFC 4.3</span>
+    </div>
+  </div>
+
+  <!-- Executive Overview -->
+  <div class="info-card">
+    <strong style="color: #064e3b; font-size: 10.5px;">Executive Summary & 3D ULPIN Encoding Standard:</strong>
+    <p style="margin-top: 3px; font-size: 9.5px; color: #334155;">
+      Extends India's 14-digit Bhu-Aadhaar 2D cadastre into a robust 3D volumetric indexing standard for multi-storey apartments, subsurface metro/utility tunnels, and regulated air-rights corridors.
+    </p>
+    <div class="formula-box">
+      3D-ULPIN = IN-[14-Digit Base Parcel]-[Strata Zone]-[Floor Level]-[Volumetric Unit ID]-[Modulo97 Checksum]
+      <div style="font-size: 9px; color: #a7f3d0; margin-top: 2px;">Example: IN-2187-4930-1049-A-F12-U1204-K8 (Floor 12 • Apartment #1204)</div>
+    </div>
+  </div>
+
+  <!-- Recommended Technology Stack -->
+  <div class="section-title">1. Recommended Production Technology Stack</div>
+  
+  <div class="tech-grid">
+    <div class="tech-card">
+      <h4>🌐 3D WebGIS & Frontend</h4>
+      <p><strong>Next.js 14 / React 18 + TypeScript + Tailwind CSS</strong><br>
+      <strong>CesiumJS</strong> (Georeferenced 3D globe) + <strong>Three.js</strong> (Interior LoD-3 unit mesh, exploded view & strata slicing) + <strong>MapLibre GL</strong>.</p>
+    </div>
+    <div class="tech-card">
+      <h4>⚡ Spatial Database & Topology</h4>
+      <p><strong>PostgreSQL 16 + PostGIS 3.4 + SFCGAL</strong><br>
+      Native 3D solid geometries (`POLYHEDRALSURFACEZ`), `ST_3DIntersects`, `ST_Volume`, `ST_MakeSolid`, and Redis tile caching.</p>
+    </div>
+    <div class="tech-card">
+      <h4>🤖 AI/ML 3D Extraction Engine</h4>
+      <p><strong>Segment Anything (SAM) / YOLOv8-OBB</strong> (Footprints)<br>
+      <strong>PDAL + Open3D + RANSAC 3D Plane Fitting</strong> (LiDAR floor height estimation) + <strong>IfcOpenShell</strong> (BIM IFC 4.3 parsing).</p>
+    </div>
+    <div class="tech-card">
+      <h4>📡 Geodetic Reference & APIs</h4>
+      <p><strong>FastAPI (Python 3.11) + GeoServer (OGC 3D Tiles)</strong><br>
+      <strong>EPSG:7755 (Indian National Grid)</strong> + WGS84 Orthometric Elevation linked to Survey of India CORS RTK Network.</p>
+    </div>
+  </div>
+
+  <!-- 16-Week Implementation Roadmap -->
+  <div class="section-title">2. Step-by-Step 16-Week Implementation Roadmap</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 14%;">Phase & Time</th>
+        <th style="width: 26%;">Key Milestones</th>
+        <th style="width: 44%;">Core Technical Deliverables</th>
+        <th style="width: 16%;">Tools & Stack</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-badge pb-1">Phase 1 (W1–3)</span><br><strong>Data Ingestion</strong></td>
+        <td>Multi-source spatial normalization & georeferencing</td>
+        <td>
+          <ul class="task-list">
+            <li>Standardize on EPSG:7755 CRS & SoI CORS RTK coordinates.</li>
+            <li>Ingest drone photogrammetry orthomosaics & DSM/DTM.</li>
+            <li>Classify LiDAR point clouds (LAS/LAZ) via PDAL filter pipelines.</li>
+          </ul>
+        </td>
+        <td>PDAL, GDAL, GeoPandas, LASpy</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge pb-2">Phase 2 (W4–6)</span><br><strong>AI 3D Extraction</strong></td>
+        <td>Automated building & floor boundary segmentation</td>
+        <td>
+          <ul class="task-list">
+            <li>Extract building footprints using YOLOv8-OBB / SAM models.</li>
+            <li>RANSAC 3D plane fitting on LiDAR clusters for floor heights (Z).</li>
+            <li>Parse BIM IFC architectural files (`IfcSpace`) to 3D volumes.</li>
+          </ul>
+        </td>
+        <td>PyTorch, SAM, Open3D, IfcOpenShell</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge pb-3">Phase 3 (W7–9)</span><br><strong>3D ULPIN Core</strong></td>
+        <td>Volumetric database & standard ULPIN generator</td>
+        <td>
+          <ul class="task-list">
+            <li>Implement ISO 19152 compliant 3D ULPIN generation logic.</li>
+            <li>Setup PostGIS 3D database (`POLYHEDRALSURFACEZ` schema).</li>
+            <li>Automate precise volume calculation in cubic meters (m³).</li>
+          </ul>
+        </td>
+        <td>PostgreSQL, PostGIS 3D, SFCGAL, FastAPI</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PAGE BREAK FOR CLEAN 2-PAGE FORMAT -->
+  <div class="page-break"></div>
+
+  <!-- PAGE 2 -->
+  <div class="header-banner" style="margin-top: 4px;">
+    <div class="header-left">
+      <h1 style="font-size: 15px;">3D ULPIN Implementation Roadmap (Continued)</h1>
+      <p>Phases 4–6 • Topology Validation, WebGIS Visualization & Open Standards Delivery</p>
+    </div>
+    <div class="badge-container">
+      <span class="badge badge-primary">PS ID: 26011</span>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 14%;">Phase & Time</th>
+        <th style="width: 26%;">Key Milestones</th>
+        <th style="width: 44%;">Core Technical Deliverables</th>
+        <th style="width: 16%;">Tools & Stack</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-badge pb-4">Phase 4 (W10–11)</span><br><strong>3D Topology</strong></td>
+        <td>Legal clash detection & manifold verification</td>
+        <td>
+          <ul class="task-list">
+            <li>Volumetric overlap detection (`ST_3DIntersects` & ST_Volume > 0).</li>
+            <li>Topological water-tight manifold closure verification (`ST_IsClosed`).</li>
+            <li>Identify unregistered interior sliver gaps & cantilever overhangs.</li>
+          </ul>
+        </td>
+        <td>PostGIS 3D, CGAL, Python Shapely</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge pb-5">Phase 5 (W12–14)</span><br><strong>3D WebGIS App</strong></td>
+        <td>Interactive 3D Cadastre explorer & inspector</td>
+        <td>
+          <ul class="task-list">
+            <li>Interactive 3D viewport (Three.js/Cesium) with raycast inspection.</li>
+            <li>Exploded vertical strata view & dynamic height clipping sliders.</li>
+            <li>Synchronized 2D elevation cross-section diagram rendering.</li>
+          </ul>
+        </td>
+        <td>Next.js, Three.js, CesiumJS, Tailwind</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge pb-6">Phase 6 (W15–16)</span><br><strong>Certification</strong></td>
+        <td>3D Bhu-Aadhaar cards & open standard exports</td>
+        <td>
+          <ul class="task-list">
+            <li>Generate official 3D Bhu-Aadhaar Digital Property Cards with QR.</li>
+            <li>Export datasets to OGC CityGML 3.0, ISO 19152 LADM & 3D GeoJSON.</li>
+            <li>Security audit, tamper-evident title hashing & registry deployment.</li>
+          </ul>
+        </td>
+        <td>CityGML 3.0, LADM XML, GeoServer</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- System Architecture Matrix -->
+  <div class="section-title">3. Cadastral Strata Classification Matrix</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 18%;">Strata Layer</th>
+        <th style="width: 18%;">Elevation Bounds</th>
+        <th style="width: 22%;">3D ULPIN Code</th>
+        <th style="width: 22%;">Ownership Model</th>
+        <th style="width: 20%;">Cadastral LoD</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Air Rights</strong></td>
+        <td>+45.0m to +65.0m</td>
+        <td><code>...-A-AIR-ZONE-A0</code></td>
+        <td>Statutory Airspace Right</td>
+        <td>LoD-1 Spatial Envelope</td>
+      </tr>
+      <tr>
+        <td><strong>Residential Strata</strong></td>
+        <td>+12.0m to +42.0m</td>
+        <td><code>...-A-F12-U1204-K8</code></td>
+        <td>Individual Freehold Title</td>
+        <td>LoD-3 Interior Polyhedron</td>
+      </tr>
+      <tr>
+        <td><strong>Commercial Podium</strong></td>
+        <td>+1.0m to +8.0m</td>
+        <td><code>...-A-F01-COMM-C3</code></td>
+        <td>Commercial Strata Title</td>
+        <td>LoD-3 Polyhedron</td>
+      </tr>
+      <tr>
+        <td><strong>Surface Ground</strong></td>
+        <td>0.00m Datum</td>
+        <td><code>...-S-S00-GRND-S1</code></td>
+        <td>Master Parent Parcel</td>
+        <td>LoD-2 Ground Footprint</td>
+      </tr>
+      <tr>
+        <td><strong>Basement Parking</strong></td>
+        <td>-6.5m to -1.0m</td>
+        <td><code>...-U-B01-PARK-B9</code></td>
+        <td>Common Strata Asset</td>
+        <td>LoD-2 Subsurface Solid</td>
+      </tr>
+      <tr>
+        <td><strong>Metro Rail Tunnel</strong></td>
+        <td>-21.0m to -14.0m</td>
+        <td><code>...-U-TUN-DMRC-T7</code></td>
+        <td>Public Statutory Easement</td>
+        <td>LoD-3 Subsurface Corridor</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer-note">
+    <span>MoRD / Dept. of Land Resources • 3D ULPIN Cadastral Framework</span>
+    <span>Compliant with ISO 19152 (LADM v2) • Generated for PS ID: 26011</span>
+  </div>
+
+  <script>
+    function applyTheme(theme, persist = true) {
+      const isDark = theme === 'dark';
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      if (persist) localStorage.setItem('dharanirman_theme', theme);
+      updatePortalThemeButton(isDark);
+    }
+    function toggleTheme() {
+      const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next, true);
+    }
+    function updatePortalThemeButton(isDark) {
+      const btn = document.getElementById('btn-portal-theme-toggle');
+      if (btn) {
+        btn.innerHTML = isDark 
+          ? '<span style="color:#fbbf24;">☀</span> Light' 
+          : '<span style="color:#38bdf8;">☾</span> Dark';
+        btn.setAttribute('title', isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme');
+      }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      updatePortalThemeButton(document.documentElement.classList.contains('dark'));
+    });
+  </script>
+</body>
+</html>

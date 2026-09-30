@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DharaNirman | 3D Cadastral Access Gateway • Smart India Hackathon</title>
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('dharanirman_theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="portal.css?v=6">
+  <style>
+    body {
+      background-color: #eaedf1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .gov-top-bar {
+      background: #0f1f38;
+      color: #94a3b8;
+      font-size: 11px;
+      padding: 4px 20px;
+      border-bottom: 1px solid #1e3a5f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .login-container {
+      width: min(500px, 94vw);
+      margin: 30px auto 20px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+    }
+    .login-header {
+      background: #162e51;
+      color: #ffffff;
+      padding: 22px 24px;
+      border-bottom: 3px solid #005ea2;
+    }
+    .auth-mode-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 2px solid #cbd5e1;
+      background: #f1f5f9;
+    }
+    .auth-mode-btn {
+      padding: 11px;
+      border: none;
+      background: transparent;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      color: #475569;
+      text-align: center;
+      transition: all 0.1s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .auth-mode-btn.active {
+      background: #ffffff;
+      color: #005ea2;
+      border-bottom: 3px solid #005ea2;
+      margin-bottom: -2px;
+    }
+    .login-body {
+      padding: 22px 24px;
+    }
+    .role-nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin-bottom: 18px;
+      border: 1px solid #cbd5e1;
+      background: #f1f5f9;
+    }
+    .role-tab-btn {
+      padding: 9px 4px;
+      border: none;
+      border-right: 1px solid #cbd5e1;
+      background: transparent;
+      color: #475569;
+      font-weight: 700;
+      font-size: 11px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.1s ease;
+    }
+    .role-tab-btn:last-child {
+      border-right: none;
+    }
+    .role-tab-btn.active {
+      background: #005ea2;
+      color: #ffffff;
+    }
+    .role-info-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 3px solid #005ea2;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+    }
+    .role-info-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      color: #162e51;
+      margin: 0 0 2px;
+    }
+    .role-info-box p {
+      font-size: 11.5px;
+      color: #475569;
+      margin: 0;
+      line-height: 1.4;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #94a3b8;
+      background: #ffffff;
+      font-size: 13px;
+      font-family: inherit;
+      color: #0f172a;
+    }
+    .form-input:focus {
+      border-color: #005ea2;
+      outline: none;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 10px;
+      background: #005ea2;
+      color: #ffffff;
+      border: 1px solid #004c82;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.1s ease;
+    }
+    .btn-submit:hover {
+      background: #004c82;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .login-footer-text {
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 14px;
+    }
+    .gov-footer {
+      margin-top: auto;
+      text-align: center;
+      padding: 14px;
+      font-size: 11px;
+      color: #64748b;
+      border-top: 1px solid #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+  <div class="gov-top-bar">
+    <span>DharaNirman 3D Cadastre • Smart India Hackathon</span>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="font-mono">PS ID: 26011 • ISO 19152 LADM v2</span>
+      <button class="btn btn-light" id="btn-portal-theme-toggle" onclick="toggleTheme()" style="padding:2px 8px; font-size:11px;" title="Toggle Theme"><span style="color:#38bdf8;">☾</span> Dark</button>
+    </div>
+  </div>
+
+  <div class="login-container">
+    <div class="login-header">
+      <div class="eyebrow" style="color:#7dd3fc; margin-bottom:2px;">Authoritative Cadastral Gateway</div>
+      <h1 style="font-size:19px; font-weight:800; margin:0 0 4px;">DharaNirman</h1>
+      <p style="color:#cbd5e1; font-size:11.5px; margin:0; line-height:1.4;">
+        3D Volumetric Land Administration & Bhu-Aadhaar Registry.
+      </p>
+    </div>
+
+    <!-- Mode Selector Tabs: Sign In vs Citizen Registration -->
+    <div class="auth-mode-bar">
+      <button id="tab-mode-login" class="auth-mode-btn active" onclick="setAuthMode('login')">Sign In (Roles)</button>
+      <button id="tab-mode-register" class="auth-mode-btn" onclick="setAuthMode('register')">Register New Citizen</button>
+    </div>
+
+    <div class="login-body">
+      <!-- 1. SIGN IN MODE -->
+      <div id="login-section">
+        <!-- Role Tabs (Sharp Rectangles) -->
+        <div id="role-selector-nav" class="role-nav" role="tablist" aria-label="Portal Selection">
+          <button class="role-tab-btn active" data-role="citizen" onclick="selectLoginRole('citizen')">Citizen</button>
+          <button class="role-tab-btn" data-role="officer" onclick="selectLoginRole('officer')">DoLR Officer</button>
+          <button class="role-tab-btn" data-role="surveyor" onclick="selectLoginRole('surveyor')">Surveyor</button>
+        </div>
+
+        <!-- Selected Role Info -->
+        <div id="login-role-copy" class="role-info-box">
+          <h3>Citizen Property Portal</h3>
+          <p>View registered 3D titles, certificates, tax status, and demarcation requests.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="login-identifier" class="form-label">Official User ID / Email / Phone</label>
+          <input id="login-identifier" class="form-input" placeholder="e.g. your.email@digital.gov.in" autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="login-password" class="form-label">Password</label>
+          <input id="login-password" type="password" class="form-input" placeholder="Enter your password" autocomplete="current-password">
+        </div>
+
+        <button class="btn-submit" onclick="submitLogin()">Sign in to Workspace</button>
+      </div>
+
+      <!-- 2. CITIZEN REGISTRATION MODE -->
+      <div id="register-section" class="hidden">
+        <div class="role-info-box" style="border-left-color: #047857; background: #ecfdf5;">
+          <h3 style="color: #047857;">New 3D Property Registration</h3>
+          <p>Register your volumetric unit ownership into the National 3D Cadastral Database.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-name" class="form-label">Full Legal Name</label>
+          <input id="reg-name" class="form-input" placeholder="e.g. Ramesh Kumar">
+        </div>
+
+        <div class="form-group">
+          <label for="reg-identifier" class="form-label">Mobile Number / Email / Aadhaar ID</label>
+          <input id="reg-identifier" class="form-input" placeholder="e.g. ramesh.kumar@example.com">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label for="reg-state" class="form-label">State / UT</label>
+            <select id="reg-state" class="form-input" onchange="onStateChange()" style="font-weight: 500;">
+              <option value="">-- Select State / UT --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="reg-city" class="form-label">City / District / Town</label>
+            <select id="reg-city" class="form-input" style="font-weight: 500;">
+              <option value="">-- Select City / Town --</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label for="reg-password" class="form-label">Create Password</label>
+            <input id="reg-password" type="password" class="form-input" minlength="8" autocomplete="new-password" placeholder="At least 8 characters" oninput="checkPasswordMatch()">
+          </div>
+          <div class="form-group">
+            <label for="reg-confirm-password" class="form-label">Confirm Password</label>
+            <input id="reg-confirm-password" type="password" class="form-input" minlength="8" autocomplete="new-password" placeholder="Repeat password" oninput="checkPasswordMatch()">
+          </div>
+        </div>
+        <div id="password-match-status" style="font-size:11px; font-weight:700; margin:-6px 0 10px; min-height:14px;"></div>
+
+        <div class="form-group">
+          <label for="reg-unit" class="form-label">Select Registered 3D Property Unit</label>
+          <select id="reg-unit" class="form-input" style="font-weight: 600;">
+            <option value="U0602">Unit #602 (Floor 6 · Mid-Rise · 120.0 m² · 360 m³)</option>
+            <option value="U1204">Unit #1204 (Floor 12 · Top Tier · 128.0 m² · 384 m³)</option>
+            <option value="U1201">Unit #1201 (Floor 12 · Corner Suite · 137.5 m² · 412 m³)</option>
+            <option value="U0401">Unit #401 (Floor 4 · Standard Suite · 118.0 m² · 354 m³)</option>
+            <option value="U0101">Unit #101 (Floor 1 · Garden View · 125.0 m² · 375 m³)</option>
+            <option value="SURFACE">Surface Ground Parcel S00 (1,600.0 m² Master Title)</option>
+            <option value="BASEMENT1">Basement Parking Bay B1-04 (Underground -6.0m)</option>
+          </select>
+        </div>
+
+        <button class="btn-submit" style="background: #047857; border-color: #065f46;" onclick="submitCitizenRegister()">
+          Register & Open 3D Bhu-Aadhaar
+        </button>
+      </div>
+
+      <p id="login-error" style="color:#d9381e; font-size:12px; font-weight:700; margin:8px 0 0;" hidden></p>
+      <p id="login-success" style="color:#059669; font-size:12px; font-weight:700; margin:8px 0 0;" hidden></p>
+      <p class="login-footer-text">DharaNirman 3D Cadastre • Smart India Hackathon Prototype</p>
+    </div>
+  </div>
+
+  <footer class="gov-footer">
+    DharaNirman 3D Cadastre • National Spatial Registry • Survey of India CORS Network
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="api.js?v=6"></script>
+  <script src="auth.js?v=6"></script>
+</body>
+</html>

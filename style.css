@@ -1,0 +1,600 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Roboto+Mono:wght@400;500;600;700&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap');
+
+:root {
+  --gov-navy: #162E51;
+  --gov-navy-dark: #0f1f38;
+  --gov-blue: #005EA2;
+  --gov-blue-dark: #004c82;
+  --gov-blue-light: #e8f3fa;
+  --gov-bg: #eaedf1;
+  --gov-surface: #ffffff;
+  --gov-gray-light: #f8fafc;
+  --gov-gray-cool: #cbd5e1;
+  --gov-gray-border: #94a3b8;
+  --gov-ink: #0f172a;
+  --gov-ink-muted: #475569;
+  --gov-red: #d9381e;
+  --gov-amber: #b45309;
+  --gov-amber-light: #fef3c7;
+  --gov-green: #047857;
+  --gov-green-light: #ecfdf5;
+  --gov-cyan: #0284c7;
+  --font-ui: 'Public Sans', 'Roboto', 'Open Sans', 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'Roboto Mono', Menlo, Consolas, Monaco, monospace;
+}
+
+/* Global sharp-cornered CAD & enterprise standard */
+*, *::before, *::after {
+  box-sizing: border-box;
+  border-radius: 0 !important;
+}
+
+html, body {
+  font-family: var(--font-ui);
+  color: var(--gov-ink);
+  background-color: var(--gov-bg);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-mono {
+  font-family: var(--font-mono) !important;
+  letter-spacing: -0.02em;
+}
+
+/* Accessible, crisp focus rings */
+*:focus-visible {
+  outline: 2px solid var(--gov-blue) !important;
+  outline-offset: 1px !important;
+}
+
+/* Technical square scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gov-blue);
+}
+
+/* Header Authority Bar */
+header.bg-gov-navy {
+  min-height: 56px;
+  padding: 8px 20px !important;
+  background-color: var(--gov-navy) !important;
+  border-bottom: 3px solid var(--gov-blue) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Government Card & Surface Panels */
+.gov-card {
+  background: #ffffff;
+  border: 1px solid var(--gov-gray-cool);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.gov-card-inset {
+  background: var(--gov-gray-light);
+  border: 1px solid var(--gov-gray-cool);
+}
+
+.gov-panel-sidebar {
+  background: #f1f5f9;
+  border-color: var(--gov-gray-cool);
+}
+
+/* Inputs, Selects, Buttons */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+select,
+textarea {
+  font-family: var(--font-ui);
+  background-color: #ffffff;
+  border: 1px solid var(--gov-gray-border);
+  color: var(--gov-ink);
+  padding: 6px 10px;
+  font-size: 12px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  resize: none;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--gov-blue) !important;
+  outline: none;
+}
+
+button {
+  font-family: var(--font-ui);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.1s ease, border-color 0.1s ease;
+}
+
+/* Status Badges */
+.badge-green {
+  background-color: var(--gov-green-light);
+  color: var(--gov-green);
+  border: 1px solid #a7f3d0;
+  font-weight: 700;
+}
+
+.badge-amber {
+  background-color: var(--gov-amber-light);
+  color: var(--gov-amber);
+  border: 1px solid #fde68a;
+  font-weight: 700;
+}
+
+.badge-red {
+  background-color: #fef2f2;
+  color: var(--gov-red);
+  border: 1px solid #fecaca;
+  font-weight: 700;
+}
+
+.badge-blue {
+  background-color: var(--gov-blue-light);
+  color: var(--gov-blue);
+  border: 1px solid #bae6fd;
+  font-weight: 700;
+}
+
+/* 3D WebGL Canvas Viewport */
+#cadastreCanvasContainer {
+  background-color: #0b1320;
+  border: 1px solid var(--gov-gray-border) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+#cadastreCanvasContainer canvas {
+  outline: none;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Precision CAD Slider Controls */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: #cbd5e1;
+  outline: none;
+  border: 1px solid #94a3b8;
+  border-radius: 0 !important;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--gov-blue);
+  border: 1px solid #0f1f38;
+  cursor: pointer;
+  border-radius: 0 !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--gov-blue);
+  border: 1px solid #0f1f38;
+  cursor: pointer;
+  border-radius: 0 !important;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: var(--gov-cyan);
+}
+
+/* Telemetry HUD & Overlays */
+#unitTooltip {
+  background: rgba(15, 23, 42, 0.96) !important;
+  border: 1px solid var(--gov-cyan) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+  font-family: var(--font-mono);
+}
+
+/* ==================================================================
+   DARK THEME SPECIFICATION (Low Strain & Zero Uncanny Contrast)
+   ================================================================== */
+:root {
+  color-scheme: light dark;
+}
+
+html.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --gov-navy: #0c1829;
+  --gov-navy-dark: #060e1a;
+  --gov-blue: #0284c7;
+  --gov-blue-dark: #0369a1;
+  --gov-blue-light: #0d2238;
+  --gov-bg: #0b111e;
+  --gov-surface: #131d2e;
+  --gov-gray-light: #162236;
+  --gov-gray-cool: #24344d;
+  --gov-gray-border: #384c68;
+  --gov-ink: #f1f5f9;
+  --gov-ink-muted: #94a3b8;
+  --gov-red: #f87171;
+  --gov-amber: #fbbf24;
+  --gov-amber-light: #3a2208;
+  --gov-green: #34d399;
+  --gov-green-light: #063728;
+  --gov-cyan: #38bdf8;
+}
+
+/* Background & Main text */
+html.dark,
+html.dark body {
+  background-color: #16161e !important;
+  color: #c0caf5 !important;
+}
+
+/* Header Authority Bar in Dark Mode */
+html.dark header.bg-gov-navy {
+  background-color: #1f2335 !important;
+  border-bottom: 3px solid #7aa2f7 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Cards and Panels */
+html.dark .gov-card {
+  background: #24283b !important;
+  border-color: #414868 !important;
+  color: #c0caf5 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark .gov-card-inset {
+  background: #1f2335 !important;
+  border-color: #414868 !important;
+}
+
+html.dark .gov-panel-sidebar {
+  background: #1a1b26 !important;
+  border-color: #414868 !important;
+}
+
+/* Inputs, Selects, and Textareas */
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark input[type="password"],
+html.dark select,
+html.dark textarea {
+  background-color: #1f2335 !important;
+  border-color: #414868 !important;
+  color: #c0caf5 !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark textarea::placeholder,
+html.dark input::placeholder {
+  color: #7a88cf !important;
+  opacity: 0.85;
+}
+
+html.dark input[type="text"]:focus,
+html.dark input[type="number"]:focus,
+html.dark input[type="password"]:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #7aa2f7 !important;
+  box-shadow: 0 0 0 2px rgba(122, 162, 247, 0.25) !important;
+}
+
+/* 3D Visualizer Role Workspace Banners (DoLR Officer, Surveyor, Citizen) */
+html.dark #visualizer-role-banner {
+  background-color: rgba(31, 35, 53, 0.95) !important;
+  border-color: rgba(122, 162, 247, 0.6) !important;
+  color: #c0caf5 !important;
+}
+html.dark #visualizer-role-title {
+  color: #7aa2f7 !important;
+}
+html.dark #visualizer-role-copy {
+  color: #9aa5ce !important;
+}
+
+/* Dark mode scrollbars */
+html.dark ::-webkit-scrollbar-track {
+  background: #16161e;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #414868;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #7aa2f7;
+}
+
+/* Tailored Overrides for Tailwind Utility Classes in Dark Mode */
+html.dark .bg-gov-bg {
+  background-color: #16161e !important;
+}
+html.dark .bg-gov-gray-light {
+  background-color: #1f2335 !important;
+}
+html.dark .bg-white {
+  background-color: #24283b !important;
+  color: #c0caf5 !important;
+}
+html.dark .text-gov-ink {
+  color: #c0caf5 !important;
+}
+html.dark .text-gov-ink-muted {
+  color: #9aa5ce !important;
+}
+html.dark .text-gov-navy {
+  color: #c0caf5 !important;
+}
+html.dark .border-gov-gray-cool {
+  border-color: #414868 !important;
+}
+html.dark .border-gov-gray-border {
+  border-color: #414868 !important;
+}
+html.dark .border-slate-200 {
+  border-color: #414868 !important;
+}
+
+/* Layer & Category items */
+html.dark label.bg-gov-gray-light:hover {
+  border-color: #7aa2f7 !important;
+  background-color: #292e42 !important;
+}
+
+/* Badges in Dark Mode */
+html.dark .badge-green {
+  background-color: #1c2e28 !important;
+  color: #9ece6a !important;
+  border-color: #2e5b42 !important;
+}
+html.dark .badge-amber {
+  background-color: #372813 !important;
+  color: #e0af68 !important;
+  border-color: #7e5720 !important;
+}
+html.dark .badge-red {
+  background-color: #3c1e28 !important;
+  color: #f7768e !important;
+  border-color: #8c2d43 !important;
+}
+html.dark .badge-blue {
+  background-color: #1e2640 !important;
+  color: #7aa2f7 !important;
+  border-color: #3d59a1 !important;
+}
+
+/* 3D CAD Dock & Overlays */
+html.dark #cadastreCanvasContainer {
+  background-color: #1a1b26 !important;
+  border-color: #414868 !important;
+}
+html.dark .bg-white\/95 {
+  background-color: rgba(36, 40, 59, 0.95) !important;
+  border-color: #414868 !important;
+  color: #c0caf5 !important;
+}
+
+/* 3D View Mode Control Buttons in Dark Mode */
+html.dark #btn-3d,
+html.dark #btn-cross {
+  color: #9aa5ce !important;
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+}
+
+html.dark #btn-3d.bg-gov-blue,
+html.dark #btn-cross.bg-gov-blue {
+  background-color: #7aa2f7 !important;
+  color: #15161e !important;
+  font-weight: 700 !important;
+  border-color: #3d59a1 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark #btn-3d:not(.bg-gov-blue):hover,
+html.dark #btn-cross:not(.bg-gov-blue):hover {
+  background-color: #292e42 !important;
+  color: #7aa2f7 !important;
+  border-color: #414868 !important;
+}
+
+html.dark #btn-3d:not(.bg-gov-blue):hover i,
+html.dark #btn-cross:not(.bg-gov-blue):hover i {
+  color: #7aa2f7 !important;
+}
+
+html.dark #btn-topology {
+  color: #e0af68 !important;
+  background-color: rgba(224, 175, 104, 0.15) !important;
+  border: 1px solid rgba(224, 175, 104, 0.35) !important;
+}
+
+html.dark #btn-topology:hover {
+  background-color: rgba(224, 175, 104, 0.28) !important;
+  color: #fce788 !important;
+  border-color: #e0af68 !important;
+}
+
+html.dark #btn-topology:hover i {
+  color: #fce788 !important;
+}
+
+/* CAD Toolbar Bottom Dock & Quick-Toggles in Dark Mode */
+html.dark .hover\:bg-gov-gray-light:hover {
+  background-color: #292e42 !important;
+  color: #7aa2f7 !important;
+  border-color: #414868 !important;
+}
+
+html.dark .hover\:bg-gov-gray-cool:hover {
+  background-color: #292e42 !important;
+  color: #7aa2f7 !important;
+  border-color: #7aa2f7 !important;
+}
+
+html.dark .hover\:bg-amber-50:hover {
+  background-color: rgba(224, 175, 104, 0.22) !important;
+  color: #fce788 !important;
+}
+
+html.dark button.bg-gov-gray-light,
+html.dark a.bg-gov-gray-light {
+  background-color: #1f2335 !important;
+  border-color: #414868 !important;
+  color: #c0caf5 !important;
+}
+
+html.dark button.bg-gov-gray-light:hover,
+html.dark a.bg-gov-gray-light:hover,
+html.dark button.hover\:bg-gov-gray-cool:hover,
+html.dark button.hover\:bg-gov-gray-light:hover {
+  background-color: #292e42 !important;
+  border-color: #7aa2f7 !important;
+  color: #7aa2f7 !important;
+}
+
+html.dark button.hover\:bg-gov-gray-cool:hover i,
+html.dark button.hover\:bg-gov-gray-light:hover i,
+html.dark button.bg-gov-gray-light:hover i {
+  color: #7aa2f7 !important;
+}
+
+/* Copy ULPIN button */
+html.dark button[onclick="copyULPIN()"] {
+  background-color: #1f2335 !important;
+  border-color: #414868 !important;
+  color: #7aa2f7 !important;
+}
+
+html.dark button[onclick="copyULPIN()"]:hover {
+  background-color: #292e42 !important;
+  border-color: #7aa2f7 !important;
+  color: #7dcfff !important;
+}
+
+html.dark #result-ulpin {
+  background-color: #1e2640 !important;
+  border-color: #3d59a1 !important;
+  color: #7dcfff !important;
+}
+
+/* Range Sliders */
+html.dark input[type="range"] {
+  background: #292e42 !important;
+  border-color: #414868 !important;
+}
+html.dark input[type="range"]::-webkit-slider-thumb {
+  background: #7aa2f7 !important;
+  border-color: #bb9af7 !important;
+}
+html.dark input[type="range"]::-moz-range-thumb {
+  background: #7aa2f7 !important;
+  border-color: #bb9af7 !important;
+}
+
+/* Planning Context Card */
+html.dark #regulation-context-card {
+  background-color: rgba(55, 40, 19, 0.4) !important;
+  border-color: rgba(224, 175, 104, 0.45) !important;
+}
+html.dark #regulation-context-card h2,
+html.dark #regulation-context-card #regulation-jurisdiction {
+  color: #e0af68 !important;
+}
+html.dark #regulation-context-card #regulation-summary,
+html.dark #regulation-context-card p {
+  color: #fde68a !important;
+}
+html.dark #regulation-context-card span {
+  background-color: rgba(31, 35, 53, 0.85) !important;
+  border-color: rgba(224, 175, 104, 0.4) !important;
+  color: #fde68a !important;
+}
+
+/* Strata Stack Navigator Items */
+html.dark #strata-air {
+  background-color: rgba(55, 40, 19, 0.35) !important;
+  border-color: rgba(224, 175, 104, 0.45) !important;
+}
+html.dark #strata-res {
+  background-color: rgba(30, 38, 64, 0.7) !important;
+  border-color: #7aa2f7 !important;
+}
+html.dark #strata-surface {
+  background-color: rgba(28, 46, 40, 0.5) !important;
+  border-color: rgba(158, 206, 106, 0.5) !important;
+}
+html.dark #strata-b1 {
+  background-color: #1f2335 !important;
+  border-color: #414868 !important;
+}
+html.dark #strata-metro {
+  background-color: rgba(60, 30, 40, 0.5) !important;
+  border-color: rgba(247, 118, 142, 0.45) !important;
+}
+html.dark #topology-card {
+  background-color: rgba(28, 46, 40, 0.5) !important;
+  border-color: rgba(158, 206, 106, 0.5) !important;
+}
+
+/* Modals */
+html.dark #certificateModal > div,
+html.dark #exportModal > div,
+html.dark #demarcationModal > div,
+html.dark #taxModal > div {
+  background-color: #24283b !important;
+  border-color: #414868 !important;
+  color: #c0caf5 !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7) !important;
+}
+html.dark #certificateModal .border-b-2 {
+  border-color: #414868 !important;
+}
+html.dark #certificateModal h2,
+html.dark #certificateModal h3,
+html.dark #exportModal h2,
+html.dark #demarcationModal h2,
+html.dark #taxModal h2 {
+  color: #c0caf5 !important;
+}
+
+/* Interactive elements transition */
+body, header, aside, section, .gov-card, button, input, select {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* Print Certificate Rules */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #certificateModal, #certificateModal * {
+    visibility: visible;
+  }
+  #certificateModal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+}
