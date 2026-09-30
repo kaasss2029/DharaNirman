@@ -337,30 +337,36 @@
         <!-- 2D Canvas Fallback / Cross-Section Overlay -->
         <canvas id="crossSectionCanvas" class="hidden absolute inset-0 w-full h-full z-0 bg-slate-950"></canvas>
 
-        <!-- Top Overlay Mode Controls (Left Dock) -->
-        <div class="absolute top-3 left-3 z-30 flex flex-wrap gap-1.5 bg-white/95 border border-gov-gray-cool p-1 shadow-md">
-          <button onclick="setViewMode('3d')" class="px-2.5 py-1 text-xs bg-gov-blue text-white font-bold transition flex items-center gap-1 shadow-sm" id="btn-3d">
-            <i data-lucide="box" class="w-3.5 h-3.5 inline mr-1"></i> <span data-i18n="btn_mode_3d">3D Volumetric</span>
-          </button>
-          <button onclick="setViewMode('cross')" class="px-2.5 py-1 text-xs hover:bg-gov-gray-light text-gov-ink font-semibold transition flex items-center gap-1" id="btn-cross">
-            <i data-lucide="scan-line" class="w-3.5 h-3.5 inline mr-1"></i> <span data-i18n="btn_mode_cross">Cross-Section</span>
-          </button>
-          <button onclick="runTopologyValidation()" id="btn-topology" class="px-2.5 py-1 text-xs hover:bg-amber-50 text-gov-amber font-bold flex items-center gap-1 transition">
-            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-gov-amber"></i> <span data-i18n="btn_mode_topology">Topology Audit</span>
-          </button>
-        </div>
+        <!-- Unified Top Overlay Dock (Mode Controls Left, Telemetry HUD Right) -->
+        <div class="absolute top-3 inset-x-3 z-30 flex items-start justify-between gap-3 pointer-events-none">
+          <!-- Left Column: Mode Switcher + Role Workspace Sub-banner -->
+          <div class="flex flex-col items-start gap-1.5 pointer-events-auto max-w-[65%]">
+            <!-- Mode Switcher -->
+            <div class="flex flex-wrap gap-1 bg-white/95 dark:bg-slate-900/95 border border-gov-gray-cool dark:border-slate-700 p-1 shadow-md">
+              <button onclick="setViewMode('3d')" class="px-2.5 py-1 text-xs bg-gov-blue text-white font-bold transition flex items-center gap-1 shadow-sm shrink-0" id="btn-3d">
+                <i data-lucide="box" class="w-3.5 h-3.5 inline mr-1"></i> <span data-i18n="btn_mode_3d">3D Volumetric</span>
+              </button>
+              <button onclick="setViewMode('cross')" class="px-2.5 py-1 text-xs hover:bg-gov-gray-light dark:hover:bg-slate-800 text-gov-ink dark:text-slate-200 font-semibold transition flex items-center gap-1 shrink-0" id="btn-cross">
+                <i data-lucide="scan-line" class="w-3.5 h-3.5 inline mr-1"></i> <span data-i18n="btn_mode_cross">Cross-Section</span>
+              </button>
+              <button onclick="runTopologyValidation()" id="btn-topology" class="px-2.5 py-1 text-xs hover:bg-amber-50 dark:hover:bg-amber-950/40 text-gov-amber dark:text-amber-300 font-bold flex items-center gap-1 transition shrink-0">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-gov-amber dark:text-amber-400"></i> <span data-i18n="btn_mode_topology">Topology Audit</span>
+              </button>
+            </div>
 
-        <!-- Top Right Telemetry HUD (Right Dock) -->
-        <div class="absolute top-3 right-3 z-30 bg-white/95 border border-gov-gray-cool px-3 py-1.5 text-[11px] font-mono text-gov-ink shadow-md pointer-events-none hidden sm:block">
-          <p class="text-gov-blue font-bold" data-i18n="hud_crs">CRS: EPSG:7755 (Indian Nat. Grid)</p>
-          <p class="text-gov-ink-muted" data-i18n="hud_vertical">Vertical: WGS84 Orthometric (m)</p>
-          <p class="text-gov-ink-muted"><span data-i18n="hud_camera">Camera:</span> <span id="camera-pos" class="text-gov-ink font-bold">X: 38, Y: 42, Z: 48</span></p>
-        </div>
+            <!-- Role Workspace Banner (Docked below buttons, cleanly separated) -->
+            <div id="visualizer-role-banner" class="max-w-xs bg-gov-navy/95 text-white border border-cyan-400/40 px-2.5 py-1 shadow-md text-[10.5px]">
+              <p id="visualizer-role-title" class="font-extrabold text-cyan-200" data-i18n="vis_role_title">3D registry workspace</p>
+              <p id="visualizer-role-copy" class="text-slate-300 mt-0.5" data-i18n="vis_role_copy">Role-specific controls are active.</p>
+            </div>
+          </div>
 
-        <!-- Role Workspace Banner (Docked Top Sub-bar, Not blocking model or sliders) -->
-        <div id="visualizer-role-banner" class="absolute top-14 left-3 z-30 max-w-xs bg-gov-navy/95 text-white border border-cyan-400/40 px-3 py-1.5 shadow-lg text-[11px]">
-          <p id="visualizer-role-title" class="font-extrabold text-cyan-200" data-i18n="vis_role_title">3D registry workspace</p>
-          <p id="visualizer-role-copy" class="text-slate-300 mt-0.5" data-i18n="vis_role_copy">Role-specific controls are active.</p>
+          <!-- Right Column: Telemetry HUD -->
+          <div class="pointer-events-auto bg-white/95 dark:bg-slate-900/95 border border-gov-gray-cool dark:border-slate-700 px-2.5 py-1 text-[10.5px] font-mono text-gov-ink dark:text-slate-200 shadow-md text-right shrink-0 hidden md:block">
+            <p class="text-gov-blue dark:text-cyan-300 font-bold whitespace-nowrap" data-i18n="hud_crs">CRS: EPSG:7755 (Indian Nat. Grid)</p>
+            <p class="text-gov-ink-muted dark:text-slate-400 whitespace-nowrap" data-i18n="hud_vertical">Vertical: WGS84 (m) · RTK ±1.2cm</p>
+            <p class="text-gov-ink-muted dark:text-slate-400 whitespace-nowrap"><span data-i18n="hud_camera">Camera:</span> <span id="camera-pos" class="text-gov-ink dark:text-white font-bold">X: 38, Y: 42, Z: 48</span></p>
+          </div>
         </div>
 
         <!-- Hover Tooltip -->
