@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>DharaNirman | 3D ULPIN Implementation Roadmap</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
   <meta name="color-scheme" content="light dark">
   <script>
     (function() {
@@ -47,7 +48,19 @@
       margin-bottom: 16px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-left img {
+      height: 42px;
+      width: auto;
+      object-fit: contain;
     }
 
     .header-left h1 {
@@ -307,11 +320,14 @@
   <!-- PAGE 1 -->
   <div class="header-banner">
     <div class="header-left">
-      <h1>DharaNirman</h1>
-      <p>Technical Architecture & Implementation Roadmap • 16-Week Project Plan</p>
-      <p style="font-size: 9.5px; color: #059669; font-weight: 600; margin-top: 2px;">
-        Smart India Hackathon • 3D Cadastre Architecture | PS ID: 26011
-      </p>
+      <img src="assets/logo-icon.png" alt="DharaNirman Logo">
+      <div>
+        <h1>DharaNirman</h1>
+        <p>Technical Architecture & Implementation Roadmap • 16-Week Project Plan</p>
+        <p style="font-size: 9.5px; color: #059669; font-weight: 600; margin-top: 2px;">
+          Smart India Hackathon • 3D Cadastre Architecture | PS ID: 26011
+        </p>
+      </div>
     </div>
     <div class="badge-container">
       <button id="btn-portal-theme-toggle" onclick="toggleTheme()" style="padding: 3px 8px; font-size: 10px; font-weight: 700; background: #0f172a; color: #ffffff; border: 1px solid #334155; cursor: pointer; margin-bottom: 6px; display: inline-block;" title="Toggle Theme"><span style="color:#38bdf8;">☾</span> Dark</button><br>
