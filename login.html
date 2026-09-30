@@ -23,27 +23,36 @@
   <link rel="stylesheet" href="portal.css?v=6">
   <style>
     body {
-      background-color: #eaedf1;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 31, 56, 0.82)),
+                  url('assets/login-bg.jpg') no-repeat center center fixed;
+      background-size: cover;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
     }
     .gov-top-bar {
-      background: #0f1f38;
+      background: rgba(15, 31, 56, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       color: #94a3b8;
       font-size: 11px;
-      padding: 4px 20px;
-      border-bottom: 1px solid #1e3a5f;
+      padding: 6px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      z-index: 10;
     }
     .login-container {
-      width: min(500px, 94vw);
-      margin: 30px auto 20px;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+      width: min(520px, 94vw);
+      margin: 36px auto 24px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 8px;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      overflow: hidden;
     }
     .login-header {
       background: #162e51;
@@ -179,8 +188,11 @@
       text-align: center;
       padding: 14px;
       font-size: 11px;
-      color: #64748b;
-      border-top: 1px solid #cbd5e1;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
   </style>
 </head>

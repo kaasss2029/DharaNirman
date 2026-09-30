@@ -538,9 +538,9 @@ html.dark .danger {
 
 /* Login page dark mode rules */
 html.dark .login-container {
-  background: #24283b !important;
-  border-color: #414868 !important;
-  box-shadow: 0 8px 32px rgba(10, 10, 20, 0.6) !important;
+  background: rgba(26, 35, 50, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.8) !important;
 }
 
 html.dark .auth-mode-bar {
