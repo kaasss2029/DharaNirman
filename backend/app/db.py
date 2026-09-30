@@ -10,7 +10,8 @@ class Base(DeclarativeBase):
     pass
 
 
-database_url = get_settings().database_url
+settings = get_settings()
+database_url = settings.normalized_database_url
 is_sqlite = database_url.startswith("sqlite")
 
 engine_kwargs = {}

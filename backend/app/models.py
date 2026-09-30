@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .config import get_settings
 from .db import Base
 
-is_sqlite = get_settings().database_url.startswith("sqlite")
+is_sqlite = get_settings().normalized_database_url.startswith("sqlite")
 if not is_sqlite:
     from geoalchemy2 import Geometry
     SpatialGeometry = Geometry("POLYHEDRALSURFACEZ", srid=7755, spatial_index=False)
